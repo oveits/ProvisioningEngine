@@ -54,9 +54,6 @@ ActiveRecord::Schema.define(version: 20140821221257) do
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
-# Could not dump table "provisionings" because of following NoMethodError
-#   undefined method `[]' for nil:NilClass
-
   create_table "resourcepools", force: true do |t|
     t.string   "name"
     t.string   "resource"
