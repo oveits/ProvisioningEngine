@@ -1,0 +1,66 @@
+<div class="view">
+	<h2>
+		Sites
+	<% if !@customer.nil? %>
+		of Customer <%= link_to @customer.name, @customer %>
+	<% end %>	
+	</h2>
+</div>
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<% if @customer.nil? %>
+			<li><%= link_to 'New', new_site_path %></li>
+			<% else %>
+			<li><%= link_to 'New', new_customer_site_path(@customer) %></li>
+			<% end %>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="view">
+<p id="notice"><%= notice %></p>
+</div>
+
+
+<div class="index" >
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <% if @customer.nil? %>
+      <th>Customer</th>
+      <% end %>
+      <th>Status</th>
+      <th colspan="4">Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @sites.each do |site| %>
+      <tr>
+        <td><%= link_to site.name, site %></td>
+        <% if @customer.nil? %>
+        <td>
+        	<% if site.customer.nil? %>
+        	<%= link_to site.customer, site.customer %>
+        	<% else %>
+        	<%= link_to site.customer.name, site.customer %>
+        	<% end %>       	
+        </td>
+        <% end %>
+        <td><%= site.status %></td>
+        <td class="actions"><%= link_to 'Edit', edit_site_path(site) %></td>
+        <td class="actions"><%= link_to 'Provision', provision_site_path(site), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td class="actions"><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td class="actions"><%= link_to 'Destroy', site, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+</div>
+
+

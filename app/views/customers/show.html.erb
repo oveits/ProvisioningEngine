@@ -1,0 +1,82 @@
+<div class="index">
+	<h2>Customer <%= @customer.name %></h2>
+</div>
+
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<h3>Create</h3>
+			<li><%= link_to 'New Customer', new_customer_path %></li>
+			<li><%= link_to 'Add Site', new_customer_site_path(@customer) %></li>
+			<br />
+			<h3>Change/Delete</h3>
+			<li><%= link_to 'Provision Customer', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<li><%= link_to 'Delete Customer', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+			<br />
+			<h3>Show related</h3>
+			<% if false %>
+			<li><%= link_to 'All Customers', customers_path %></li>	
+			<% end %>
+			<li><%= link_to "Sites", customer_sites_path(customer = @customer) %></li>
+			<% if false %>
+			<li><%= link_to 'Users', customer_users_path(@customer) %></li>
+			<% end %>
+			<li><%= link_to 'Provisioning Tasks', customer_provisionings_path(@customer) %></li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+
+
+<div class="index">
+	
+<p id="notice"><%= notice %></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Customer</th>
+      <th>Target/Site</th>
+      <th>Status</th>
+      <th colspan="4"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+      <tr>
+        <td><%= @customer.id %></td>
+        <td><%= @customer.name %></td>
+        <td>
+        	<% begin %>
+        	<%= Target.find(@customer.target_id).name %>
+        	<% rescue %>
+        	[id] <%= @customer.target_id %>
+        	<% end %>
+        </td>
+        <td><%= link_to @customer.status, customer_provisionings_path(@customer) %></td>       
+        <td class="actions"><%= link_to 'Edit', edit_customer_path(@customer) %></td>
+        <td class="actions"><%= link_to 'Provision', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td></td>
+        <td class="actions"><%= link_to 'Destroy', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+      <%= render @customer.sites %>     
+  </tbody>
+</table>
+</div>
+
+
+
+<br>
+
+
+<% if false %>
+####### same as:
+| <%= link_to "Sites of this Customer", customer_sites_path(customer_id = @customer.id) %> 
+####### same as:
+|
+<%= link_to "Sites of this Customer", { :controller => 'sites', :action => 'index', :customer_id => customer.id } %>
+<% end %>

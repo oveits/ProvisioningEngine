@@ -1,0 +1,23 @@
+customers_controller.rb
+def destroy
+   ...
+   Thread.new { @provisioning.deliver; @customer.destroy }
+   
+causes a Fatal error and a crash of the rails server:
+
+Console log of "rails s":
+--------------------------
+
+Started GET "/assets/application.js?body=1" for 127.0.0.1 at 2014-08-05 08:52:21 +0200
+   (1.0ms)  begin transaction
+  SQL (1.0ms)  UPDATE "provisionings" SET "status" = ?, "updated_at" = ? WHERE "provisionings"."id" = 145  [["status", "last unsuccessful attempt with ERROR=\"j
+ava.net.ConnectException: Connection timed out: connect\"\" at 2014-08-05 08:53:31 +0200"], ["updated_at", "2014-08-05 06:53:31.867091"]]
+   (3.0ms)  commit transaction
+java.net.ConnectException: Connection timed out: connect
+[2014-08-05 08:53:31] FATAL SystemExit: java.net.ConnectException: Connection timed out: connect
+        f:/veits/RubyOnRails/ProvisioningPortalv4/app/models/provisioning.rb:115:in `abort'
+        f:/veits/RubyOnRails/ProvisioningPortalv4/app/models/provisioning.rb:115:in `deliver'
+        f:/veits/RubyOnRails/ProvisioningPortalv4/app/controllers/customers_controller.rb:74:in `block in destroy'
+[2014-08-05 08:53:31] INFO  going to shutdown ...
+[2014-08-05 08:53:31] INFO  WEBrick::HTTPServer#start done.
+Exiting

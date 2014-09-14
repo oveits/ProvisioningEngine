@@ -1,0 +1,49 @@
+<h1>Site Data</h1>
+<p id="notice"><%= notice %></p>
+<%= link_to 'Edit', edit_site_path(@site) %> |
+<%= link_to 'Customer Sites', customer_path(@site.customer) %>
+
+<%= form_for(@site) do |f| %>
+  <% if @site.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@site.errors.count, "error") %> prohibited this site from being saved:</h2>
+
+      <ul>
+      <% @site.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+
+  <div class="CSSTableGenerator">
+
+  	<table>
+  		<thead>
+  			<th>Attribute</th>
+			<th>Value	</th>
+  		</thead>
+
+  		<tbody>
+
+			<% @site.attributes.each do |attribute| %> 
+			<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <td>
+			    <% begin %>
+			    <%= f.label Customer.find(attribute[1]).name unless attribute[1].nil? %>
+			    <% rescue %>
+			    <%= f.label attribute[1] unless attribute[1].nil? %>
+			    <% end %>
+			    </td>
+			</tr>
+			<% end %>
+			
+			
+		</tbody>
+	</table>
+	  </div>
+<% end %>
+
+

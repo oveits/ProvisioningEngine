@@ -1,0 +1,116 @@
+
+<div class="view">
+	<h2>
+		Provisioning Tasks
+	<% if !@site.nil? %>
+		of Site <%= @site.name %>
+	<% end %>
+	<% if !@customer.nil? %>
+		of Customer <%= @customer.name %>
+	<%= link_to '(show all)', provisionings_path %>
+	<% end %>	
+	</h2>
+</div>
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<li><%= link_to 'New Provisioning', new_provisioning_path %></li>
+			<li><%= link_to 'Clear Table', removeAll_provisionings_path, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="view">
+<p id="notice"><%= notice %></p>
+</div>
+
+<div class="index" >
+<table>
+  <thead>
+    <tr>
+      <th>Job ID</th>
+      <th>Action</th>
+      <th>Status</th>
+      <th>Object</th>
+      <th>Attempts</th>
+      <th colspan="4"></th>
+    </tr>
+  </thead>
+ 
+
+  <tbody>
+    <% @provisionings.reverse_each do |provisioning| %>
+      <tr>
+        <td><%= provisioning.id %></td>
+        <td><%= provisioning.action %></td>
+        <td><%= provisioning.status %></td>
+        <td>
+        
+        <% @user = nil; @site = nil; @customer = nil %>       
+        
+        <% if @user.nil? && !provisioning.user.nil? %>
+        	<% @user = provisioning.user %>
+        	<% @site = @user.site %>
+      	<% end %>
+      	
+		<% if @site.nil? && !provisioning.site.nil? %>
+        	<% @site = provisioning.site %>
+        	<% @customer = @site.customer %>
+      	<% end %>
+      	
+      	<% if @customer.nil? && !provisioning.customer.nil? %>
+        	<% @customer = provisioning.customer %>
+      	<% end %>
+      	
+        
+        <% if !@user.nil? %>
+        	User:  <%= @user.name %>
+        <% end %>
+        
+        <% if !@site.nil? %>
+        	Site:  <%= @site.name %>
+        <% end %>
+        
+        <% if !@customer.nil? %>
+        	Customer: <%= @customer.name %>
+       	<% end %>
+
+        </td>
+        <td>
+        	<%= provisioning.attempts %>
+        		<% if false %>
+        <% if !provisioning.delayedjob.nil? %>
+        
+        <%= provisioning.delayedjob %>
+        	<% begin %>
+        	<% @job = Delayed::Job.find(provisioning.delayedjob) %>
+        	<%= @job.attempts %> 
+        	<% rescue %>
+        	<% end %>
+        	
+        <% end %>
+        		<% end %>	
+        </td>
+        <td class="actions"><%= link_to 'Edit', edit_provisioning_path(provisioning) %></td>
+        <td class="actions"><%= link_to 'Destroy', provisioning, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <% if false %>
+        <td class="actions"><%= link_to 'Deliver', deliver_provisioning_path(provisioning), :confirm => 'Are you sure?', :method => :post %></td>
+        <% end %>
+        <td class="actions">
+        	<% begin %>
+        		<% @job = Delayed::Job.find(provisioning.delayedjob) %>
+        		<%= link_to 'running (click to stop)', stop_provisioning_path(provisioning), method: :delete, data: { confirm: 'Are you sure?' }%>
+        	<% rescue %>
+        		<%= link_to 'stopped (click to restart)', deliver_provisioning_path(provisioning), method: :put, data: { confirm: 'Are you sure?'} %></td>
+        	<% end %>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+</div>
+
+<br>
+
+

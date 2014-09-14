@@ -1,0 +1,91 @@
+<% if !@site.nil?; @customer = @site.customer; end %>
+<div class="view">
+	<h2>
+		Users	
+	<% if !@site.nil? %>
+		of Site <%= link_to @site.name, @site %>
+		<% if !@customer.nil? %>
+			of Customer <%= link_to @customer.name, @customer %>
+		<% end %>
+	<% end %>	
+	</h2>
+</div>
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<li><%= link_to 'New User', new_user_path %></li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="view">
+<p id="notice"><%= notice %></p>
+</div>
+
+<div class="index" >
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      	<% if @customer.nil? %>
+      <th>Customer</th>
+      	<% end %>
+      	<% if @site.nil? %>
+      <th>Site</th>
+      	<% end %>
+      <th>Extension</th>
+      <th>Givenname</th>
+      <th>Familyname</th>
+      	<% if false %>
+      <th>Email</th>
+      	<% end %>
+      <th>Status</th>
+      <th colspan="4"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= link_to user.name, user %></td>
+        
+        	<% if @customer.nil? %>
+        <td>	
+        	<% if !user.site.nil? && !user.site.customer.nil? %>			
+        	<%= link_to user.site.customer.name, user.site.customer %>
+        	<% end %>
+        </td>
+        	<% end %>     	               
+        
+        	<% if @site.nil? %>
+        <td>
+        	<% if user.site.nil? %>
+        	<%= link_to user.site, user.site %>
+        	<% else %>
+        	<%= link_to user.site.name, user.site %>
+        	<% end %>
+        </td>
+        	<% end %>      	
+        
+        
+        <td><%= user.extension %></td>
+        <td><%= user.givenname %></td>
+        <td><%= user.familyname %></td>
+        	<% if false %>
+        <td><%= user.email %></td>
+        	<% end %>
+        <td><%= user.status %></td>
+        <td class="actions"><%= link_to 'Edit', edit_user_path(user) %></td>
+        <td class="actions"><%= link_to 'Provision', provision_user_path(user), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td class="actions"><%= link_to 'Destroy', user, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+
+
+</div>

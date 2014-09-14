@@ -1,0 +1,2 @@
+module ResourcepoolsHelper
+end

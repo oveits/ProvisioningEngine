@@ -1,0 +1,87 @@
+<% @alwaysDropDown = true %>
+
+<%= form_for(@customer) do |f| %>
+  <% if @customer.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@customer.errors.count, "error") %> prohibited this customer from being saved:</h2>
+
+      <ul>
+      <% @customer.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+  
+  <div>
+<nav>
+	<div class="actions">
+		<ul>
+			<li><%= f.submit 'Save', class: "action-button" %></li>
+			<li>
+				<% begin %>
+			  	<%= link_to 'Cancel', customer_path(@customer) %>
+			  	<% rescue %>
+			  	<%= link_to 'Cancel', customers_path %>
+			  	<% end %>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+</div>
+
+  <div class="index">
+  	 <table> 
+  		<thead>
+  			<th>Attribute</th>
+			<th>Value	</th>
+  		</thead>
+
+  		<tbody>
+  		<% ro = 'readonly'; rw = 'readwrite' %>
+		<% myparams = @myparams %>
+		<% myparams['target_id']%>
+		<% myreadonlystyle = "background:#eee none; color:#222"  %>
+		<% @customer.attributes.each do |attribute| %> 
+			<tr>
+				<% if myparams[attribute[0]] == rw %>
+			    <td><%= f.label attribute[0] %></td>
+			    <td><%= f.text_field attribute[0]  %></td>
+			    <% elsif myparams[attribute[0]] == ro %>
+			    <td><%= f.label attribute[0] %></td>
+			    <td><%= f.text_field attribute[0],:readonly => true, :style => myreadonlystyle %></td>
+			    <% elsif myparams[attribute[0]] == 'showTargetDropDown' %>
+			    <td><%= f.label attribute[0] %></td>
+			    <td>
+			    <% begin %>
+			    	<% if @alwaysDropDown %>
+			    		<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target", :selected => @target.id) %>
+			    	<% else %>
+		    			<%= f.text_field attribute[0], :value => @target.id,:readonly => true, :style => myreadonlystyle %>
+			    	<% end %>
+			    <% rescue %>
+			    	<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target") %>
+			    <% end %>		    
+			    </td>
+
+			    <% end %>
+			</tr>
+			<% end %>
+			<tr>
+				<td class="actions">
+				  	<%= f.submit 'Save'%>
+				</td>
+				<td class="actions">
+				  	<% begin %>
+				  	<%= link_to 'Cancel', customer_path(@customer) %>
+				  	<% rescue %>
+				  	<%= link_to 'Cancel', customers_path %>
+				  	<% end %>
+				</td>
+			</tr>
+		</tbody>
+	</table> 
+	  
+  </div>
+<% end %>
