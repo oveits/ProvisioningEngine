@@ -5,8 +5,6 @@ Rails.application.routes.draw do
   end
   
 
-  resources :resourcepools
-
   resources :users do
     resources :provisionings, :member => { :deliver => :post}
     member do
@@ -31,10 +29,6 @@ Rails.application.routes.draw do
       put 'deliver'
     end
   end
-
-  resources :campaigns
-
-  resources :accounts
 
   resources :sites do
     resources :sites, :users
