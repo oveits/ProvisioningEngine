@@ -61,3 +61,8 @@ gem 'em-http-request'
 # or alternatively, but has higher memory footprint: 
 # gem 'trinidad'
 
+# OV: needed for heroku (see https://www.railstutorial.org/book/beginning#sec-heroku_setup)
+group :production do
+  gem 'pg', '0.15.1'
+  gem 'rails_12factor', '0.0.2'
+end
