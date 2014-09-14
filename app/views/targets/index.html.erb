@@ -1,0 +1,43 @@
+<div class="view">
+	<h2>
+		Targets	
+	</h2>
+</div>
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<li><%= link_to 'New Target', new_target_path %></li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="view">
+<p id="notice"><%= notice %></p>
+</div>
+
+<div class="index" >
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Configuration</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @targets.each do |target| %>
+      <tr>
+        <td><%= link_to target.name, target %></td>
+        <td><%= target.configuration %></td>
+        <td class="actions"><%= link_to 'Edit', edit_target_path(target) %></td>
+        <td class="actions"><%= link_to 'Destroy', target, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+</div>
+

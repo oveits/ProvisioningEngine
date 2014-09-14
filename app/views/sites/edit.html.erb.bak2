@@ -1,0 +1,67 @@
+<% if false %>
+<% myreadonlystyle = "background:#eee none; color:#222; font-style: italic"  %>
+<% else %>
+<% myreadonlystyle = "background:#eee none; color:#222"  %>
+<% end %>
+
+<h1>Site Data (edit)</h1>
+
+<% myedit = true %>
+
+
+<% if false %>
+
+<%= render 'form' %>
+
+<%= link_to 'Show', @site %> |
+<%= link_to 'Back', sites_path %>
+
+<h1>Site Data</h1>
+<% end %>
+
+<p id="notice"><%= notice %></p>
+<%= link_to 'Edit', edit_site_path(@site) %> |
+<%= link_to 'Sites', sites_path %>
+
+<%= form_for(@site) do |f| %>
+<div class="actions">
+    <%= f.submit %>
+  </div>
+  <% if @site.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@site.errors.count, "error") %> prohibited this site from being saved:</h2>
+
+      <ul>
+      <% @site.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="CSSTableGenerator">
+  	<table>
+  		<thead>
+  			<th>Attribute</th>
+			<th>Value	</th>
+  		</thead>
+
+  		<tbody>
+			<% @site.attributes.each do |attribute| %>
+			<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <% if myedit %>
+			    	<% if false %>
+			    		<td><%= f.text_field attribute[0],:readonly => true, :style => myreadonlystyle %></td>
+			    	<% else %>
+			    		<td><%= f.text_field attribute[0] %></td>
+			    	<% end %>
+			    <% else %>
+			    	<td><%= f.label attribute[1] unless attribute[1].nil? %></td>
+			    <% end %>
+			</tr>
+			<% end %>
+		</tbody>
+	</table>
+	  </div>
+<% end %>

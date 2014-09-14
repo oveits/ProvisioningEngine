@@ -1,0 +1,111 @@
+<% @site =  @user.site %>
+<% begin %>
+<% @customer = @user.site.customer %>
+<% rescue %>
+<% @customer = nil %>
+<% end %>
+
+<div class="index">
+	<h2>User <%= @user.name %> 
+		<% if false %>
+		of Site <%= link_to @user.site.name, @user.site %> of Customer <%= link_to @user.site.customer.name, @user.site.customer %>
+		<% end %>		
+		</h2>
+</div>
+
+
+<%= form_for(@user) do |f| %>
+  <% if @user.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
+
+      <ul>
+      <% @user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<h3>Create</h3>
+			<li><%= link_to 'New', new_user_path %></li>
+			<br />
+			<h3>Change/Delete</h3>
+			<li><%= link_to 'Edit', edit_user_path(@user) %></li>
+			<li><%= link_to 'Provision', provision_user_path(@user), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<li><%= link_to 'Delete', @user, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+			<% if false %>
+			synchronize not yet supported for class user
+			<li><%= link_to 'Synchronize', synchronize_user_path(@user), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<% end %>
+			<br />
+			<h3>Show related</h3>
+			<% if false %>
+			<li><%= link_to 'All Users', users_path %></li>
+			<% end %>
+			<li><%= link_to 'All Site Users', users_path(@site) %></li>
+			<li><%= link_to 'Site Provis. Tasks', site_provisionings_path(@site) %></li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="index">
+<p id="notice"><%= notice %></p>
+
+
+  	<table>
+  		<thead>
+  			<th>Attribute</th>
+			<th>Value	</th>
+  		</thead>
+
+  		<tbody>
+
+			<% @user.attributes.each do |attribute| %>
+			
+			<% # insert customer row before site row %>
+			<% if attribute[0] == 'site_id' %>
+				<% if !@customer.nil? %>
+					<% if !@customer.name.nil? %>		
+					<tr>
+						<td>Customer</td>
+						<td><%= link_to @customer.name, @customer %></td>
+					</tr>
+					<% else %>	
+					<tr>
+						<td>Customer ID</td>
+						<td><%= link_to @customer.id, @customer %></td>
+					</tr>
+					<% end %>			
+				<% end %>
+			<% end %>
+			
+			<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <td>
+			    <% begin %>
+				    <% if attribute[0] == 'customer' %>
+				    <%= Customer.find(attribute[1]).name unless attribute[1].nil? %>
+				    <% else %>
+				    <%= link_to Site.find(attribute[1]).name, Site.find(attribute[1]) unless attribute[1].nil? %>
+				    <% end %>
+			    <% rescue %>
+			    	<%= attribute[1] unless attribute[1].nil? %>
+			    <% end %>
+			    </td>
+			</tr>
+			<% end %>
+			
+			
+		</tbody>
+	</table>
+	  </div>
+<% end %>
+
+

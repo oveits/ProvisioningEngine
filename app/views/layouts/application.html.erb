@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ProvisioningPortalv4</title>
+  <%= stylesheet_link_tag "main" %>
+  <%= stylesheet_link_tag "cake.generic" %>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+	
+	<% @mymenue = [:customers, :sites, :users, :provisionings, :targets] %>
+	
+<ul class="semiopaquemenu">
+	<% @mymenue.each do |menueitem| %>
+		<% if controller_name == menueitem.to_s || controller_name[1..-1] == menueitem %>
+	<li class="active"> <%= link_to menueitem.capitalize, menueitem %></li>|
+		<% else %>
+	<li>				<%= link_to menueitem.capitalize, menueitem %></li>|
+		<% end %>
+	
+	<% end %>
+</ul>
+
+<% if false %>
+	<ul class="semiopaquemenu">
+		<% if controller_name == 'customers' || controller_name == 'customer'%>
+		<li class="active">
+		<% else %>
+		<li>
+		<% end %>
+			<%= link_to 'Customers', customers_path %></li>|
+			
+		<% if controller_name == 'sites' || controller_name == 'site'%>
+		<li class="active">
+		<% else %>
+		<li>
+		<% end %>
+			<%= link_to 'Sites', sites_path %></li>|
+			
+		<% if controller_name == 'users' || controller_name == 'user'%>
+		<li class="active">
+		<% else %>
+		<li>
+		<% end %>
+		<%= link_to 'Users', users_path %></li>|
+		
+		<% if controller_name == 'provisionings' || controller_name == 'provisioning'%>
+		<li class="active">
+		<% else %>
+		<li>
+		<% end %>
+			<%= link_to 'Provisioning Tasks', provisionings_path %></li>|
+			
+		<% if controller_name == 'resourcespools' || controller_name == 'resourcepools'%>
+		<li class="active">
+		<% else %>
+		<li>
+		<% end %>
+			<%= link_to 'Resource Pools', resourcepools_path %></li>|
+	</ul>
+<% end%>
+<br />
+
+
+				
+
+<%= yield %>
+
+</body>
+</html>

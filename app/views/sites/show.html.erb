@@ -1,0 +1,76 @@
+<div class="index">
+	<h2>Site <%= @site.name %> of Customer <%= link_to @site.customer.name, @site.customer %></h2>
+</div>
+
+
+<%= form_for(@site) do |f| %>
+  <% if @site.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@site.errors.count, "error") %> prohibited this site from being saved:</h2>
+
+      <ul>
+      <% @site.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<h3>Create</h3>
+			<li><%= link_to 'New Site', new_site_path %></li>
+			<li><%= link_to 'New User', new_site_user_path(@site) %></li>
+			<br />
+			<h3>Change/Delete</h3>
+			<li><%= link_to 'Edit Site', edit_site_path(@site) %></li>
+			<li><%= link_to 'Provision', provision_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<li><%= link_to 'Synchronize', synchronize_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<li><%= link_to 'Delete Site', @site, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+			<br />
+			<h3>Show related</h3>
+			<% if false %>
+			<li><%= link_to 'All Sites', sites_path %></li>
+			<% end %>
+			<li><%= link_to 'Users', site_users_path(@site) %></li>
+			<li><%= link_to 'Provisioning Tasks', site_provisionings_path(@site) %></li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="index">
+<p id="notice"><%= notice %></p>
+
+
+  	<table>
+  		<thead>
+  			<th>Attribute</th>
+			<th>Value	</th>
+  		</thead>
+
+  		<tbody>
+
+			<% @site.attributes.each do |attribute| %> 
+			<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <td>
+			    <% begin %>
+			    <%= Customer.find(attribute[1]).name unless attribute[1].nil? %>
+			    <% rescue %>
+			    <%= attribute[1] unless attribute[1].nil? %>
+			    <% end %>
+			    </td>
+			</tr>
+			<% end %>
+			
+			
+		</tbody>
+	</table>
+	  </div>
+<% end %>
+
+

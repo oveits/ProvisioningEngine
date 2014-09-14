@@ -1,0 +1,39 @@
+<%= form_for(@target) do |f| %>
+  <% if @target.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@target.errors.count, "error") %> prohibited this target from being saved:</h2>
+
+      <ul>
+      <% @target.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+  
+  <nav>
+	<div class="actions">
+		<ul>
+			<li><%= f.submit 'Save', class: "action-button" %></li>
+			<li>
+				<% begin %>
+			  	<%= link_to 'Cancel', target_path(@target) %>
+			  	<% rescue %>
+			  	<%= link_to 'Cancel', targets_path %>
+			  	<% end %>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+<div class="index">
+  <div class="field">
+    <%= f.label :name %><br>
+    <%= f.text_field :name, :size => 60%>
+  </div>
+  <div class="field">
+    <%= f.label :configuration %><br>
+    <%= f.text_area :configuration, :size => "60x20" %>
+  </div
+
+<% end %>

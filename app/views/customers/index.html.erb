@@ -1,0 +1,67 @@
+
+<div class="view">
+<h2>Customers</h2>
+</div>
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<li><%= link_to 'New Customer', new_customer_path %></li>
+			<li><%= link_to 'Clear Table', removeAll_customers_path, method: :delete, data: { confirm: 'Are you sure?' } %></li> 
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="index">
+<p id="notice"><%= notice %></p>	
+	
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Target</th>
+      <th>Status</th>
+      <th colspan="2"></th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <% @customers.each do |customer| %>
+      <tr>
+      	<% begin %>
+      	<% @target = Target.find(customer.target_id) %>
+      	<% rescue %>
+      	<% end %>
+        <td><%= customer.id %></td>
+        <td><%= link_to customer.name, customer %></td>
+        <td>
+		<% begin %>
+        <%= link_to @target.name, @target %>
+		<% rescue %>
+      	<% end %>
+        </td>
+        <td><%= link_to customer.status, customer_provisionings_path(customer) %></td>
+
+      <% if true %>
+        <td class="actions"><%= link_to 'Edit', edit_customer_path(customer) %></td> 
+        <td class="actions"><%= link_to 'Destroy', customer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      <% else %>
+        <td></td>
+        <td></td>
+        <td></td>
+      <% end %>
+        <% if false %>
+        <td><%= link_to "Provision to OSV", provisionings_path(customer), :confirm => 'Are you sure?', :action => :deliver, :method => :post %></td>
+        <% end %>
+      </tr>
+    <% end %>
+    <% if true %>
+  </tbody>
+  <% end %>
+</table>
+</div>
+
+

@@ -1,0 +1,41 @@
+
+<%= form_for(@provisioning) do |f| %>
+  <% if @provisioning.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@provisioning.errors.count, "error") %> prohibited this provisioning from being saved:</h2>
+
+      <ul>
+      <% @provisioning.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+  
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<li><%= f.submit 'Save', class: "action-button" %></li>
+			<li>
+				<% begin %>
+			  	<%= link_to 'Cancel', provisioning_path(@provisioning) %>
+			  	<% rescue %>
+			  	<%= link_to 'Cancel', provisionings_path %>
+			  	<% end %>
+			</li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="index">
+  <div class="field">
+    <%= f.label :action %><br>
+    <%= f.text_field :action, :size => 80%>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+</div>
+<% end %>

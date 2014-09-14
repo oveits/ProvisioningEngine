@@ -1,0 +1,96 @@
+<% @alwaysDropDown = true %>
+<% if true %>
+<%    ro = 'readonly'; rw = 'readwrite' %>
+<%    @myparams = {"id"=>'none', "name"=>rw, "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw } %>
+<% end %>
+
+
+<%= form_for(@user) do |f| %>
+  <% if @user.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
+
+      <ul>
+      <% @user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<li><%= f.submit 'Save', class: "action-button" %></li>
+			<li>
+				<% begin %>
+			  	<%= link_to 'Cancel', user_path(@user) %>
+			  	<% rescue %>
+			  	<%= link_to 'Cancel', users_path %>
+			  	<% end %>
+			</li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+  <div class="index">
+  	 <table> 
+  		<thead>
+  			<th>Attribute</th>
+			<th>Value	</th>
+  		</thead>
+
+  		<tbody>
+  		<% ro = 'readonly'; rw = 'readwrite' %>
+		<% myparams = @myparams %>
+		
+		<% myreadonlystyle = "background:#eee none; color:#222"  %>
+		<% @user.attributes.each do |attribute| %>	
+			<% if myparams[attribute[0]] == rw %>
+				<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <td><%= f.text_field attribute[0]  %></td>
+			    </tr>
+			<% elsif myparams[attribute[0]] == 'none' %>
+
+			<% elsif myparams[attribute[0]] == 'showCustomerDropDown' %>
+				<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <td>
+			    <% begin %>
+			    	<% if @alwaysDropDown %>
+			    		<%= f.select(:site_id, Site.all.map {|site| [site.customer.name + ": " + site.name,site.id]}, :prompt => "Select a Customer Site", :selected => @site.id) %>
+			    	<% else %>
+		    			<%= f.text_field attribute[0], :value => @site.id,:readonly => true, :style => myreadonlystyle %>
+			    	<% end %>
+			    <% rescue %>
+			    	<%= f.select(:site_id, Site.all.map {|site| [site.customer.name + ": " + site.name,site.id]}, :prompt => "Select a Customer Site") %>
+			    <% end %>		    
+			    </td>
+			    </tr>
+			<% else # default: show as readonly %>
+				<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <td><%= f.text_field attribute[0],:readonly => true, :style => myreadonlystyle %></td>
+			    </tr>
+			<% end # if %>
+		<% end # each %>
+			<tr>
+				<td class="actions">
+				  	<%= f.submit 'Save'%>
+				</td>
+				<td class="actions">
+				  	<% begin %>
+				  	<%= link_to 'Cancel', user_path(@user) %>
+				  	<% rescue %>
+				  	<%= link_to 'Cancel', users_path %>
+				  	<% end %>
+				</td>
+			</tr>
+		</tbody>
+	</table> 
+	  
+  </div>
+<% end %>
