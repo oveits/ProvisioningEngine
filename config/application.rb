@@ -17,7 +17,7 @@ module ProvisioningPortalv4
     config.autoload_paths << Rails.root.join("lib")
     
     # OV: added:
-    config.active_record.schema_format :sql
+    #config.active_record.schema_format :sql
     
     
     # Settings in config/environments/* take precedence over those specified here.
