@@ -43,18 +43,25 @@ padding: 5px 0 5px 20px; /* padding of the 4 sides of the menu */
 margin: 0;
 text-align: left; /* set value to "left", "center", or "right" to align menu accordingly */
 }
-.active {
-	background: #000000;
-	margin: 10px;
-	padding: 15px 10px 15px 120px;
+/*.active {
+	#color: red;
+	background: #CCC;
+	#margin: 0px;
+	padding: 5px 1px 5px 1px;
 }
+*/
 
 ul.semiopaquemenu li{
 display: inline;
+}.active {
+	color: red;
+	background: #BBB;
+	#margin: 0px;
+	padding: 5px 1px 5px 0px;
 }
 /* Own Change: spacing from 15 to 5*/
 ul.semiopaquemenu li a{
-color:white;
+color: white;
 font: bold;
 padding: 6px 8px 6px 6px; /* padding of the 4 sides of each menu link */
 margin-right: 0px; /* spacing between each menu link */
