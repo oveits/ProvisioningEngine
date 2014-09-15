@@ -16,6 +16,9 @@ module ProvisioningPortalv4
     # needed to load the class ProvisioningJob from file lib/provisioning_job.rb
     config.autoload_paths << Rails.root.join("lib")
     
+    # OV: added:
+    config.active_record.schema_format :sql
+    
     
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
