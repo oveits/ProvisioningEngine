@@ -32,7 +32,7 @@ class Provisioning < ActiveRecord::Base
   
   def deliverasynchronously(uriString="http://localhost/CloudWebPortal", httpreadtimeout=4*3600, httpopentimeout=6)
     begin # provisioning job still running
-      Delayed::Job.find(delayedjob)
+      Delayed::Job.find(delayedjob_id)
     rescue # else
       # create a new provisioning job for the provisioning task
       
@@ -44,7 +44,7 @@ class Provisioning < ActiveRecord::Base
       
       # not needed here, sinc hwere, the delayedjob IS the provisioning attribute?
       #@provisioning.update_attributes(:delayedjob => @delayedjob)
-      update_attributes(:delayedjob => delayedjob)      
+      update_attributes(:delayedjob_id => delayedjob.id)     
     end
   end # def createdelayedjob
   
@@ -325,29 +325,33 @@ class Provisioning < ActiveRecord::Base
   
   def createdelayedjob  
     begin # provisioning job still running
-      Delayed::Job.find(delayedjob)
+      Delayed::Job.find(delayedjob_id)
     rescue # else
       # create a new provisioning job for the provisioning task
       
-      #delayedjob = Delayed::Job.enqueue(ProvisioningJob.new(id))
+      delayedjob = Delayed::Job.enqueue(ProvisioningJob.new(id))
           # For troubleshooting, it is sometomes better to use the two next commands instead of the delayedjob command
-          provisioningjob = ProvisioningJob.new(id)
-          provisioningjob.perform
+          #provisioningjob = ProvisioningJob.new(id)
+          #provisioningjob.perform
       
       # not needed here, sinc hwere, the delayedjob IS the provisioning attribute?
       #@provisioning.update_attributes(:delayedjob => @delayedjob)
-      update_attributes(:delayedjob => delayedjob)      
+      update_attributes(:delayedjob_id => delayedjob.id)      
     end
   end # def createdelayedjob
      
   def destroydelayedjob
     begin
       # delete the background job, if it has not automatically been destroyed (e.g. a job is deleted after finish)
-      @job = Delayed::Job.find(delayedjob)
+      @job = Delayed::Job.find(delayedjob_id)
       @job.destroy 
     rescue
       # just continue, if the job is deleted already  
     end
+  end
+  
+  def delayedjob
+    Delayed::Job.find(delayedjob_id)
   end
   
 
