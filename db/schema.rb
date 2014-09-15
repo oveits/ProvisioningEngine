@@ -13,21 +13,6 @@
 
 ActiveRecord::Schema.define(version: 20140821221257) do
 
-  create_table "accounts", force: true do |t|
-    t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  create_table "campaigns", force: true do |t|
-    t.string   "name"
-    t.integer  "account_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "campaigns", ["account_id"], name: "index_campaigns_on_account_id"
-
   create_table "customers", force: true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -54,12 +39,8 @@ ActiveRecord::Schema.define(version: 20140821221257) do
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
-  create_table "resourcepools", force: true do |t|
-    t.string   "name"
-    t.string   "resource"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
+# Could not dump table "provisionings" because of following NoMethodError
+#   undefined method `[]' for nil:NilClass
 
   create_table "sites", force: true do |t|
     t.string   "name"
