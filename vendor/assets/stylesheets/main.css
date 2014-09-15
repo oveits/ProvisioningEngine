@@ -55,7 +55,7 @@ ul.semiopaquemenu li{
 display: inline;
 }.active {
 	color: red;
-	background: #BBB;
+	background: #444444;
 	#margin: 0px;
 	padding: 5px 1px 5px 0px;
 }
