@@ -39,8 +39,22 @@ ActiveRecord::Schema.define(version: 20140821221257) do
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
-# Could not dump table "provisionings" because of following NoMethodError
-#   undefined method `[]' for nil:NilClass
+  create_table "provisionings", force: true do |t|
+    t.string   "action"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "status"
+    t.integer  "customer_id"
+    t.integer  "site_id"
+    t.integer  "delayedjob_id"
+    t.integer  "attempts"
+    t.integer  "user_id"
+  end
+
+  add_index "provisionings", ["customer_id"], name: "index_provisionings_on_customer_id"
+  add_index "provisionings", ["delayedjob_id"], name: "index_provisionings_on_delayedjob_id"
+  add_index "provisionings", ["site_id"], name: "index_provisionings_on_site_id"
+  add_index "provisionings", ["user_id"], name: "index_provisionings_on_user_id"
 
   create_table "sites", force: true do |t|
     t.string   "name"
