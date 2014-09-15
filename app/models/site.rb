@@ -34,36 +34,6 @@ class Site < ActiveRecord::Base
 #      Regexp.new(source + r.source)
 #    end
 #  end
-
-  def provisionOld
-    @site = Site.find(id)
-    @customer = Customer.find(customer_id)
-         
-    inputBody = "action=Add Site, OSVIP=, XPRIP=, UCIP=, customerName=#{@customer.name}, SiteName=#{name}, SC=#{sitecode}"          
-    inputBody += ", GatewayIP=#{gatewayIP}, CC=#{countrycode}, AC=#{areacode}, LOC=#{localofficecode}, XLen=#{extensionlength}"       
-    inputBody += ", EndpointDefaultHomeDnXtension=#{mainextension}"
-
-    # add target system information
-    unless @customer.nil? || @customer.target_id.nil?
-      @target = Target.find(@customer.target_id)
-      actionPrepend = @target.configuration.gsub(/\n/, ', ')
-    end
-    #
-    inputBody = actionPrepend + ' ,' + inputBody unless actionPrepend.nil?
-    # added target system information
-    
-    @provisioning = Provisioning.new(action: inputBody, site: @site, customer: @customer)
-    
-    if @provisioning.save
-       @provisioning.createdelayedjob
-       # success
-       return 0
-    else
-      @provisioning.errors.full_messages.each do |message|
-        abort 'provisioning error: ' + message.to_s
-      end
-    end 
-  end # def
   
   def provision(inputBody)
     @site = Site.find(id)

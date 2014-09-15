@@ -51,6 +51,7 @@ class HttpPostRequest
     rescue
       responseBody = nil
     end
+    
     return responseBody
-  end
+  end # def perform
 end
