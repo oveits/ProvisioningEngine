@@ -9,5 +9,5 @@ Rails.application.config.assets.version = '1.0'
 
 # OV added, because of an error message, after I had added <%= stylesheet_link_tag "main" %> to apps/views/layouts/application.html.erb
 Rails.application.config.assets.precompile += %w( main.css )
-Rails.application.config.assets.precompile += %w( stdtheme.css )
-Rails.application.config.assets.precompile += %w( cake.generic.css )
+#Rails.application.config.assets.precompile += %w( stdtheme.css )
+#Rails.application.config.assets.precompile += %w( cake.generic.css )
