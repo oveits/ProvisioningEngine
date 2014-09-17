@@ -150,7 +150,7 @@ class Provisioning < ActiveRecord::Base
           resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Site Name .* exists already.*$|Customer.*exists already.*$/] + '" at ' + Time.now.to_s
           # TODO: update Site Data as seen from OSV
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed: was already provisioned') unless targetobject.nil?
+            targetobject.update_attributes(:status => thisaction + ' success: was already provisioned') unless targetobject.nil?
             unless targetobject.nil?
               updateDB = UpdateDB.new
               updateDB.perform(targetobject) 

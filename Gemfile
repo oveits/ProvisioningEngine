@@ -73,3 +73,12 @@ group :production do
 end
 
 gem 'seed_dump'
+
+group :test do
+  gem 'selenium-webdriver', '2.35.1'
+  gem 'capybara', '2.1.0'
+  # OV to get rid of a warining during running 
+  gem "minitest"
+end
+
+
