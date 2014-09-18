@@ -162,10 +162,12 @@ class Customer < ActiveRecord::Base
   
     has_many :sites, dependent: :destroy
     has_many :provisionings
+    
     validates :name, presence: true,
                      uniqueness: true, 
                      length: { in: 3..20  }
     validates :target_id, presence: true
+    
 #    validates_with ValidateWithProvisioningEngine
 #    handle_asynchronously :create_on_OSV
 end
