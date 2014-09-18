@@ -12,9 +12,9 @@
 	<div class="actions">
 		<ul>
 			<% if @customer.nil? %>
-			<li><%= link_to 'New', new_site_path %></li>
+			<li><%= link_to 'New Site', new_site_path %></li>
 			<% else %>
-			<li><%= link_to 'New', new_customer_site_path(@customer) %></li>
+			<li><%= link_to 'New Site', new_customer_site_path(@customer) %></li>
 			<% end %>
 		</ul>
 	</div>
