@@ -20,7 +20,7 @@ describe "Customers" do
     
   end
   
-  describe "new" do
+  describe "New Customer" do
     before { visit new_customer_path }
     
     it "should have the header 'New Customer'" do
@@ -28,9 +28,7 @@ describe "Customers" do
     end
     
     its "Cancel button in the left menue leads to the Customers index page" do
-      #first(:link, "Cancel").click
       click_link("Cancel", match: :first)
-      #click_link "Cancel"
       expect(page).to have_selector('h2', text: 'Customers')    
     end
     
@@ -64,13 +62,11 @@ describe "Customers" do
           fill_in "Name",         with: "ExampleCustomer"         
           
           # Expected drop down in HTML page:
-          #<select id="customer_target_id" name="customer[target_id]">
-          #<option value="">Select a Target</option>
-          #<option value="2">TestTarget</option></select>
-
-          # OV: works, if target ID=2. However, we cannot know, which ID the TestTarget will get (depends on history of database)
-          #find_by_id('customer_target_id').find("option[value='2']").select_option #find("option[value='1']").select_option
-          # better:
+          #    <select id="customer_target_id" name="customer[target_id]">
+          #    <option value="">Select a Target</option>
+          #    <option value="2">TestTarget</option></select>
+          
+          # in that drop-down, select the item with name 'TestTarget'
           select "TestTarget", :from => "customer[target_id]"
         end
         
@@ -78,8 +74,31 @@ describe "Customers" do
           expect { click_button submit, match: :first }.to change(Customer, :count).by(1)         
         end
         
+        it "should create a customer (2nd 'Save' button)" do
+          expect { first('.index').click_button submit, match: :first }.to change(Customer, :count).by(1)
+        end
+        
+        it "should create a customer with status 'provisioning success'" do
+          # synchronous operation, so we will get deterministic test results:         
+          Delayed::Worker.delay_jobs = false
+          
+          # /customers/index should show provisioning success
+          click_button submit, match: :first
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/provisioning success/) #have_selector('h2', text: 'Customers')
+          
+          # /customers/<id> should show provisioning success
+          visit customer_path(Customer.count)
+          p page.html.gsub(/[\n\t]/, '')
+          page.html.gsub(/[\n\t]/, '').should match(/provisioning success/)        
+        end
+        
+        
         it "should create a provisioning task" do
           expect { click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
+        end
+        
+        it "should create a provisioning task (2nd 'Save' button)" do
+          expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
         end
         
         it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomer'" do
@@ -89,14 +108,18 @@ describe "Customers" do
           createdProvisioningTask.action.should match(/customerName=ExampleCustomer/)
         end
         
+        it "should create a provisioning task that finishes successfully or throws an Error 'Customer exists already'" do
+          Delayed::Worker.delay_jobs = false
+          click_button submit, match: :first
+          createdProvisioningTask = Provisioning.find(Provisioning.count)
+          begin
+            createdProvisioningTask.status.should match(/finished successfully/)
+          rescue
+            createdProvisioningTask.status.should match(/Customer exists already/)          
+          end
+          
+        end  
         
-        it "should create a customer on second 'Save' button" do
-          expect { first('.index').click_button submit, match: :first }.to change(Customer, :count).by(1)
-        end
-        
-        it "should create a provisioning task (2nd save button)" do
-          expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
-        end
       end
       
     end
