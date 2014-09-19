@@ -1,9 +1,66 @@
+<div class="index">
+	<h2>Provisioning <%= @provisioning.action %></h2>
+</div>
+
+
+<%= form_for(@provisioning) do |f| %>
+  <% if @provisioning.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@provisioning.errors.count, "error") %> prohibited this provisioning from being saved:</h2>
+
+      <ul>
+      <% @provisioning.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+
+<div>
+<nav>
+	<div class="actions">
+		<ul>
+			<h3>Create</h3>
+			<li><%= link_to 'New Provisioning', new_provisioning_path %></li>
+			<br />
+			<h3>Change/Delete</h3>
+			<li><%= link_to 'Edit Provisioning', edit_provisioning_path(@provisioning) %></li>
+			<li><%= link_to 'Delete Provisioning', @provisioning, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+		</ul>
+	</div>
+</nav>
+</div>
+
+<div class="index">
 <p id="notice"><%= notice %></p>
 
-<p>
-  <strong>Action:</strong>
-  <%= @provisioning.action %>
-</p>
 
-<%= link_to 'Edit', edit_provisioning_path(@provisioning) %> |
-<%= link_to 'Back', provisionings_path %>
+  	<table>
+  		<thead>
+  			<th>Attribute</th>
+			<th>Value	</th>
+  		</thead>
+
+  		<tbody>
+
+			<% @provisioning.attributes.each do |attribute| %> 
+			<tr>
+			    <td><%= f.label attribute[0] %></td>
+			    <td>
+			    <% begin %>
+			    <%= Customer.find(attribute[1]).action unless attribute[1].nil? %>
+			    <% rescue %>
+			    <%= attribute[1] unless attribute[1].nil? %>
+			    <% end %>
+			    </td>
+			</tr>
+			<% end %>
+			
+			
+		</tbody>
+	</table>
+	  </div>
+<% end %>
+
+

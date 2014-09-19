@@ -51,7 +51,9 @@ class Provisioning < ActiveRecord::Base
   def deliver(uriString="http://localhost/CloudWebPortal", httpreadtimeout=600, httpopentimeout=6)
     
     begin
+      p :status
       update_attributes(:status => 'started at ' + Time.now.to_s)
+      p :status
       provisioningRequest = HttpPostRequest.new
       
       #resulttext = provisioningRequest.perform("customerName=#{targetobject.customer.name}, action = Show Sites, SiteName=#{targetobject.name}", "http://localhost/CloudWebPortal", provisioningRequestTimeout)
@@ -151,6 +153,7 @@ class Provisioning < ActiveRecord::Base
           # TODO: update Site Data as seen from OSV
           targetobjects.each do |targetobject|
             targetobject.update_attributes(:status => thisaction + ' success: was already provisioned') unless targetobject.nil?
+            p targetobject.status unless targetobject.nil?
             unless targetobject.nil?
               updateDB = UpdateDB.new
               updateDB.perform(targetobject) 
