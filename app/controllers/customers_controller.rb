@@ -107,9 +107,9 @@ class CustomersController < ApplicationController
     @provisionings = Provisioning.where(customer: @customer)
     activeProvisioningJob = nil
     @provisionings.each do |provisioning|
-      unless provisioning.delayedjob.nil?
+      unless provisioning.delayedjob_id.nil?
         begin
-          activeProvisioningJob = Delayed::Job.find(provisioning.delayedjob)
+          activeProvisioningJob = Delayed::Job.find(provisioning.delayedjob_id)
           break  # will break the do loop only, if a job was found
         rescue
           # keep: activeProvisioningJob = nil
