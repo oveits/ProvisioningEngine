@@ -1,7 +1,9 @@
 Rails.application.routes.draw do
   
   #root 'welcome#index'
-  root 'customers#index'
+  #root 'customers#index'
+  
+  root 'application#root'
  
   resources :targets do
     resources :customers
