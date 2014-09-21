@@ -242,6 +242,6 @@ class Provisioning < ActiveRecord::Base
   belongs_to :customer
   belongs_to :site
   belongs_to :user
-  #handle_asynchronously :deliverasynchronously
+  handle_asynchronously :deliverasynchronously
   validates_with Validate_action
 end
