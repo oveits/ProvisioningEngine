@@ -26,3 +26,21 @@ Things you may want to cover:
 
 Please feel free to use a different markup language if you do not plan to run
 <tt>rake doc:app</tt>.
+
+=== Commands
+
+* start web server:
+** rails s -p 3002 
+** start background processes: #rake jobs:work
+
+* start test execution:
+** speed up tests: #bundle exec spork
+** single test, e.g.: #rspec spec/requests/customers_spec.rb -e "with valid information should create a provisioning task with action"
+** all tests: #rspec spec/requests/customers_spec.rb
+
+* Production
+** git add .
+** git status
+** git commit -a -m "minor change: / is now redirected to /customers"
+** git push
+** git push heroku

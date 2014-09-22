@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-def createCustomer(customerName = "Examplecustomer")      
+def createCustomer(customerName = "ExampleCustomer")      
   # add and provision customer "ExampleCustomer with target = TestTarget"
   fillFormForNewCustomer(customerName)
   click_button 'Save', match: :first 
 end
 
-def fillFormForNewCustomer(customerName = "Examplecustomer")
+def fillFormForNewCustomer(customerName = "ExampleCustomer")
   # create target, and fill out the form on /customers/new
   Target.create(name: 'TestTarget', configuration: 'a=b')
   visit new_customer_path # for refreshing after creating the target
