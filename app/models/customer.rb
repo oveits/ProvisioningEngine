@@ -164,7 +164,8 @@ class Customer < ActiveRecord::Base
     has_many :provisionings
     
     validates :name, presence: true,
-                     uniqueness: true, 
+                     #uniqueness: true, 
+                     uniqueness: {:case_sensitive => false},
                      length: { in: 3..20  }
     validates :target_id, presence: true
     
