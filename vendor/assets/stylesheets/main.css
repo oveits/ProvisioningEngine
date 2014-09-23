@@ -12,9 +12,12 @@ h1 {
 }
 h2 {
 	background:#fff;
-	color: #990000;
+	color: #009900;
+	/* make it more readable: */
+	letter-spacing: .6px;
 	font-weight: bold;
-	font-family:'Gill Sans','lucida grande', helvetica, arial, sans-serif;
+	/* font-family:'Gill Sans','lucida grande', helvetica, arial, sans-serif; ,*/
+	font-family: arial, sans-serif;
 	font-size: 120%;
 }
 h3 {
