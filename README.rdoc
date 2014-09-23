@@ -38,9 +38,14 @@ Please feel free to use a different markup language if you do not plan to run
 ** single test, e.g.: #rspec spec/requests/customers_spec.rb -e "with valid information should create a provisioning task with action"
 ** all tests: #rspec spec/requests/customers_spec.rb
 
-* Production
+* Commit & Production
+** if behind proxy:
+*** SET HTTP_PROXY=http://172.28.12.5:8080
+** cd /d F:\veits\RubyOnRails\ProvisioningPortalv4
 ** git add .
 ** git status
 ** git commit -a -m "minor change: / is now redirected to /customers"
 ** git push
 ** git push heroku
+** heroku rake jobs:work
+** (other CMD window) heroku open
