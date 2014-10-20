@@ -12,7 +12,9 @@
 			<li><%= link_to 'Add Site', new_customer_site_path(@customer) %></li>
 			<br />
 			<h3>Change/Delete</h3>
+			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
 			<li><%= link_to 'Provision Customer', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<% end %>
 			<li><%= link_to 'Delete Customer', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></li>
 			<br />
 			<h3>Show related</h3>
@@ -59,8 +61,12 @@
         </td>
         <td><%= link_to @customer.status, customer_provisionings_path(@customer) %></td>       
         <td class="actions"><%= link_to 'Edit', edit_customer_path(@customer) %></td>
+			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
         <td class="actions"><%= link_to 'Provision', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+			<% end %>
+			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
         <td></td>
+			<% end %>
         <td class="actions"><%= link_to 'Destroy', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
       </tr>
       <%= render @customer.sites %>     
