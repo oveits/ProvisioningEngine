@@ -7,8 +7,12 @@
   <td><%= link_to site.status, site_provisionings_path(site) %></td>
   <% end %>
   <td class="actions"><%= link_to 'Edit', edit_site_path(site) %></td>
+			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
   <td class="actions"><%= link_to 'Provision', provision_site_path(site), method: :patch, data: { confirm: 'Are you sure?' }%></td>
+			<% end %>
+			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
   <td class="actions"><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, data: { confirm: 'Are you sure?' }%></td>
+			<% end %>
   <td class="actions"><%= link_to 'Destroy', site, method: :delete, data: { confirm: 'Are you sure?' } %></td>
 </tr>
 
