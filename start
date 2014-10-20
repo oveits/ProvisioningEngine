@@ -1,0 +1,11 @@
+mypid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
+[ "_$mypid" = "_" ] || exit=true 
+
+#if started already, then exit:
+[ "_$exit" = "_true" ] && echo "Web Portal already running: PID=$mypid. Exiting..." && exit
+
+#else start the web portal:
+sudo ./startWebPortal.sh
+
+mypid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
+[ "_$mypid" = "_" ] || echo "Web Portal started: PID=$mypid"

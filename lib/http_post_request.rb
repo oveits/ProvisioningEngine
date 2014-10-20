@@ -1,5 +1,5 @@
 class HttpPostRequest
-  def perform(action, uriString="http://localhost/CloudWebPortal", httpreadtimeout=4*3600, httpopentimeout=6)
+  def perform(action, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     #
     # renders action="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
     #

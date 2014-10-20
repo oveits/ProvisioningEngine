@@ -18,7 +18,7 @@ class UpdateDB
     provisioningRequest = HttpPostRequest.new
     
     if targetobject.is_a?(Site)
-      responseBody = provisioningRequest.perform("customerName=#{targetobject.customer.name}, action = Show Sites, SiteName=#{targetobject.name}", "http://localhost/CloudWebPortal", provisioningRequestTimeout) unless targetobject.customer.nil?
+      responseBody = provisioningRequest.perform("customerName=#{targetobject.customer.name}, action = Show Sites, SiteName=#{targetobject.name}", ENV["PROVISIONINGENGINE_CAMEL_URL"], provisioningRequestTimeout) unless targetobject.customer.nil?
     elsif targetobject.is_a?(Customer)
       # today, customers have no parameters, which need to be synchronized
       responseBody = "Synchronization not supported for class Customer"

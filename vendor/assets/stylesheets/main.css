@@ -12,7 +12,9 @@ h1 {
 }
 h2 {
 	background:#fff;
-	color: #009900;
+	/* color: #86C048; */
+	color: #449922;
+	
 	/* make it more readable: */
 	letter-spacing: .6px;
 	font-weight: bold;
@@ -22,11 +24,14 @@ h2 {
 }
 h3 {
 	color: #2c6877;
-	font-family:'Gill Sans','lucida grande', helvetica, arial, sans-serif;
+	letter-spacing: .6px;
+	/* font-family:'Gill Sans','lucida grande', helvetica, arial, sans-serif; */
+	font-family: arial, sans-serif;
 	font-size: 120%;
 	font-weight: bold;
 }
 h4 {
+	letter-spacing: .4px;
 	color: #993;
 	font-weight: normal;
 }
@@ -37,12 +42,15 @@ background: #1a1109;
 }
 /* Own Change: Padding from 11px 0 8px 0 to 5px 0 5px 0*/
 ul.semiopaquemenu{ /* main menu UL */
-font: bold 14px !important;
+font-weight: normal;
+/* font: bold 14px !important; */
+/* font-size: 100%; */
+font-size: 14px;
+letter-spacing: 0.2px;
 color: white;
 width: 98.5%;
 background: #878A8C;
-#background: #000000;
-padding: 5px 0 5px 20px; /* padding of the 4 sides of the menu */
+padding: 5px 0px 5px 20px; /* padding of the 4 sides of the menu */
 margin: 0;
 text-align: left; /* set value to "left", "center", or "right" to align menu accordingly */
 }
@@ -57,19 +65,31 @@ text-align: left; /* set value to "left", "center", or "right" to align menu acc
 ul.semiopaquemenu li{
 display: inline;
 }.active {
-	color: red;
-	background: #444444;
+	
+	font-weight: bold;
+	letter-spacing: .2px;
+	/*background: #444444;*/
 	#margin: 0px;
 	padding: 5px 1px 5px 0px;
 }
 /* Own Change: spacing from 15 to 5*/
 ul.semiopaquemenu li a{
 color: white;
-font: bold;
-padding: 6px 8px 6px 6px; /* padding of the 4 sides of each menu link */
+padding: 5px 8px 6px 4px; /* padding of the 4 sides of each menu link */
 margin-right: 0px; /* spacing between each menu link */
 text-decoration: none;
 }
+
+ul.semiopaquemenu li.active a  {
+	/* color: #449922; */
+	color: white;
+	font-weight: bold;
+	letter-spacing: .2px;
+	/* background: #e0e0e0; */
+	#margin: 0px;
+	#padding: 6px 8px 6px 6px;
+}
+
 
 ul.semiopaquemenu li a:hover, ul.semiopaquemenu li a.selected{
 color: black;
