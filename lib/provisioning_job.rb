@@ -1,5 +1,5 @@
 class ProvisioningRequest
-  def perform(action, uriString="http://localhost/CloudWebPortal", httpreadtimeout=4*3600, httpopentimeout=6)
+  def perform(action, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     #httpopentimeout = 5
     #httpreadtimeout = 4*3600 # allow for 4 hours for deletion of large customer bases
     
@@ -72,7 +72,7 @@ class UpdateDB
 #    end
 
     provisioningRequest = ProvisioningRequest.new
-    responseBody = provisioningRequest.perform("Show Sites, customerName=#{targetobject.customer.name}", "http://localhost/CloudWebPortal", 10) unless targetobject.customer.nil?
+    responseBody = provisioningRequest.perform("Show Sites, customerName=#{targetobject.customer.name}", ENV["PROVISIONINGENGINE_CAMEL_URL"], 10) unless targetobject.customer.nil?
     
     p 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU'
     p responseBody unless responseBody.nil?

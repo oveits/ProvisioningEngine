@@ -3,7 +3,8 @@ class ValidateWithProvisioningEngine < ActiveModel::Validator
     require "net/http"
     require "uri"
     
-    uri = URI.parse("http://localhost/CloudWebPortal")
+    #uri = URI.parse("http://localhost/CloudWebPortal")
+    uri = URI.parse(ENV["PROVISIONINGENGINE_CAMEL_URL"])
     
     #response = Net::HTTP.post_form(uri, {"testMode" => "testMode", "offlineMode" => "offlineMode", "action" => "Add Customer", "customerName" => @customer.name})
     #OV replaced by (since I want to control the timers):
@@ -49,7 +50,8 @@ class Customer < ActiveRecord::Base
     require "net/http"
     require "uri"
     
-    uri = URI.parse("http://localhost/CloudWebPortal")
+    #uri = URI.parse("http://localhost/CloudWebPortal")
+    uri = URI.parse(ENV["PROVISIONINGENGINE_CAMEL_URL"])
     
     #response = Net::HTTP.post_form(uri, {"testMode" => "testMode", "offlineMode" => "offlineMode", "action" => "Add Customer", "customerName" => @customer.name})
     #OV replaced by (since I want to control the timers):
