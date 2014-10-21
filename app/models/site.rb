@@ -87,7 +87,7 @@ class Site < ActiveRecord::Base
                     length: { in: 3..20  }
   validates :sitecode, presence: true
   validates_format_of :sitecode, :with => /\A[1-9][0-9]{0,6}\Z/, message: "must be a number of length 1 to 7" 
-  validates_format_of :gatewayIP, :with => Regexp.new(validIPAddressRegex.source + '|' + validRFC952HostnameRegex.source), message: "must be a valid IP address or Domain Name" 
+  validates_format_of :gatewayIP, :with => Regexp.new('\A\Z|' + validIPAddressRegex.source + '|' + validRFC952HostnameRegex.source), message: "must be either empty or a valid IP address or Domain Name" 
   validates_format_of :countrycode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
   validates_format_of :areacode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
   validates_format_of :localofficecode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"

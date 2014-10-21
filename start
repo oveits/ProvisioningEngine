@@ -1,11 +1,8 @@
-mypid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
-[ "_$mypid" = "_" ] || exit=true 
+export HTTP_PROXY=
+export http_proxy=
 
-#if started already, then exit:
-[ "_$exit" = "_true" ] && echo "Web Portal already running: PID=$mypid. Exiting..." && exit
+  # start web portal
+  sudo ./startWebPortal.sh 
 
-#else start the web portal:
-sudo ./startWebPortal.sh
-
-mypid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
-[ "_$mypid" = "_" ] || echo "Web Portal started: PID=$mypid"
+  # start delayed jobs
+  sudo ./startDelayedJobs.sh
