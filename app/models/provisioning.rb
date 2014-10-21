@@ -38,13 +38,14 @@ class Provisioning < ActiveRecord::Base
       
       #delayedjob = Delayed::Job.enqueue(ProvisioningJob.new(id))
       delayedjob = delay.deliver(uriString, httpreadtimeout, httpopentimeout)
+      #deliver(uriString, httpreadtimeout, httpopentimeout)
           # For troubleshooting, it is sometomes better to use the two next commands instead of the delayedjob command
           #provisioningjob = ProvisioningJob.new(id)
           #provisioningjob.perform
       
       # not needed here, sinc hwere, the delayedjob IS the provisioning attribute?
       #@provisioning.update_attributes(:delayedjob => @delayedjob)
-      update_attributes(:delayedjob_id => delayedjob.id)     
+      update_attributes(:delayedjob_id => delayedjob.id) unless delayedjob.nil?
     end
   end # def createdelayedjob
   
@@ -58,7 +59,6 @@ class Provisioning < ActiveRecord::Base
       
       #resulttext = provisioningRequest.perform("customerName=#{targetobject.customer.name}, action = Show Sites, SiteName=#{targetobject.name}", "http://localhost/CloudWebPortal", provisioningRequestTimeout)
   
-      resulttext = provisioningRequest.perform(action, uriString, httpreadtimeout, httpopentimeout)
       
       if attempts.nil?
         update_attributes(:attempts => 1 )
@@ -72,16 +72,19 @@ class Provisioning < ActiveRecord::Base
       # if not found:
       thisaction = 'unknown action' if thisaction.nil?  
       
-      targetobjects = [user, site, customer] # extend, if needed
-      
       # update the stats uf the target objects
-      #   e.g. with "provisioning.action = 'Add Customer, ...', update the status of the customer object to 'provisioning in progress'"
+      targetobjects = [user, site, customer] # extend, if needed; highest priority first (see comment below)
+        # e.g. with "provisioning.action = 'Add Customer, ...', update the status of the customer object to 'provisioning in progress'"
+        # only the first non-nil object is updated
+	# i.e., if user is defined, then the user status is updated only
+	# 	if user is nil and the site is definde, then only the status of the site is updated
+	# 	if both, the user and site are nil and the customer is defined, then the customer status is updated
       targetobjects.each do |targetobject|
         targetobject.update_attributes(:status => thisaction + ' in progress') unless targetobject.nil?
-        # only update User, if User, Site and Customer are defined. Only Update Site, if Site and Customer is defined.
         break unless targetobject.nil?
       end
-      
+
+      resulttext = provisioningRequest.perform(action, uriString, httpreadtimeout, httpopentimeout)
       
       case resulttext 
         when nil 
@@ -236,12 +239,16 @@ class Provisioning < ActiveRecord::Base
   end
   
   def delayedjob
-    Delayed::Job.find(delayedjob_id)
+    unless delayedjob_id.nil?
+      Delayed::Job.find(delayedjob_id)
+    else
+      nil
+    end
   end
   
   belongs_to :customer
   belongs_to :site
   belongs_to :user
-  handle_asynchronously :deliverasynchronously
+  #handle_asynchronously :deliverasynchronously
   validates_with Validate_action
 end

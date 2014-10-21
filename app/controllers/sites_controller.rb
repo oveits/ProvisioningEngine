@@ -50,10 +50,11 @@ class SitesController < ApplicationController
   def create
     @site = Site.new(site_params)
     #@customer = Customer.find(params[:customer_id])
-    @site.status = 'waiting for provisioning'
       
     respond_to do |format|
       if @site.save
+        @site.status = 'waiting for provisioning'
+        @site.update_attributes(:status => 'waiting for provisioning')
         format.html { redirect_to @site.customer, notice: 'Site is being created.' }
         format.json { render :show, status: :created, location: @site }
 
@@ -140,9 +141,9 @@ class SitesController < ApplicationController
     @provisionings = Provisioning.where(site: @site)
     job = nil
     @provisionings.each do |provisioning|
-      unless provisioning.delayedjob.nil?
+      unless provisioning.delayedjob_id.nil?
         begin
-          job = Delayed::Job.find(provisioning.delayedjob)
+          job = Delayed::Job.find(provisioning.delayedjob_id)
           break  # will break the do loop only, if a job was found
         rescue
           # keep: job = nil
@@ -178,6 +179,7 @@ class SitesController < ApplicationController
   end
   
   def destroy
+    #@site.destroy
     #@site = Site.find(params[:id])          
     @customer = @site.customer
     inputBody = "action=Delete Site, customerName=#{@customer.name}, SiteName=#{@site.name}"
@@ -186,9 +188,9 @@ class SitesController < ApplicationController
     @provisionings = Provisioning.where(site: @site)
     activeProvisioningJob = nil
     @provisionings.each do |provisioning|
-      unless provisioning.delayedjob.nil?
+      unless provisioning.delayedjob_id.nil?
         begin
-          activeProvisioningJob = Delayed::Job.find(provisioning.delayedjob)
+          activeProvisioningJob = Delayed::Job.find(provisioning.delayedjob_id)
           break  # will break the do loop only, if a job was found
         rescue
           # keep: activeProvisioningJob = nil
@@ -198,6 +200,10 @@ class SitesController < ApplicationController
     # now activeProvisioningJob != nil, if an active job has been found for this site
      
     if activeProvisioningJob.nil? and @site.provision(inputBody)
+      # does not seem to work:
+      #@site.status = 'waiting for deletion'
+      # seems to work:
+      @site.update_attributes(:status => 'waiting for deletion')
       respond_to do |format|
         format.html { redirect_to @customer, notice: "Site #{@site.name} is being destroyed (background process)." }
         format.json { head :no_content }

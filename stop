@@ -1,17 +1,2 @@
-mypid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
-[ "_$mypid" = "_" ] && exit=true
-
-#if not found, exit:
-[ "_$exit" = "_true" ] && echo "Web Portal not running. Exiting..." && exit
-
-#else stop the web portal:
-echo "trying to stop web portal (PID=$mypid)" && sudo kill "$mypid"
-
-sleep 10
-
-#check that the web portal is stopped:
-mypid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
-[ "_$mypid" = "_" ] && exit
-
-#if it is still up and running, kill it with -9:
-echo "trying to stop web portal (PID=$mypid) with kill -9" && sudo kill -9 "$mypid"
+sudo ./stopWebPortal.sh
+sudo ./stopDelayedJobs.sh

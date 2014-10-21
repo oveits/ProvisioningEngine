@@ -1,0 +1,19 @@
+export HTTP_PROXY=
+export http_proxy=
+
+myWebPortalPid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
+myDelayedJobsPid=`ps -ef | grep "rake jobs:work" | grep -v grep | grep -v shims | awk '{print $2}'`
+
+if [ "_$myWebPortalPid" = "_" ]; then
+  # start web portal
+  sudo ./startWebPortal.sh 
+else
+  echo "Web Portal already running: PID=$myWebPortalPid."
+fi
+
+if [ "_$myDelayedJobsPid" = "_" ]; then
+  # start delayed jobs
+  sudo ./startDelayedJobs.sh
+else
+  echo "Delayed Jobs already running: PID=$myDelayedJobsPid."
+fi

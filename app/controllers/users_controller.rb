@@ -42,7 +42,6 @@ class UsersController < ApplicationController
   # POST /users.json
   def create
     @user = User.new(user_params)
-    #@user.status = 'waiting for provisioning'
     
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
@@ -50,6 +49,8 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       if @user.save
+        #@user.status = 'waiting for provisioning'
+        @user.update_attributes(:status => 'waiting for deletion')
         format.html { redirect_to @user, notice: 'User is being created.' }
         format.json { render :show, status: :created, location: @user }
         
@@ -137,6 +138,7 @@ class UsersController < ApplicationController
     inputBody ="action=Delete User, X=#{@user.extension}, customerName=#{@customer.name}, SiteName=#{@site.name}"
     
     if @user.provision(inputBody)
+      @user.update_attributes(:status => 'waiting for deletion')
       respond_to do |format|
         format.html { redirect_to users_path, notice: "User #{@user.name} is being destroyed (background process)." }
         format.json { head :no_content }

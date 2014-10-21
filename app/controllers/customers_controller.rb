@@ -41,12 +41,13 @@ class CustomersController < ApplicationController
     @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
 
     @customer = Customer.new(customer_params)
-    @customer.status = 'waiting for provisioning'
     #@provisioning = Provisioning.new(action: "action=Add Customer, customerName=#{customer_params[:name]}", customer: @customer)  
     
     #abort 'create customer'
     respond_to do |format|         
       if @customer.save #and @provisioning.save
+        #@customer.status = 'waiting for provisioning'
+        @customer.update_attributes(:status => 'waiting for provisioning')
         format.html { redirect_to @customer, notice: 'Customer is being created.' }
         format.json { render :show, status: :created, location: @customer } 
         
@@ -118,8 +119,8 @@ class CustomersController < ApplicationController
     end
     # now activeProvisioningJob != nil, if an active job has been found for this site
     
-    @customer.update_attributes(:status => 'deletion in progress')
     if activeProvisioningJob.nil? and @customer.provision("action=Delete Customer, customerName=#{@customer.name}")
+      @customer.update_attributes(:status => 'waiting for deletion')
       respond_to do |format|
         format.html { redirect_to customers_url, notice: "Customer #{@customer.name} is being destroyed (background process)." }
         format.json { head :no_content }
@@ -179,7 +180,7 @@ class CustomersController < ApplicationController
     # -> calls model provisioning.deliver
     # too many steps !!!!!!!!!!!!!!!!!!!!!!!!!
     @customer = Customer.find(params[:id])
-    @customer.status = 'waiting for provisioning'
+    #@customer.update_attributes(:status => 'waiting for provisioning')
     respond_to do |format|
       if @customer.provision("action=Add Customer, customerName=#{customer_params[:name]}")
         @provisionings = Provisioning.where(customer: @customer)
