@@ -1,7 +1,13 @@
 require 'rubygems'
 require 'spork'
+# OV: if I add following line, rspec has to be called with "bundle exec rspec ..."
+require 'factory_girl_rails' 
+#require_relative '../app/models/customer'
 #uncomment the following line to use spork with the debugger
 #require 'spork/ext/ruby-debug'
+
+# OV added (see http://stackoverflow.com/questions/26288113/rspec-cannot-find-my-controllers-uninitialized-constant)
+#require File.expand_path("../../config/environment", __FILE__)
 
 Spork.prefork do
   ENV["RAILS_ENV"] ||= 'test'
@@ -18,6 +24,10 @@ Spork.prefork do
   ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
 
   RSpec.configure do |config|
+    
+    # OV added:
+    config.include FactoryGirl::Syntax::Methods
+
     # ## Mock Framework
     #
     # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
@@ -101,6 +111,9 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 ActiveRecord::Migration.check_pending! if defined?(ActiveRecord::Migration)
 
 RSpec.configure do |config|
+  # OV added (see http://stackoverflow.com/questions/11875634/rails-3-2-rspec-factory-girl-nameerror-uninitialized-constant-factory)
+  config.include FactoryGirl::Syntax::Methods
+
   # ## Mock Framework
   #
   # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:

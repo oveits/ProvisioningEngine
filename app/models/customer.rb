@@ -1,5 +1,10 @@
 class ValidateWithProvisioningEngine < ActiveModel::Validator
   def validate(record)
+    # returnString = @customer.provision("testMode=testMode, action=Add Customer, customerName=#{customer_params[:name]}")
+  end
+end
+class ValidateWithProvisioningEngine_old < ActiveModel::Validator
+  def validate(record)
     require "net/http"
     require "uri"
     
@@ -22,6 +27,7 @@ class ValidateWithProvisioningEngine < ActiveModel::Validator
     end
    
     unless responseBody.include? 'TEST MODE'
+    # i.e. no error, since, if there is an error, there will be 'ERROR:' instead
       
       begin
         errormessage =  responseBody[/ERROR.*$/]
@@ -39,6 +45,8 @@ end
 
 
 class Customer < ActiveRecord::Base
+  def new
+  end
   def create_on_OSV(name)
     #send the newsletter here, which will take some time and you
     #sleep(15)
@@ -126,7 +134,8 @@ class Customer < ActiveRecord::Base
      
   end
     
-  def provision(inputBody)
+  def provision(inputBody, async=true)
+
     @customer = Customer.find(id)
     # e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     
@@ -136,12 +145,14 @@ class Customer < ActiveRecord::Base
       actionAppend = actionAppend.gsub(/\r/, '')
     end
     
-    # recursive deletion of sites:
-    @sites = Site.where(customer: id)
-    @sites.each do |site|
-      inputBodySite = "action=Delete Site, customerName=#{@customer.name}, SiteName=#{site.name}"
-      inputBodySite = inputBodySite + ', ' + actionAppend unless actionAppend.nil?
-      site.provision(inputBodySite)
+    # recursive deletion of sites (skipped in test mode):
+    if inputBody.include?("Delete") && !inputBody.include?("testMode")
+      @sites = Site.where(customer: id)
+      @sites.each do |site|
+        inputBodySite = "action=Delete Site, customerName=#{@customer.name}, SiteName=#{site.name}"
+        inputBodySite = inputBodySite + ', ' + actionAppend unless actionAppend.nil?
+        site.provision(inputBodySite, async)
+      end 
     end
     
     inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
@@ -151,9 +162,13 @@ class Customer < ActiveRecord::Base
     if @provisioning.save
        #@provisioning.createdelayedjob
        #@provisioning.deliver
-       @provisioning.deliverasynchronously
+       if async == true
+         @provisioning.deliverasynchronously
+       else
+         @provisioning.deliver
+       end
        # success
-       return 0
+       #return 0
     else
       @provisioning.errors.full_messages.each do |message|
         abort 'provisioning error: ' + message.to_s

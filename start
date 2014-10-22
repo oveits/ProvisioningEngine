@@ -1,8 +1,5 @@
 export HTTP_PROXY=
 export http_proxy=
 
-  # start web portal
-  sudo ./startWebPortal.sh 
-
-  # start delayed jobs
-  sudo ./startDelayedJobs.sh
+sudo ./startWebPortal.sh
+sudo ./startDelayedJobs.sh
