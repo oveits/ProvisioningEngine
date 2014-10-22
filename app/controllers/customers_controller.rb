@@ -48,10 +48,10 @@ class CustomersController < ApplicationController
       if @customer.save #and @provisioning.save
         #@customer.status = 'waiting for provisioning'
         @customer.update_attributes(:status => 'waiting for provisioning')
+        @customer.provision("action=Add Customer, customerName=#{customer_params[:name]}")
         format.html { redirect_to @customer, notice: 'Customer is being created.' }
         format.json { render :show, status: :created, location: @customer } 
         
-        @customer.provision("action=Add Customer, customerName=#{customer_params[:name]}")
         #Delayed::Job.enqueue(ProvisioningJob.new(@provisioning.id), {:priority => 3 })
           # for troubleshooting of the above Delayed::Job, it is easier to replace the above command 
           # by the following two lines, so the ProvisioningJob can be debugged as a foreground process:
@@ -119,18 +119,42 @@ class CustomersController < ApplicationController
     end
     # now activeProvisioningJob != nil, if an active job has been found for this site
     
-    if activeProvisioningJob.nil? and @customer.provision("action=Delete Customer, customerName=#{@customer.name}")
-      @customer.update_attributes(:status => 'waiting for deletion')
+    @customer.update_attributes(:status => 'waiting for deletion') if activeProvisioningJob.nil?
+    customerName = @customer.name
+
+    testmodeResponse = @customer.provision("testMode=testMode, action=Delete Customer, customerName=#{@customer.name}", false)
+    # 4: customer exists on target system and input is OK
+    # 101: customer does not exist on database 
+    if testmodeResponse == 101
+	# customer does not exist on database --> just delete the customer from the database:
+        #@customer.destroy
+    elsif testmodeResponse == 4
+        # customer exists on target system and input is OK, so try to exexute de-provisioning in the background:
+        provisionTaskExistsAlready =  @customer.provision("action=Delete Customer, customerName=#{@customer.name}")
+        # provisionTaskExistsAlready will return nil, if a provisioningTask already exists, else it will return 0 and will send a de-provisioning job in the background
+    end
+
+    if activeProvisioningJob.nil? &&  testmodeResponse == 4 && !provisionTaskExistsAlready.nil?
+      # customer exists on target system and input is OK and de-provisioning started
       respond_to do |format|
-        format.html { redirect_to customers_url, notice: "Customer #{@customer.name} is being destroyed (background process)." }
+        format.html { redirect_to customers_url, notice: "Customer #{customerName} is being destroyed (background process)." }
         format.json { head :no_content }
       end
-    else
+    elsif activeProvisioningJob.nil? &&  testmodeResponse == 101
+      # customer does not exist on target system and input is OK --> delete customer from database
+      @customer.destroy
       respond_to do |format|
-        format.html { redirect_to customer_provisionings_path(@customer), notice: "Customer #{@customer.name} cannot be deleted, since there are active provisioning tasks running." }
+	format.html { redirect_to customers_url, notice: "Customer #{customerName} deleted from database (was already removed from the target systems)." }
+        format.json { head :no_content } 
+      end
+    else
+      # either there are pending jobs, or there was another error with the testmode request
+      respond_to do |format|
+        format.html { redirect_to customer_provisionings_path(@customer), notice: "Customer #{@customer.name} cannot be deleted: are there other active provisioning tasks running?" }
         format.json { head :no_content }
       end
     end
+
   end
 
   # allow for a possibility to remove all provisionins using a single button press:

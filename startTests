@@ -1,0 +1,4 @@
+export HTTP_PROXY=
+export http_proxy=
+
+bundle exec rspec spec/requests/customers_spec.rb "$@"

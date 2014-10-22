@@ -33,6 +33,7 @@ class Provisioning < ActiveRecord::Base
   def deliverasynchronously(uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     begin # provisioning job still running
       Delayed::Job.find(delayedjob_id)
+      return nil
     rescue # else
       # create a new provisioning job for the provisioning task
       
@@ -46,6 +47,7 @@ class Provisioning < ActiveRecord::Base
       # not needed here, sinc hwere, the delayedjob IS the provisioning attribute?
       #@provisioning.update_attributes(:delayedjob => @delayedjob)
       update_attributes(:delayedjob_id => delayedjob.id) unless delayedjob.nil?
+      return 0
     end
   end # def createdelayedjob
   
@@ -104,7 +106,7 @@ class Provisioning < ActiveRecord::Base
           # update status of targetobject
           targetobjects.each do |targetobject|
             if thisaction == 'deletion'
-              targetobject.update_attributes(:status => thisaction + ' successful (rerun destroy to remove from database)') unless targetobject.nil?
+              targetobject.update_attributes(:status => thisaction + ' successful (press "Destroy" again to remove from database)') unless targetobject.nil?
             else
               targetobject.update_attributes(:status => thisaction + ' successful') unless targetobject.nil?
             end
@@ -127,10 +129,11 @@ class Provisioning < ActiveRecord::Base
         # test mode
           returnvalue = 4
           resulttext = "finished with success (TEST MODE [#{returnvalue.to_s}])\"" + '" at ' + Time.now.to_s
-          targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' successful (test mode)') unless targetobject.nil?
-            break unless targetobject.nil? 
-          end
+	# do not change the status in case of a test mode query:
+#          targetobjects.each do |targetobject|
+#            targetobject.update_attributes(:status => thisaction + ' successful (test mode)') unless targetobject.nil?
+#            break unless targetobject.nil? 
+#          end
           #provisioning.update_attributes(:delayedjob => nil)
         when /Script aborted.*$/
         # deletion script or ccc.sh script aborted
@@ -172,10 +175,11 @@ class Provisioning < ActiveRecord::Base
           targetobjects.each do |targetobject|
             targetobject.update_attributes(:status => thisaction + ' failed: was already de-provisioned') unless targetobject.nil?
             # instead of updating the status, remove from database (can be commented out)
-            unless targetobject.nil?
-              targetobject.destroy
-              break
-            end 
+	    # now to be done in the controller on returnvalue 101
+            #unless targetobject.nil?
+            #  targetobject.destroy
+            #  break
+            #end 
           end 
         when /Warnings/
         # import errors

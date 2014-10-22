@@ -35,7 +35,8 @@ class Site < ActiveRecord::Base
 #    end
 #  end
   
-  def provision(inputBody)
+  def provision(inputBody, async=true)
+
     @site = Site.find(id)
     @customer = @site.customer
     # e.g. inputBody = "action = Add Customer, customerName=#{name}" 
@@ -51,7 +52,7 @@ class Site < ActiveRecord::Base
     @users.each do |user|
       inputBodyUser = "action=Delete User, X=#{user.extension}, customerName=#{@customer.name}, SiteName=#{@site.name}"
       inputBodyUser = inputBodyUser + ', ' + actionAppend unless actionAppend.nil?
-      user.provision(inputBodyUser)
+      user.provision(inputBodyUser, async)
     end
     
     # deletion of site:
@@ -62,7 +63,13 @@ class Site < ActiveRecord::Base
     if @provisioning.save
        #@provisioning.createdelayedjob
        #@provisioning.deliver
-       @provisioning.deliverasynchronously
+       if async == true
+#p "=============== models/sites.rb:provision: performing @provisioning.deliverasynchronously ============"
+         @provisioning.deliverasynchronously
+       else
+#p "=============== models/sites.rb:provision: performing @provisioning.deliver ============"
+         @provisioning.deliver
+       end
        # success
        return 0
     else

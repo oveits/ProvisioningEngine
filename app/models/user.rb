@@ -23,7 +23,8 @@ end
 
 class User < ActiveRecord::Base
 
-  def provision(inputBody)
+  def provision(inputBody, async=true)
+
     @user = User.find(id)
     @site = Site.find(site_id)
     @customer = site.customer
@@ -40,7 +41,11 @@ class User < ActiveRecord::Base
     
     if @provisioning.save
        #@provisioning.createdelayedjob
-       @provisioning.deliverasynchronously
+       if async == true
+         @provisioning.deliverasynchronously
+       else
+         @provisioning.deliver
+       end
        # success
        return 0
     else
