@@ -1,0 +1,4 @@
+myWebPortalPid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
+[ "_$myWebPortalPid" == "_" ] && echo "Web Portal:   not running" ||  echo "Web Portal:   running (PID=$myWebPortalPid)"
+myDelayedJobsPid=`ps -ef | grep "rake jobs:work" | grep -v grep | grep -v shims | awk '{print $2}'`
+[ "_$myDelayedJobsPid" == "_" ] && echo "Delayed Jobs: not running" || echo "Delayed Jobs: running (PID=$myDelayedJobsPid)"
