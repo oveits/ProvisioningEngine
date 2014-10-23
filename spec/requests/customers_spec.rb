@@ -37,6 +37,29 @@ def createCustomerDB(customerName = "nonProvisionedCust" )
 
 end
 
+def createCustomerDB_not_working
+  	FactoryGirl.create(:target)
+        delta = Customer.count
+p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before FactoryGirl.create"
+        FactoryGirl.create(:customer)
+p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after FactoryGirl.create"
+	customer = Customer.find(1)
+p customer.name + "<<<<<<<<<<<<<<<< customer.name"
+        delta = Customer.count - delta
+p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta(Customer.count)"
+
+end
+
+def createCustomerDB_manual( arguments = {} )
+	# default values
+	arguments[:name] ||= "nonProvisionedCust"
+
+        target = Target.new(name: "TestTarget", configuration: "a=b")
+	target.save
+	customer = Customer.new(name: "nonProvisionedCust", target_id: target.id)
+        customer.save
+end
+
 def fillFormForNewCustomer(customerName = "ExampleCustomer" )
   if Target.where(name: 'TestTarget').count == 0
     Target.create(name: 'TestTarget', configuration: 'a=b')
@@ -126,21 +149,6 @@ describe "Customers" do
     before { visit new_customer_path }
     let(:submit) { "Save" }
 
-#describe "createCustomerDB" do
-#  before { 	visit new_customer_path
-#		FactoryGirl.create(:target) }
-#  it "has a valid factory" do
-#    FactoryGirl.create(:customer).should be_valid
-#  end
-#
-#  it "should add a customer to the database" do
-#    FactoryGirl.create(:target)
-#    # works: expect { click_button submit, match: :first }.not_to change(Customer, :count)
-#    # does not work (yet):
-#    expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
-#  end
-#end
-  
     describe "with invalid information" do
       it "should not create a customer" do
         expect { click_button submit, match: :first }.not_to change(Customer, :count)
@@ -179,9 +187,25 @@ describe "Customers" do
       end
 
       ############## FactoryGirl not yet functional ###########
+      it "has a valid factory" do
+        FactoryGirl.create(:target).should be_valid
+        FactoryGirl.create(:customer).should be_valid
+      end
+
       it "should add a customer to the database (FactoryGirlTest; not yet functional)" do
         FactoryGirl.create(:target)
-        expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
+        delta = Customer.count
+        	p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
+        #FactoryGirl.attributes_for(:customer, name: "dhgkshk")
+	FactoryGirl.create(:customer)
+	customer = Customer.find(1)
+        	p customer.name + "<<<<<<<<<<<<<<<< customer.name"
+	delta = Customer.count - delta
+        	p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta"
+	expect(delta).to eq(1)
+        #expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
+        #expect(FactoryGirl.build(:customer)).to change(Customer, :count).by(1)
+		p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
       end
       
       it "should create a customer (1st 'Save' button)" do
@@ -258,7 +282,7 @@ describe "Customers" do
         visit customer_path(customers[0])
         #p page.html.gsub(/[\n\t]/, '')
        
-       }
+      }
          
       let(:submit) { "Delete Customer" }
       let(:submit2) { "Destroy" }
@@ -283,6 +307,39 @@ describe "Customers" do
       end
     end # of describe "De-Provision Customer" do
     
+    describe "Delete Customer from database using manual database seed" do
+      before {
+        createCustomerDB_manual(name: "nonProvisionedCust")
+        customers = Customer.where(name: "nonProvisionedCust" )
+                #p customers.inspect
+        visit customer_path(customers[0])
+                #p page.html.gsub(/[\n\t]/, '')
+      }
+
+
+      let(:submit) { "Delete Customer" }
+      let(:submit2) { "Destroy" }
+
+      it "should remove a customer from the database, if not found on the target system" do
+        Delayed::Worker.delay_jobs = false
+	
+	expect(page).to have_link("Delete Customer")
+
+        delta = Customer.count
+		#p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before click"
+        click_link "Delete Customer"
+        	# replacing by following line causes error "Unable to find link :submit" (why?)
+        	#click_link :submit
+			#p page.html.gsub(/[\n\t]/, '')
+		# following line causes error: 
+        	#expect(click_link "Delete Customer").to change(Customer, :count).by(-1)
+        delta = Customer.count - delta
+        expect(delta).to eq(-1)
+		#p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after click"
+      end
+    end
+
+
     describe "Delete Customer from database" do
       
       before {
@@ -318,18 +375,19 @@ describe "Customers" do
 #        end
 	
 	createCustomerDB( "nonProvisionedCust" )
+	#createCustomerDB_not_working
         customers = Customer.where(name: "nonProvisionedCust" )
         visit customer_path(customers[0])
 	
 	# debug:
-        #p page.html.gsub(/[\n\t]/, '')
+        p page.html.gsub(/[\n\t]/, '')
 	
        }
          
       let(:submit) { "Delete Customer" }
       let(:submit2) { "Destroy" }
       
-      it "should remove a customer from the database, if not found on the target system" do
+      it "(working) should remove a customer from the database, if not found on the target system" do
         expect { click_link submit, match: :first }.to change(Customer, :count).by(-1)
       end
       
