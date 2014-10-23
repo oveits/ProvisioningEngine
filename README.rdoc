@@ -29,9 +29,9 @@ Please feel free to use a different markup language if you do not plan to run
 
 === Commands
 
-* start web server:
-	* rails s -p 3002 
-	* start background processes: #rake jobs:work
+- start web server:
+ - rails s -p 3002 
+ - start background processes: #rake jobs:work
 
 * start test execution:
 ** speed up tests: #bundle exec spork
