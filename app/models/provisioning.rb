@@ -175,11 +175,12 @@ class Provisioning < ActiveRecord::Base
           targetobjects.each do |targetobject|
             targetobject.update_attributes(:status => thisaction + ' failed: was already de-provisioned') unless targetobject.nil?
             # instead of updating the status, remove from database (can be commented out)
-	    # now to be done in the controller on returnvalue 101
-            #unless targetobject.nil?
-            #  targetobject.destroy
-            #  break
-            #end 
+	    # now to be done in the controller on returnvalue 101 (implemented for customer only)
+            unless targetobject.nil?
+p targetobject.inspect
+              targetobject.destroy unless targetobject == customer
+              break
+            end 
           end 
         when /Warnings/
         # import errors
