@@ -29,15 +29,6 @@ class Provisioning < ActiveRecord::Base
 #  def deliverasynchronously(uriString="http://localhost/CloudWebPortal", httpreadtimeout=4*3600, httpopentimeout=6)
 #    deliver(uriString, httpreadtimeout, httpopentimeout)
 #  end
-  def activeJob?
-    activeJob = false   
-    begin
-      activeJob = Delayed::Job.find(self.delayedjob_id)
-      return true
-    rescue
-      return false
-    end
-  end
   
   def deliverasynchronously(uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     begin # provisioning job still running
