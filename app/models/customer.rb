@@ -47,93 +47,29 @@ end
 class Customer < ActiveRecord::Base
   def new
   end
-  def create_on_OSV(name)
-    #send the newsletter here, which will take some time and you
-    #sleep(15)
-    #p '-----------------------------------------------------------'
-    #puts 'From send newsletter: ' + name
-    #p '-----------------------------------------------------------'
-    #sleep 100
-    #abort '--------------------test---------------------------'
-    require "net/http"
-    require "uri"
+  
+  def activeJob?
+    # will return true, if the object has an active job
     
-    #uri = URI.parse("http://localhost/CloudWebPortal")
-    uri = URI.parse(ENV["PROVISIONINGENGINE_CAMEL_URL"])
+    @provisionings = Provisioning.where(customer: self)
     
-    #response = Net::HTTP.post_form(uri, {"testMode" => "testMode", "offlineMode" => "offlineMode", "action" => "Add Customer", "customerName" => @customer.name})
-    #OV replaced by (since I want to control the timers):
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.open_timeout = 2
-    http.read_timeout = 500
-    request = Net::HTTP::Post.new(uri.request_uri)
-    #request.set_form_data({"testMode" => "testMode", "action" => "Add Customer", "customerName" => name})
-    request.set_form_data({"action" => "Add Customer", "customerName" => name})
-    
-    begin
-      response = http.request(request)
-      #responseBody = response.body[0,200]
-      responseBody = response.body
-    rescue Exception=>e
-      responseBody = 'ERROR: OpenScape Voice provisioning timeout'
+    # search for active jobs:
+    @provisionings.each do |provisioning|    
+      return true if provisioning.activeJob?
     end
     
-    
-
-#    p '#########################################################################################'
-#    p 'responseBody = ' + responseBody
-#    p '#########################################################################################'    
-#    
-#    begin
-#      errormessage =  responseBody[/ERROR.*$/]
-#      errormessage =  errormessage[7..-1]
-#    rescue
-#      errormessage =  responseBody
-#    end
-#    
-#      p '#########################################################################################'
-#    unless errormessage.nil?
-#      p 'error message = ' + errormessage
-#    else
-#      p 'error message = nil'
-#    end
-#      p '#########################################################################################'
-       
-    #unless responseBody[/Warnings:0    Errors:0     Syntax Errors:0/]
-    unless responseBody[/Warnings:0    Errors/]
-      #record.errors[:name] << errormessage
-      #record.errors[' '] << errormessage  
-      begin
-        errormessage = responseBody[/ERROR.*$/]
-        errormessage =  errormessage[7..-1]  
-      rescue
-        begin
-          errormessage = "Import errors: " + responseBody[/OSV.*$/]
-        rescue
-          errormessage responseBody[0,200]
-        end
-      end
-      
-        
-#      begin
-#        abort errormessage
-#      rescue
-#        begin
-#          abort responseBody[/OSV.*$/]
-#        rescue
-#          abort responseBody
-#        end
-#      end
-      #abort "test"
-      errors[:name] << errormessage
-      errors[' '] << errormessage
-        # for debugging:
-        p responseBody[0,200]
-      #abort errormessage
-    end
-     
+    # else return false:
+    return false
   end
-    
+  
+  def provisioned?
+    if /provisioning successful/.match(status)
+      true
+    else
+      false
+    end
+  end
+  
   def provision(inputBody, async=true)
 
     @customer = Customer.find(id)
