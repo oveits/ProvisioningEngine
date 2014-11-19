@@ -386,3 +386,19 @@ table{
 .CSSTableGenerator tr:first-child th:last-child{
 	border-width:0px 0px 1px 1px;
 }
+
+/* OV added: */
+ 
+//.alert:not(:empty) .error:not(:empty), .notice:not(:empty), .success:not(:empty) { padding:.25em 0; margin:0 0 2px 0; border:1px solid #ddd; font-size:1.1em; text-align:left;} 
+
+
+.error { background:#FBE3E4;color:#8a1f11;border-color:#FBC2C4; }
+.notice { background:#FFF6BF;color:#514721;border-color:#FFD324; }
+.success { background:#DDFCD5;color:#000;border-color:#44A815; }
+.alert { background:#FBE3E4;color:#8a1f11;border-color:#FBC2C4; }
+
+
+.error a {color:#8a1f11;}
+.notice a {color:#514721;}
+.success a {color:#264409;}
+.alert a {color:#8a1f11;}

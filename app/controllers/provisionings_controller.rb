@@ -5,7 +5,8 @@ class ProvisioningsController < ApplicationController
     @provisioning = Provisioning.find(params[:id])
     @provisioning.destroydelayedjob
     flash[:notice] = "Provisioning [id: #{params[:id]}] stopped."
-    redirect_to provisionings_url
+    #redirect_to provisionings_url
+    redirect_to :back
   end
   
   def deliver
@@ -13,31 +14,60 @@ class ProvisioningsController < ApplicationController
     #@provisioning.createdelayedjob
     @provisioning.deliverasynchronously
     flash[:notice] = "Provisioning in progress."
-    redirect_to provisionings_url
+    #redirect_to provisionings_url
+    redirect_to :back
   end
 
   # GET /provisionings
   # GET /provisionings.json
-  def index   
-    if(params[:user_id])
-      @user = User.find(params[:user_id])
-      @provisionings = Provisioning.where(user: params[:user_id])
-    elsif(params[:site_id])
-      @site = Site.find(params[:site_id])
-      @provisionings = Provisioning.where(site: params[:site_id])
-    elsif(params[:customer_id])
-      @customer = Customer.find(params[:customer_id])
-      @provisionings = Provisioning.where(customer: params[:customer_id])
-    else
-      @provisionings = Provisioning.all
-    end
+  def index
+    @active = params[:active]
+    # can be :true, :any
     
+#abort "provisionings index test"
+
+    #TODO: today,this index will only display customer provisionings, if called from a customer context
+    # however, we also want to see all provisioning of child objects, e.g. the sites of this customer
+    # see TODO below
+    
+    if @provisionings.nil?   
+      if(params[:user_id])
+        @user = User.find(params[:user_id])
+        @provisionings = Provisioning.where(user: params[:user_id])
+      elsif(params[:site_id])
+        @site = Site.find(params[:site_id])
+        @provisionings = Provisioning.where(site: params[:site_id])
+      elsif(params[:customer_id])
+        @customer = Customer.find(params[:customer_id])
+        @provisionings = Provisioning.where(customer: params[:customer_id]) 
+        #TODO: search for all provisionings, where customer: this customer(done), or site: one of the sites of this customer (open) or user: one of the users of the sites of this customer (open)
+      else
+        @provisionings = Provisioning.all
+      end
+    end
+
+#abort @provisionings.inspect    
     #abort @provisionings.count.to_s + "params[:customer_id] = " + params[:customer_id].to_s
     
+    # debugging:
     Provisioning.all.each do |provisioning|
       p '##############################################'
       p provisioning.customer.to_s
     end
+    
+    # show only active provisioning jobs:
+    if @active
+      @activeProvisionings= []
+      @provisionings.each do |provisioning|
+        @activeProvisionings << provisioning if provisioning.activeJob?
+      end
+      
+      #abort @activeProvisionings.inspect
+      @provisionings =  @activeProvisionings
+    end 
+    
+    #abort @provisionings.inspect
+            
   end
 
   # GET /provisionings/1
@@ -137,6 +167,6 @@ class ProvisioningsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def provisioning_params
-      params.require(:provisioning).permit(:action, :site, :customer)
+      params.require(:provisioning).permit(:action, :site, :customer, :active)
     end
 end

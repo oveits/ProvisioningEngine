@@ -192,20 +192,20 @@ describe "Customers" do
         FactoryGirl.create(:customer).should be_valid
       end
 
-      it "should add a customer to the database (FactoryGirlTest; not yet functional)" do
+      it "should add a customer to the database (FactoryGirlTest)" do
         FactoryGirl.create(:target)
         delta = Customer.count
         	p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
         #FactoryGirl.attributes_for(:customer, name: "dhgkshk")
-	FactoryGirl.create(:customer)
-	customer = Customer.find(1)
-        	p customer.name + "<<<<<<<<<<<<<<<< customer.name"
-	delta = Customer.count - delta
-        	p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta"
-	expect(delta).to eq(1)
-        #expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
-        #expect(FactoryGirl.build(:customer)).to change(Customer, :count).by(1)
-		p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
+      	FactoryGirl.create(:customer)
+      	customer = Customer.find(1)
+              	p customer.name + "<<<<<<<<<<<<<<<< customer.name"
+      	delta = Customer.count - delta
+              	p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta"
+      	expect(delta).to eq(1)
+              #expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
+              #expect(FactoryGirl.build(:customer)).to change(Customer, :count).by(1)
+      	p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
       end
       
       it "should create a customer (1st 'Save' button)" do

@@ -1,6 +1,7 @@
 
 <div class="view">
 	<h2>
+	<% if @active %> Active <% end %>	
 		Provisioning Tasks
 	<% if !@site.nil? %>
 		of Site <%= @site.name %>
@@ -24,6 +25,8 @@
 
 <div class="view">
 <p id="notice"><%= notice %></p>
+<p id="error"><%= error %></p>
+<p id="success"><%= success %></p>
 </div>
 
 <div class="index" >

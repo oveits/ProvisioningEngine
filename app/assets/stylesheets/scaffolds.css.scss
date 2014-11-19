@@ -36,8 +36,13 @@ div {
 }
 
 #notice {
-  color: green;
+  //OV: changed from green to black
+  color: black;
 }
+
+// OV added:
+#error {color: red;}
+#success {color: green;}
 
 .field_with_errors {
   padding: 2px;

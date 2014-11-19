@@ -6,4 +6,6 @@ class ApplicationController < ActionController::Base
   def root
     redirect_to customers_path
   end
+  
+  add_flash_types :error, :success
 end
