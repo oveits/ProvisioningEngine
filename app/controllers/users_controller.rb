@@ -40,7 +40,7 @@ class UsersController < ApplicationController
 
   # POST /users
   # POST /users.json
-  def create
+  def createOld
     @user = User.new(user_params)
     
     ro = 'readonly'; rw = 'readwrite'
@@ -83,6 +83,23 @@ class UsersController < ApplicationController
      else
         format.html { render :new }
         format.json { render json: @user.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+  
+  def create 
+    @object = User.new(user_params)
+    @className = @object.class.to_s
+    
+    respond_to do |format|         
+      if @object.save
+        @object.update_attributes(:status => 'waiting for provisioning')
+        @object.provision(:create)
+        format.html { redirect_to @object, notice: "#{@className} is being created." }
+        format.json { render :show, status: :created, location: @object } 
+      else
+        format.html { render :new  }                   
+        format.json { render json: @object.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -131,7 +148,7 @@ class UsersController < ApplicationController
     end
   end
   
-  def destroy
+  def destroyOld
     @user = User.find(params[:id])
     @site = @user.site
     @customer = @site.customer
@@ -149,6 +166,35 @@ class UsersController < ApplicationController
         format.json { head :no_content }
       end
     end        
+  end
+  
+  def destroy
+    @object = @user
+    @method = "Delete"
+    @className = @object.class.to_s
+    @classname = @className.downcase
+    async = true
+      
+    if @object.activeJob?
+      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running: see below."
+      redirectPath = user_provisionings_path(@object, active: true )
+    elsif @object.provisioned?
+      flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
+      redirectPath = :back
+      
+      @object.update_attributes(:status => 'waiting for deletion') unless @object.activeJob?
+      @object.provision(:destroy)
+    else
+      flash[:success] = "#{@className} #{@object.name} deleted."
+      redirectPath = users_url
+      
+      @object.destroy!
+    end 
+    
+    respond_to do |format|
+      format.html { redirect_to redirectPath }
+      format.json { head :no_content }
+    end  
   end
 
 

@@ -29,6 +29,15 @@ class Provisioning < ActiveRecord::Base
 #  def deliverasynchronously(uriString="http://localhost/CloudWebPortal", httpreadtimeout=4*3600, httpopentimeout=6)
 #    deliver(uriString, httpreadtimeout, httpopentimeout)
 #  end
+  def activeJob?
+    activeJob = false   
+    begin
+      activeJob = Delayed::Job.find(self.delayedjob_id)
+      return true
+    rescue
+      return false
+    end
+  end
   
   def deliverasynchronously(uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     begin # provisioning job still running
@@ -95,7 +104,7 @@ class Provisioning < ActiveRecord::Base
           resulttext = "connection timout for #{uriString} at " + Time.now.to_s
           returnvalue = 8
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed (unknown error); stopped') unless targetobject.nil?
+            targetobject.update_attributes(:status => thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil?
             break unless targetobject.nil?
           end
           abort 'provisioning.deliver: ' + resulttext
@@ -211,7 +220,7 @@ p targetobject.inspect
     
     rescue Exception => e
         update_attributes(:status => e.message)
-        abort e.message if returnvalue == 3 || returnvalue == 7 
+        abort e.message if returnvalue == 3 || returnvalue == 7 || returnvalue == 8
     end
 
   end # def deliver

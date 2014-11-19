@@ -47,7 +47,7 @@ class SitesController < ApplicationController
 
   # POST /sites
   # POST /sites.json
-  def create
+  def createOld
     @site = Site.new(site_params)
     #@customer = Customer.find(params[:customer_id])
       
@@ -58,12 +58,13 @@ class SitesController < ApplicationController
         format.html { redirect_to @site.customer, notice: 'Site is being created.' }
         format.json { render :show, status: :created, location: @site }
 
-        @customer = @site.customer
-        inputBody = "action=Add Site, customerName=#{@customer.name}, SiteName=#{site_params[:name]}, SC=#{site_params[:sitecode]}"          
-        inputBody += ", GatewayIP=#{site_params[:gatewayIP]}, CC=#{site_params[:countrycode]}, AC=#{site_params[:areacode]}, LOC=#{site_params[:localofficecode]}, XLen=#{site_params[:extensionlength]}"       
-        inputBody += ", EndpointDefaultHomeDnXtension=#{site_params[:mainextension]}"
-
-        @site.provision(inputBody)
+#        @customer = @site.customer
+#        inputBody = "action=Add Site, customerName=#{@customer.name}, SiteName=#{site_params[:name]}, SC=#{site_params[:sitecode]}"          
+#        inputBody += ", GatewayIP=#{site_params[:gatewayIP]}, CC=#{site_params[:countrycode]}, AC=#{site_params[:areacode]}, LOC=#{site_params[:localofficecode]}, XLen=#{site_params[:extensionlength]}"       
+#        inputBody += ", EndpointDefaultHomeDnXtension=#{site_params[:mainextension]}"
+#
+#        @site.provision(inputBody)
+        @site.provision(:create)
         
       else
         format.html { 
@@ -71,6 +72,23 @@ class SitesController < ApplicationController
           @myparams = {"id"=>'', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'', "updated_at"=>'', "status"=>'', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
           render :new }
         format.json { render json: @site.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+  
+  def create 
+    @object = Site.new(site_params)
+    @className = @object.class.to_s
+
+    respond_to do |format|         
+      if @object.save
+        @object.update_attributes(:status => 'waiting for provisioning')
+        @object.provision(:create)
+        format.html { redirect_to @object, notice: "#{@className} is being created." }
+        format.json { render :show, status: :created, location: @object } 
+      else
+        format.html { render :new  }                   
+        format.json { render json: @object.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -131,89 +149,46 @@ class SitesController < ApplicationController
 
   # DELETE /sites/1
   # DELETE /sites/1.json  
-  def destroyOld   
-    #@site.destroy 
-    @provisioning = Provisioning.new(action: "action=Delete Site, customerName=#{@site.customer.name}, SiteName=#{@site.name}", site: @site)
-    @provisioning.save 
-
-
-    # we can only destroy, if no active delayed job for this object is present:
-    @provisionings = Provisioning.where(site: @site)
-    job = nil
-    @provisionings.each do |provisioning|
-      unless provisioning.delayedjob_id.nil?
-        begin
-          job = Delayed::Job.find(provisioning.delayedjob_id)
-          break  # will break the do loop only, if a job was found
-        rescue
-          # keep: job = nil
-        end
-      end
-    end
-    # now job != nil, if an active job has been found for this site
-    
-    @customer = @site.customer
-          
-    if job.nil? 
-      # no active job exists, so a destroy job can be created 
-
-      flash[:notice] = "Site #{@site.name} is being destroyed (background process)."
-      @site.update_attributes(:status => 'deletion in progress')
-         
-      @provisioning.createdelayedjob
-      
-      respond_to do |format|
-        format.html { redirect_to @customer, notice: "Site #{@site.name} is being destroyed (background process)." }
-        format.json { head :no_content }
-      end
-    else
-      flash[:notice] = "Site #{@site.name} cannot be deleted, since there are active provisioning tasks running"
-      
-      @provisioning.destroy
-      
-      respond_to do |format|
-        format.html { redirect_to site_provisionings_path(@site), notice: "Site #{@site.name} cannot be deleted, since there are active provisioning tasks running." }
-        format.json { head :no_content }
-      end
-    end     
-  end
   
   def destroy
-    #@site.destroy
-    #@site = Site.find(params[:id])          
-    @customer = @site.customer
-    inputBody = "action=Delete Site, customerName=#{@customer.name}, SiteName=#{@site.name}"
+    @object = @site
+    @method = "Delete"
+    @className = @object.class.to_s
+    @classname = @className.downcase
+    async = true
     
-    # we should only destroy, if no active delayed job for this object is present:
-    @provisionings = Provisioning.where(site: @site)
-    activeProvisioningJob = nil
-    @provisionings.each do |provisioning|
-      unless provisioning.delayedjob_id.nil?
-        begin
-          activeProvisioningJob = Delayed::Job.find(provisioning.delayedjob_id)
-          break  # will break the do loop only, if a job was found
-        rescue
-          # keep: activeProvisioningJob = nil
-        end
-      end
-    end
-    # now activeProvisioningJob != nil, if an active job has been found for this site
-     
-    if activeProvisioningJob.nil? and @site.provision(inputBody)
-      # does not seem to work:
-      #@site.status = 'waiting for deletion'
-      # seems to work:
-      @site.update_attributes(:status => 'waiting for deletion')
-      respond_to do |format|
-        format.html { redirect_to @customer, notice: "Site #{@site.name} is being destroyed (background process)." }
-        format.json { head :no_content }
-      end
+#flash[:notice] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running."
+#redirect_to customers_url, :flash => { :success => "oops!" }
+#format.html { redirect_to customers_url }
+#abort flash[:error]
+
+#if false    
+    if @object.activeJob?
+      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running: see below."
+      #redirectPath = customer_provisionings_path(@object, true)
+      redirectPath = site_provisionings_path(@object, active: true )
+      #does not work: redirectPath = provisioningobject_provisionings_path(@object)
+    elsif @object.provisioned?
+      flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
+      redirectPath = :back
+      
+      @object.update_attributes(:status => 'waiting for deletion') unless @object.activeJob?
+      #provisionTaskExistsAlready =  @object.provisionNew(provisioningAction, async)
+      #provisionTaskExistsAlready =  @object.de_provision(async)
+      @object.provision(:destroy)
     else
-      respond_to do |format|
-        format.html { redirect_to site_provisionings_path(@site), notice: "Site #{@site.name} cannot be deleted, since there are active provisioning tasks running." }
-        format.json { head :no_content }
-      end
-    end    
+      flash[:success] = "#{@className} #{@object.name} deleted."
+      redirectPath = sites_url
+      
+      @object.destroy!
+    end 
+    
+    respond_to do |format|
+      format.html { redirect_to redirectPath }
+      format.json { head :no_content }
+    end
+
+#end   
   end
 
   private

@@ -24,7 +24,7 @@ class Validate_MainExtension < ActiveModel::Validator
 end
 
 
-class Site < ActiveRecord::Base
+class Site < Provisioningobject #< ActiveRecord::Base
   #
   # INIT
   #
@@ -34,50 +34,113 @@ class Site < ActiveRecord::Base
 #      Regexp.new(source + r.source)
 #    end
 #  end
+
+  def target
+    Target.find(customer.target_id) unless customer.nil? || customer.target_id.nil?
+  end
   
-  def provision(inputBody, async=true)
-
-    @site = Site.find(id)
-    @customer = @site.customer
-    # e.g. inputBody = "action = Add Customer, customerName=#{name}" 
-    
-    unless @customer.nil? || @customer.target_id.nil?
-      @target = Target.find(@customer.target_id)
-      actionAppend = @target.configuration.gsub(/\n/, ', ')
-      actionAppend = actionAppend.gsub(/\r/, '')
-    end
-    
-    # recursive deletion of users:
-    @users = User.where(site: id)
-    @users.each do |user|
-      inputBodyUser = "action=Delete User, X=#{user.extension}, customerName=#{@customer.name}, SiteName=#{@site.name}"
-      inputBodyUser = inputBodyUser + ', ' + actionAppend unless actionAppend.nil?
-      user.provision(inputBodyUser, async)
-    end
-    
-    # deletion of site:
-    inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
-
-    @provisioning = Provisioning.new(action: inputBody, site: @site, customer: @customer)
-    
-    if @provisioning.save
-       #@provisioning.createdelayedjob
-       #@provisioning.deliver
-       if async == true
-#p "=============== models/sites.rb:provision: performing @provisioning.deliverasynchronously ============"
-         @provisioning.deliverasynchronously
-       else
-#p "=============== models/sites.rb:provision: performing @provisioning.deliver ============"
-         @provisioning.deliver
-       end
-       # success
-       return 0
+  def children
+    children = User.where(site: id)
+    if children.count > 0
+      children
     else
-      @provisioning.errors.full_messages.each do |message|
-        abort 'provisioning error: ' + message.to_s
-      end
-    end 
-  end # def
+      nil
+    end
+  end
+  
+  def provisioningAction(method)
+   
+    if name.nil?
+      abort "cannot de-provision a site without name"
+    end
+    
+    if customer.nil?
+      abort "cannot de-provision a site without customer"
+    end
+    
+    if customer.name.nil?
+      abort "cannot de-provision a site with a customer with no name"
+    end
+    
+    case method
+      when :create
+        #"action=Add Site, siteName=#{name}, #customerName=#{customer.name}"
+        inputBody = "action=Add Site, customerName=#{customer.name}, SiteName=#{name}, SC=#{sitecode}"          
+        inputBody += ", GatewayIP=#{gatewayIP}, CC=#{countrycode}, AC=#{areacode}, LOC=#{localofficecode}, XLen=#{extensionlength}"       
+        inputBody += ", EndpointDefaultHomeDnXtension=#{mainextension}"
+        return inputBody
+      when :destroy
+        "action=Delete Site, siteName=#{name}, customerName=#{customer.name}"
+      else
+        abort "Unsupported provisioning method"
+    end
+  end
+
+# TODO: remove after successful test
+#  def de_provision(async=true)
+#    @object = self
+#    @method = "Delete"
+#    @className = @object.class.to_s
+#    @classname = @className.downcase
+#    @parentClassName = "Customer"
+#    @parentclassname = @parentClassName.downcase
+#    
+##abort self.inspect
+##abort @parentclassname
+#    
+#    unless @object.customer.nil?
+#      provisioningAction = "action=#{@method} #{@className}, #{@classname}Name=#{@object.name}, #{@parentclassname}Name=#{@object.customer.name}" 
+##abort provisioningAction
+#      provisionNew(provisioningAction, async)
+#    else
+#      abort "cannot de-provision a site without specified customer"
+#    end
+#  end
+
+# TODO: remove after successful test  
+#  def provisionOld(inputBody, async=true)
+#
+#    @site = Site.find(id)
+#    @customer = @site.customer
+#    # e.g. inputBody = "action = Add Customer, customerName=#{name}" 
+#    
+#    unless @customer.nil? || @customer.target_id.nil?
+#      @target = Target.find(@customer.target_id)
+#      actionAppend = @target.configuration.gsub(/\n/, ', ')
+#      actionAppend = actionAppend.gsub(/\r/, '')
+#    end
+#    
+#    # recursive deletion of users:
+#    @users = User.where(site: id)
+#    @users.each do |user|
+#      inputBodyUser = "action=Delete User, X=#{user.extension}, customerName=#{@customer.name}, SiteName=#{@site.name}"
+#      inputBodyUser = inputBodyUser + ', ' + actionAppend unless actionAppend.nil?
+#      user.provision(inputBodyUser, async)
+#    end
+#    
+#    # deletion of site:
+#    inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
+#
+#    @provisioning = Provisioning.new(action: inputBody, site: @site, customer: @customer)
+#    
+#    if @provisioning.save
+#       #@provisioning.createdelayedjob
+#       #@provisioning.deliver
+#       if async == true
+##p "=============== models/sites.rb:provision: performing @provisioning.deliverasynchronously ============"
+#         @provisioning.deliverasynchronously
+#       else
+##p "=============== models/sites.rb:provision: performing @provisioning.deliver ============"
+#         @provisioning.deliver
+#       end
+#       # success
+#       return 0
+#    else
+#      @provisioning.errors.full_messages.each do |message|
+#        abort 'provisioning error: ' + message.to_s
+#      end
+#    end 
+#  end # def
   
   validIPAddressRegex = /\A(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\Z/
   validRFC952HostnameRegex = /\A(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])\Z/
