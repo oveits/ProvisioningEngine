@@ -5,50 +5,6 @@ require 'spec_helper'
 #  Target.create(name: 'TestTarget', configuration: 'a=b')
 #end
 
-def myObject
-  "Customer"
-end
-
-def myObjects
-  # Customers
-  "#{myObject.pluralize}"
-end
-
-def myobject
-  # customer
-  myObject.downcase
-end
-
-def myobjects
-  # customers
-  myObjects.downcase
-end
-
-def provisioningobject_path(thisobject)
-  #customer_path
-  if thisobject.class.to_s == "Integer"
-    send("#{myobject}_path".to_sym, thisobject)
-  elsif !thisobject.id.nil?
-    send("#{myobject}_path".to_sym, thisobject.id)
-  else
-    abort "provisioningobject_path: called with argument that has no id" + thisobject.inspect
-  end
-end
-
-def myProvisioningobject
-  Object.const_get(myObject)
-end
-
-def provisioningobjects_path
-  #customers_path
-  send("#{myobjects}_path".to_sym)
-end
-
-def new_provisioningobject_path
-  #new_customer_path
-  send("new_#{myobject}_path".to_sym)
-end
-
 
 def createCustomer(customerName = "ExampleCustomer" )      
   # add and provision customer "ExampleCustomer with target = TestTarget"
@@ -67,7 +23,7 @@ def createCustomerDB(customerName = "nonProvisionedCust" )
         createCustomer(customerName)
 
         # delete all delayed jobs of this customer
-        @customer = myProvisioningobject.where(name: customerName )
+        @customer = Customer.where(name: customerName )
         @provisionings = Provisioning.where(customer: @customer)
         @provisionings.each do |provisioning|
           unless provisioning.delayedjob_id.nil?
@@ -83,13 +39,13 @@ end
 
 def createCustomerDB_not_working
   	FactoryGirl.create(:target)
-        delta = myProvisioningobject.count
-p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before FactoryGirl.create"
+        delta = Customer.count
+p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before FactoryGirl.create"
         FactoryGirl.create(:customer)
-p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after FactoryGirl.create"
-	customer = myProvisioningobject.find(1)
+p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after FactoryGirl.create"
+	customer = Customer.find(1)
 p customer.name + "<<<<<<<<<<<<<<<< customer.name"
-        delta = myProvisioningobject.count - delta
+        delta = Customer.count - delta
 p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta(Customer.count)"
 
 end
@@ -100,7 +56,7 @@ def createCustomerDB_manual( arguments = {} )
 
         target = Target.new(name: "TestTarget", configuration: "a=b")
 	target.save
-	customer = myProvisioningobject.new(name: "nonProvisionedCust", target_id: target.id)
+	customer = Customer.new(name: "nonProvisionedCust", target_id: target.id)
         customer.save
 end
 
@@ -108,7 +64,7 @@ def fillFormForNewCustomer(customerName = "ExampleCustomer" )
   if Target.where(name: 'TestTarget').count == 0
     Target.create(name: 'TestTarget', configuration: 'a=b')
   end
-  visit new_provisioningobject_path # for refreshing after creating the target
+  visit new_customer_path # for refreshing after creating the target
   fill_in "Name",         with: customerName        
   select "TestTarget", :from => "customer[target_id]"
   
@@ -126,100 +82,87 @@ def destroyCustomer(customerName = "ExampleCustomer" )
   
   # de-provision the customer, if it exists on the target system
   # else delete the customer from the database
-  customers = myProvisioningobject.where(name: customerName)
+  customers = Customer.where(name: customerName)
   #p @customers[0].inspect
   unless customers[0].nil?
     Delayed::Worker.delay_jobs = false
-    visit provisioningobject_path(customers[0])
+    visit customer_path(customers[0])
     click_link "Destroy", match: :first
     Delayed::Worker.delay_jobs = true
   end
   
   # delete the customer from the database if it still exists
-  customers = myProvisioningobject.where(name: customerName)
+  customers = Customer.where(name: customerName)
   unless customers[0].nil?
     Delayed::Worker.delay_jobs = false
-    visit provisioningobject_path(customers[0])
+    visit customer_path(customers[0])
     click_link "Destroy", match: :first
     Delayed::Worker.delay_jobs = true
   end
 end
 
-# Customers
-describe "#{myObjects}" do
+
+describe "Customers" do
   #before { debugger }
   describe "index" do
-    #before { visit customers_path }
-    before { visit provisioningobjects_path } 
+    before { visit customers_path }   
     subject { page }
     
-    # "should have the header 'Customers'"
-    it "should have the header '#{myObjects}'" do
-      expect(page).to have_selector('h2', text: "#{myObjects}")
+    it "should have the header 'Customers'" do
+      expect(page).to have_selector('h2', text: 'Customers')
     end
     
-    #  "should have link to 'New Customer'"
-    it "should have link to 'New #{myObject}'" do     
-      #expect(page).to have_link( 'New Customer', href: new_customer_path )
-      expect(page).to have_link( "New #{myObject}", href: new_provisioningobject_path )
+    it "should have link to 'New Customer'" do     
+      expect(page).to have_link( 'New Customer', href: new_customer_path )
     end
     
-    #   "link to 'New Customer' leads to correct page"
-    its "link to 'New #{myObject}' leads to correct page" do
-      click_link "New #{myObject}"
-      expect(page).to have_selector('h2', text: "New #{myObject}")    
+    its "link to 'New Customer' leads to correct page" do
+      click_link "New Customer"
+      expect(page).to have_selector('h2', text: 'New Customer')    
     end
     
   end # of describe "index" do
   
-  describe "New #{myObject}" do
+  describe "New Customer" do
     before { 
       # TODO: de-provision and delete customer, if it exists already
       destroyCustomer
-      visit new_provisioningobject_path }
+      visit new_customer_path }
     
-    it "should have the header 'New #{myObject}'" do
-      expect(page).to have_selector('h2', text: "New #{myObject}")
+    it "should have the header 'New Customer'" do
+      expect(page).to have_selector('h2', text: 'New Customer')
     end
     
-    #its "Cancel button in the left menue leads to the Customers index page" do
-    its "Cancel button in the left menue leads to the #{myObjects} index page" do
+    its "Cancel button in the left menue leads to the Customers index page" do
       click_link("Cancel", match: :first)
-      expect(page).to have_selector('h2', text: "#{myObjects}")    
+      expect(page).to have_selector('h2', text: 'Customers')    
     end
     
-    #its "Cancel button in the web form leads to the Customers index page" do
-    its "Cancel button in the web form leads to the #{myObjects} index page" do
+    its "Cancel button in the web form leads to the Customers index page" do
       #find html tag with class=index. Within this tag, find and click link 'Cancel' 
       first('.index').click_link('Cancel')
-      expect(page).to have_selector('h2', text: "#{myObjects}")    
+      expect(page).to have_selector('h2', text: 'Customers')    
     end
   end # of describe "New Customer" do
     
-  #describe "Create Customer" do
-  describe "Create #{myObject}" do
-    before { visit new_provisioningobject_path }
+  describe "Create Customer" do
+    before { visit new_customer_path }
     let(:submit) { "Save" }
 
     describe "with invalid information" do
-      #it "should not create a customer" do
-      it "should not create a #{myobject}" do
-        #expect { click_button submit, match: :first }.not_to change(Customer, :count)
-        #expect { click_button submit, match: :first }.not_to change(Object.const_get("Customer"), :count)
-        expect { click_button submit, match: :first }.not_to change(myProvisioningobject, :count)
+      it "should not create a customer" do
+        expect { click_button submit, match: :first }.not_to change(Customer, :count)
       end
       
-      #it "should not create a customer on second 'Save' button" do
-      it "should not create a #{myobject} on second 'Save' button" do
-        expect { first('.index').click_button submit, match: :first }.not_to change(myProvisioningobject, :count)
+      it "should not create a customer on second 'Save' button" do
+        expect { first('.index').click_button submit, match: :first }.not_to change(Customer, :count)
       end
       
       describe "with duplicate name" do
-        #it "should not create a customer" do
-        it "should not create a #{myobject}" do
+        it "should not create a customer" do
           #createTarget
           createCustomer
-          expect { createCustomer }.not_to change(myProvisioningobject, :count)       
+          expect { createCustomer }.not_to change(Customer, :count)       
         end
       end
       
@@ -251,26 +194,26 @@ describe "#{myObjects}" do
 
       it "should add a customer to the database (FactoryGirlTest)" do
         FactoryGirl.create(:target)
-        delta = myProvisioningobject.count
-        	p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
+        delta = Customer.count
+        	p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
         #FactoryGirl.attributes_for(:customer, name: "dhgkshk")
       	FactoryGirl.create(:customer)
-      	customer = myProvisioningobject.find(1)
+      	customer = Customer.find(1)
               	p customer.name + "<<<<<<<<<<<<<<<< customer.name"
-      	delta = myProvisioningobject.count - delta
+      	delta = Customer.count - delta
               	p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta"
       	expect(delta).to eq(1)
               #expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
               #expect(FactoryGirl.build(:customer)).to change(Customer, :count).by(1)
-      	p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
+      	p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
       end
       
       it "should create a customer (1st 'Save' button)" do
-        expect { click_button submit, match: :first }.to change(myProvisioningobject, :count).by(1)       
+        expect { click_button submit, match: :first }.to change(Customer, :count).by(1)       
       end
       
       it "should create a customer (2nd 'Save' button)" do
-        expect { first('.index').click_button submit, match: :first }.to change(myProvisioningobject, :count).by(1)
+        expect { first('.index').click_button submit, match: :first }.to change(Customer, :count).by(1)
       end
       
       it "should create a customer with status 'provisioning success'" do
@@ -286,8 +229,8 @@ describe "#{myObjects}" do
         expect(page.html.gsub(/[\n\t]/, '')).to match(/provisioning success/) #have_selector('h2', text: 'Customers')
         
         # /customers/<id> should show provisioning success
-        customers = myProvisioningobject.where(name: "ExampleCustomer" )
-        visit provisioningobject_path(customers[0])
+        customers = Customer.where(name: "ExampleCustomer" )
+        visit customer_path(customers[0])
         # for debugging:
         #p page.html.gsub(/[\n\t]/, '')
         page.html.gsub(/[\n\t]/, '').should match(/provisioning success/)
@@ -303,7 +246,6 @@ describe "#{myObjects}" do
         expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
       end
       
-      #it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomer'" do
       it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomer'" do
         click_button submit, match: :first
         createdProvisioningTask = Provisioning.find(Provisioning.last)
@@ -336,8 +278,8 @@ describe "#{myObjects}" do
         createCustomer
         Delayed::Worker.delay_jobs = true
         
-        customers = myProvisioningobject.where(name: "ExampleCustomer" )            
-        visit provisioningobject_path(customers[0])
+        customers = Customer.where(name: "ExampleCustomer" )            
+        visit customer_path(customers[0])
         #p page.html.gsub(/[\n\t]/, '')
        
       }
@@ -356,9 +298,9 @@ describe "#{myObjects}" do
         expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h2', text: 'Customers')
         
         # /customers/<id> should show provisioning success
-        customers = myProvisioningobject.where(name: "ExampleCustomer" )
+        customers = Customer.where(name: "ExampleCustomer" )
         p customers
-        visit provisioningobject_path(customers[0])
+        visit customer_path(customers[0])
         # for debugging:
         #p page.html.gsub(/[\n\t]/, '')
         page.html.gsub(/[\n\t]/, '').should match(/deletion success/)      
@@ -368,10 +310,9 @@ describe "#{myObjects}" do
     describe "Delete Customer from database using manual database seed" do
       before {
         createCustomerDB_manual(name: "nonProvisionedCust")
-        customers = myProvisioningobject.where(name: "nonProvisionedCust" )
+        customers = Customer.where(name: "nonProvisionedCust" )
                 #p customers.inspect
-        #visit customer_path(customers[0])
-        visit provisioningobject_path(customers[0])
+        visit customer_path(customers[0])
                 #p page.html.gsub(/[\n\t]/, '')
       }
 
@@ -384,7 +325,7 @@ describe "#{myObjects}" do
 	
 	expect(page).to have_link("Delete Customer")
 
-        delta = myProvisioningobject.count
+        delta = Customer.count
 		#p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before click"
         click_link "Delete Customer"
         	# replacing by following line causes error "Unable to find link :submit" (why?)
@@ -392,7 +333,7 @@ describe "#{myObjects}" do
 			#p page.html.gsub(/[\n\t]/, '')
 		# following line causes error: 
         	#expect(click_link "Delete Customer").to change(Customer, :count).by(-1)
-        delta = myProvisioningobject.count - delta
+        delta = Customer.count - delta
         expect(delta).to eq(-1)
 		#p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after click"
       end
@@ -435,8 +376,8 @@ describe "#{myObjects}" do
 	
 	createCustomerDB( "nonProvisionedCust" )
 	#createCustomerDB_not_working
-        customers = myProvisioningobject.where(name: "nonProvisionedCust" )
-        visit provisioningobject_path(customers[0])
+        customers = Customer.where(name: "nonProvisionedCust" )
+        visit customer_path(customers[0])
 	
 	# debug:
         p page.html.gsub(/[\n\t]/, '')
