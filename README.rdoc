@@ -1,51 +1,59 @@
 == README
+This README documents whatever steps are necessary to get the Ruby based Provisioning Portal up and running.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+=== Installation
+* prerequisites:
+  * rails v4 is installed
+  * ruby v2 is installed
+  * Camel based ProvisioningEngine is up and running and reachable (yet private; not part of this package; if not available, the Web Portal itself will work Okay, but all provisionings will fail)
+* download:
+  * git clone https://github.com/oveits/ProvisioningEngine ProvisioningPortal
+* cd ProvisioningPortal
+* rake db:migrate
+* cd config
+* cp application.yml.example application.yml
+* edit application.yml
+  * adapt PROVISIONINGENGINE_CAMEL_URL
+  * WEBPORTAL_PROVISIONINGBUTTON_VISIBLE and WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE should be kept to "false" (experimental)
+  
 
-Things you may want to cover:
+===  Web server
+* start web server on Windows on port 80:
+  * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
+  * rails s -p 80
+  * rake jobs:work # for starting the background processes (based on the "delayed_job_active_record" gem)
+* start web server on Linux on port 80:
+  * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
+  * ./start # will start both, the web server and the delayed_jobs in the background and will append the logs to /var/log/WebPortal.log
+* open a browser and connect to URL = http://localhost/ 
+  expected result: redirection to http://localhost/customers, showing a list of configured customers (expected to be empty at this point).
 
-* Ruby version
+=== Test Execution
+* rake db:migrate RAILS_ENV=test
+* bundle exec spork # for speeding up rspec test initialization
+* start single test (--drb needed for spork speedup), e.g.: 
+  * bundle exec rspec --drb spec/requests/customers_spec.rb -e "with valid information should create a provisioning task with action"
+* start all tests:
+  * bundle exec rspec --drb spec/requests/customers_spec.rb
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
-
-=== Commands
-
-- start web server:
- - rails s -p 3002 
- - start background processes: #rake jobs:work
-
-* start test execution:
-** speed up tests: #bundle exec spork
-** single test, e.g.: #rspec spec/requests/customers_spec.rb -e "with valid information should create a provisioning task with action"
-** all tests: #rspec spec/requests/customers_spec.rb
-
-* Commit & Production
-** if behind proxy:
-*** SET HTTP_PROXY=http://172.28.12.5:8080
-** cd /d F:\veits\RubyOnRails\ProvisioningPortalv4
-** git add .
-** git status
-** git commit -a -m "minor change: / is now redirected to /customers"
-** git push
-** git push heroku
-** heroku rake jobs:work
-** (other CMD window) heroku open
+=== Commit & Production
+* if behind proxy (in this case: 172.28.12.5:8080):
+  * SET HTTP_PROXY=http://172.28.12.5:8080
+* cd /d F:\veits\RubyOnRails\ProvisioningPortalvx.x.x
+* git add .
+* git status
+* git commit -a -m "minor change: / is now redirected to /customers"
+* git push
+* heroku
+  * heroku create # if not done already
+  * git push heroku # or
+  * git push heroku yourbranch:master #, if you are not on the master branch
+  * heroku rake db:migrate
+* heroku rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
+* heroku open # this will open a browser with the correct link
+  
+=== Tipps
+* Pre-view this rdoc: 
+  1. rdoc README.rdoc -o ./tmp/doc
+  2. open (application root)/tmp/doc/README_rdoc.html in a browser 
+  
