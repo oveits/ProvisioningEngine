@@ -5,55 +5,87 @@ require 'spec_helper'
 #  Target.create(name: 'TestTarget', configuration: 'a=b')
 #end
 
-def myObject
-  "Customer"
+def myObject(obj="Customer")
+  #"Customer"
+  obj
 end
 
-def myObjects
+def myObjects(obj=myObject)
   # Customers
-  "#{myObject.pluralize}"
+  "#{myObject(obj).pluralize}"
 end
 
-def myobject
+def myobject(obj=myObject)
   # customer
-  myObject.downcase
+  myObject(obj).downcase
 end
 
-def myobjects
+def myobjects(obj=myObject)
   # customers
-  myObjects.downcase
+  myObjects(obj).downcase
 end
 
 def provisioningobject_path(thisobject)
   #customer_path
-  if thisobject.class.to_s == "Integer"
-    send("#{myobject}_path".to_sym, thisobject)
-  elsif !thisobject.id.nil?
-    send("#{myobject}_path".to_sym, thisobject.id)
-  else
-    abort "provisioningobject_path: called with argument that has no id" + thisobject.inspect
-  end
+  path = send("#{myobject(thisobject.class.to_s)}_path", thisobject.id)
+#  if thisobject.class.to_s == "Integer"
+#    send("#{myobject}_path".to_sym, thisobject)
+#  elsif !thisobject.id.nil?
+#    send("#{myobject}_path".to_sym, thisobject.id)
+#  else
+#    abort "provisioningobject_path: called with argument that has no id" + thisobject.inspect
+#  end
 end
 
-def myProvisioningobject
-  Object.const_get(myObject)
+def myProvisioningobject(obj)
+  Object.const_get(myObject(obj))
 end
 
-def provisioningobjects_path
+def provisioningobjects_path(obj)
   #customers_path
-  send("#{myobjects}_path".to_sym)
+  send("#{myobjects(obj)}_path".to_sym)
 end
 
-def new_provisioningobject_path
+def new_provisioningobject_path(obj)
   #new_customer_path
-  send("new_#{myobject}_path".to_sym)
+  send("new_#{myobject(obj)}_path".to_sym)
 end
 
 
-def createCustomer(customerName = "Example#{myObject}" )      
-  # add and provision customer "ExampleCustomer with target = TestTarget"
-  fillFormForNewCustomer(customerName)
+def createCustomer(name = "" )      
+  # add and provision customer "ExampleCustomer with target = TestTarget" 
+  obj = "Customer"
+  
+  fillFormForNewCustomer(name)
   click_button 'Save', match: :first 
+end
+
+def createSite(name = "Example#{myObject}" )      
+  # add and provision customer "ExampleCustomer with target = TestTarget" 
+  fillFormForNewSite(name)
+  click_button 'Save', match: :first 
+end
+
+def createCustomer(name = "Example#{myObject}" )      
+  # add and provision customer "ExampleCustomer with target = TestTarget" 
+  fillFormForNewCustomer(name)
+  click_button 'Save', match: :first 
+end
+
+def createObject(obj, name = "" )      
+  # add and provision customer "ExampleCustomer with target = TestTarget"
+  name = "Example#{obj}" if name == ""
+  case obj
+    when /Customer/
+      fillFormForNewCustomer(name)
+    when /Site/
+      fillFormForNewSite(name)
+    when /User/
+      fillFormForNewUser(name)
+  end
+    
+  click_button 'Save', match: :first 
+  #p page.html.gsub(/[\n\t]/, '').inspect
 end
 
 #def createCustomerDB(arguments = {})
@@ -104,12 +136,12 @@ def createCustomerDB_manual( arguments = {} )
         customer.save
 end
 
-def fillFormForNewCustomer(customerName = "Example#{myObject}" )
+def fillFormForNewCustomer(name = "Example#{myObject}" )
   if Target.where(name: 'TestTarget').count == 0
     Target.create(name: 'TestTarget', configuration: 'a=b')
   end
-  visit new_provisioningobject_path # for refreshing after creating the target
-  fill_in "Name",         with: customerName        
+  visit new_provisioningobject_path("Customer") # for refreshing after creating the target
+  fill_in "Name",         with: name        
   select "TestTarget", :from => "customer[target_id]"
   
   # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
@@ -117,6 +149,49 @@ def fillFormForNewCustomer(customerName = "Example#{myObject}" )
           #    <select id="customer_target_id" name="customer[target_id]">
           #    <option value="">Select a Target</option>
           #    <option value="2">TestTarget</option></select>
+end
+
+def fillFormForNewSite(name = "" )
+  name = "ExampleSite" if name == ""
+  if Customer.where(name: 'ExampleCustomer').count == 0
+    createCustomer
+    #Customer.create(name: 'ExampleCustomer', configuration: 'a=b')
+  end
+  visit new_provisioningobject_path("Site") # for refreshing after creating the target
+  fill_in "Name",         with: name        
+  select "ExampleCustomer", :from => "site[customer_id]"
+  fill_in "Sitecode",         with: "99821"
+  fill_in "Countrycode",         with: "49" 
+  fill_in "Areacode",         with: "89" 
+  fill_in "Localofficecode",         with: "7007" 
+  fill_in "Extensionlength",         with: "5" 
+  fill_in "Mainextension",         with: "10000" 
+  
+  # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
+  # Expected drop down in HTML page:
+          #    <select id="site_customer_id" name="site[customer_id]"><option value="">Select a Customer</option>
+          #    <option value="18">Cust1</option>
+          #    <option value="21">Cust2</option></select>
+end
+
+def fillFormForNewUser(name = "" )
+  name = "ExampleUser" if name == ""
+  if Site.where(name: 'ExampleSite').count == 0
+    createObject("Site", name = "ExampleSite" ) 
+  end
+  visit new_provisioningobject_path("User") # for refreshing after creating the target
+  fill_in "Name",         with: name        
+  select "ExampleSite", :from => "user[site_id]"
+  fill_in "Extension",         with: "20800"
+  fill_in "Givenname",         with: "Oliver" 
+  fill_in "Familyname",         with: "Veits" 
+  fill_in "Email",         with: "oliver.veits@company.com" 
+  
+  # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
+  # Expected drop down in HTML page:
+          #    <select id="site_customer_id" name="site[customer_id]"><option value="">Select a Customer</option>
+          #    <option value="18">Cust1</option>
+          #    <option value="21">Cust2</option></select>
 end
 
 def destroyCustomer(customerName = "Example#{myObject}" )
@@ -145,94 +220,178 @@ def destroyCustomer(customerName = "Example#{myObject}" )
   end
 end
 
-# Customers
-describe "#{myObjects}" do
-  #before { debugger }
-  describe "index" do
-    #before { visit customers_path }
-    before { visit provisioningobjects_path } 
+def destroyObjectByName(obj, name = "")
+  
+  # default name:
+  name = "Example#{obj}" if name == ""
+  # for test: create the customer, if it does not exist:
+  Delayed::Worker.delay_jobs = true
+
+  # TODO: not yet supported:
+  #createCustomer / destroyObject(obj)
+  
+  # de-provision the customer, if it exists on the target system
+  # else delete the customer from the database
+  myObjects = myProvisioningobject(obj).where(name: name)
+  #p @customers[0].inspect
+  #p myObjects.inspect
+  unless myObjects[0].nil?
+    Delayed::Worker.delay_jobs = false
+    visit provisioningobject_path(myObjects[0])
+    click_link "Destroy", match: :first
+    Delayed::Worker.delay_jobs = true
+  end
+  
+  # delete the customer from the database if it still exists
+  myObjects = myProvisioningobject(obj).where(name: name)
+  unless myObjects[0].nil?
+    Delayed::Worker.delay_jobs = false
+    visit provisioningobject_path(myObjects[0])
+    click_link "Destroy", match: :first
+    Delayed::Worker.delay_jobs = true
+  end  
+end
+
+#{ "Customer" , "Site" }.each do |obj|
+Array["Customergg", "Site"].each do |obj|
+  describe "#{obj} new" do
+    #expect(obj).to be("Customer")
+  end
+end
+  
+  
+# shared example:
+shared_examples_for Customer do
+  #describe "aaa" do
+    before { visit customers_path }
     subject { page }
     
-    # "should have the header 'Customers'"
-    it "should have the header '#{myObjects}'" do
-      expect(page).to have_selector('h2', text: "#{myObjects}")
+    it "should have the header 'Customers'" do
+      expect(page).to have_selector('h2', text: Customer.to_s + "s")
     end
+  #end
+end
+
+describe Site do
+  #describe "aaa" do
+    #before { visit sites_path }
+    #subject { page }
     
-    #  "should have link to 'New Customer'"
-    it "should have link to 'New #{myObject}'" do     
-      #expect(page).to have_link( 'New Customer', href: new_customer_path )
-      expect(page).to have_link( "New #{myObject}", href: new_provisioningobject_path )
-    end
+    it_behaves_like Customer
     
-    #   "link to 'New Customer' leads to correct page"
-    its "link to 'New #{myObject}' leads to correct page" do
-      click_link "New #{myObject}"
-      expect(page).to have_selector('h2', text: "New #{myObject}")    
-    end
+#    it "should have the header 'Customers'" do
+#      expect(page).to have_selector('h2', text: "ProvisioningObjects")
+#    end
+  #end
+end
+
+Array["Customer", "Site", "User"].each do |obj|
+  describe "Provisioningobject #{obj}" do  
+    describe "index" do
+      before(:each) { visit provisioningobjects_path(obj)  }
+      # not needed:
+      subject { page }
     
-  end # of describe "index" do
+      # "should have the header 'Customers'"
+      it "should have the header '#{myObjects(obj)}'" do
+        # this works:
+        #visit provisioningobjects_path(obj)
+        expect(page).to have_selector('h2', text: obj)
+      end
+      
+      #  "should have link to 'New Customer'"
+      it "should have link to 'New #{myObject(obj)}'" do     
+        #expect(page).to have_link( 'New Customer', href: new_customer_path )
+        expect(page).to have_link( "New #{myObject(obj)}", href: new_provisioningobject_path(obj) )
+      end
+      
+      #   "link to 'New Customer' leads to correct page"
+      its "link to 'New #{myObject(obj)}' leads to correct page" do
+        click_link "New #{myObject(obj)}"
+        expect(page).to have_selector('h2', text: "New #{myObject(obj)}")    
+      end    
+    end # of describe "index" do
+
+    describe "New #{myObject(obj)}" do
+      before { 
+        # TODO: de-provision and delete customer, if it exists already
+        destroyObjectByName(obj)
+        visit new_provisioningobject_path(obj) }
+      
+      it "should have the header 'New #{myObject(obj)}'" do
+        expect(page).to have_selector('h2', text: "New #{myObject(obj)}")
+      end
+      
+      #its "Cancel button in the left menue leads to the Customers index page" do
+      its "Cancel button in the left menue leads to the #{myObjects(obj)} index page" do
+        click_link("Cancel", match: :first)
+        expect(page).to have_selector('h2', text: "#{myObjects(obj)}")    
+      end
+      
+      #its "Cancel button in the web form leads to the Customers index page" do
+      its "Cancel button in the web form leads to the #{myObjects(obj)} index page" do
+        #find html tag with class=index. Within this tag, find and click link 'Cancel' 
+        first('.index').click_link('Cancel')
+        expect(page).to have_selector('h2', text: "#{myObjects(obj)}")    
+      end
+    end # of describe "New Customer" do
+
+    #describe "Create Customer" do
+    describe "Create #{myObject(obj)}" do
+      before { visit new_provisioningobject_path(obj) }
+      let(:submit) { "Save" }
   
-  describe "New #{myObject}" do
-    before { 
-      # TODO: de-provision and delete customer, if it exists already
-      destroyCustomer
-      visit new_provisioningobject_path }
+      describe "with invalid information" do
+        #it "should not create a customer" do
+        it "should not create a #{myobject}" do
+          #expect { click_button submit, match: :first }.not_to change(Customer, :count)
+          expect { click_button submit, match: :first }.not_to change(Object.const_get(obj), :count)
+          #expect { click_button submit, match: :first }.not_to change(myProvisioningobject(obj), :count)
+        end
+        
+        #it "should not create a customer on second 'Save' button" do
+        it "should not create a #{myobject} on second 'Save' button" do
+          expect { first('.index').click_button submit, match: :first }.not_to change(myProvisioningobject(obj), :count)
+        end
+        
+        describe "with duplicate data" do
+          #it "should not create a customer" do
+          it "should not create a #{myobject(obj)}" do
+            createObject(obj)
+            expect { createObject(obj) }.not_to change(myProvisioningobject(obj), :count) 
+            if obj=="User" 
+              #p "============================"
+              #p page.html.gsub(/[\n\t]/, '').inspect
+              expect(page).to have_selector('li', text: "Extension is already taken for this site")   
+            end
+          end
+        end
+        
+        # TODO: activate the test below and then implement https://www.railstutorial.org/book/_single-page#sec-uniqueness_validation 
+        #describe "with case-insensitive duplicate name" do
+        #  it "should not create a customer" do
+        #    #createTarget
+        #    customerName = "CCCCust"
+        #    createCustomer customerName
+        #    expect { createCustomer customerName.to_lower }.not_to change(Customer, :count)       
+        #  end
+        #end
+      end # describe "with invalid information" do
+      
+    end    
     
-    it "should have the header 'New #{myObject}'" do
-      expect(page).to have_selector('h2', text: "New #{myObject}")
-    end
-    
-    #its "Cancel button in the left menue leads to the Customers index page" do
-    its "Cancel button in the left menue leads to the #{myObjects} index page" do
-      click_link("Cancel", match: :first)
-      expect(page).to have_selector('h2', text: "#{myObjects}")    
-    end
-    
-    #its "Cancel button in the web form leads to the Customers index page" do
-    its "Cancel button in the web form leads to the #{myObjects} index page" do
-      #find html tag with class=index. Within this tag, find and click link 'Cancel' 
-      first('.index').click_link('Cancel')
-      expect(page).to have_selector('h2', text: "#{myObjects}")    
-    end
-  end # of describe "New Customer" do
+  end #describe Provisioningobject do
+end
+
+# Customers
+describe "#{myObjects}" do
+  
     
   #describe "Create Customer" do
   describe "Create #{myObject}" do
     before { visit new_provisioningobject_path }
     let(:submit) { "Save" }
 
-    describe "with invalid information" do
-      #it "should not create a customer" do
-      it "should not create a #{myobject}" do
-        #expect { click_button submit, match: :first }.not_to change(Customer, :count)
-        #expect { click_button submit, match: :first }.not_to change(Object.const_get("Customer"), :count)
-        expect { click_button submit, match: :first }.not_to change(myProvisioningobject, :count)
-      end
-      
-      #it "should not create a customer on second 'Save' button" do
-      it "should not create a #{myobject} on second 'Save' button" do
-        expect { first('.index').click_button submit, match: :first }.not_to change(myProvisioningobject, :count)
-      end
-      
-      describe "with duplicate name" do
-        #it "should not create a customer" do
-        it "should not create a #{myobject}" do
-          #createTarget
-          createCustomer
-          expect { createCustomer }.not_to change(myProvisioningobject, :count)       
-        end
-      end
-      
-      # TODO: activate the test below and then implement https://www.railstutorial.org/book/_single-page#sec-uniqueness_validation 
-      #describe "with case-insensitive duplicate name" do
-      #  it "should not create a customer" do
-      #    #createTarget
-      #    customerName = "CCCCust"
-      #    createCustomer customerName
-      #    expect { createCustomer customerName.to_lower }.not_to change(Customer, :count)       
-      #  end
-      #end
-    end
     
     
     describe "with valid information" do
@@ -360,7 +519,7 @@ describe "#{myObjects}" do
         
         # /customers/<id> should show provisioning success
         customers = myProvisioningobject.where(name: "Example#{myObject}" )
-        p customers
+        #p customers
         visit provisioningobject_path(customers[0])
         # for debugging:
         #p page.html.gsub(/[\n\t]/, '')
@@ -444,7 +603,7 @@ describe "#{myObjects}" do
         visit provisioningobject_path(customers[0])
 	
 	# debug:
-        p page.html.gsub(/[\n\t]/, '')
+        #p page.html.gsub(/[\n\t]/, '')
 	
        }
          
