@@ -1,9 +1,11 @@
 require 'spec_helper'
 
-#def createTarget
-#  # create target, and fill out the form on /customers/new
-#  Target.create(name: 'TestTarget', configuration: 'a=b')
-#end
+RSpec.configure do |c|
+  c.filter_run_excluding broken: true , provisioning: true #, untested: true
+end
+
+objectList = Array["Customer", "Site", "User"]
+#objectList = Array["Customer"]
 
 def myObject(obj="Customer")
   #"Customer"
@@ -72,24 +74,15 @@ def createCustomer(name = "Example#{myObject}" )
   click_button 'Save', match: :first 
 end
 
-def createObject(obj, name = "" )      
-  # add and provision customer "ExampleCustomer with target = TestTarget"
-  name = "Example#{obj}" if name == ""
-  case obj
-    when /Customer/
-      fillFormForNewCustomer(name)
-    when /Site/
-      fillFormForNewSite(name)
-    when /User/
-      fillFormForNewUser(name)
-  end
+def createObject(obj, name = "" )        
+  fillFormForNewObject(obj, name)
     
   click_button 'Save', match: :first 
   #p page.html.gsub(/[\n\t]/, '').inspect
 end
 
-#def createCustomerDB(arguments = {})
 def createCustomerDB(customerName = "nonProvisionedCust" )
+  obj = "Customer"
 	# creates a customer in the database without provisioning job
 
 	# I have problems with FactoryGirls for adding database entries.
@@ -99,8 +92,9 @@ def createCustomerDB(customerName = "nonProvisionedCust" )
         createCustomer(customerName)
 
         # delete all delayed jobs of this customer
-        @customer = myProvisioningobject.where(name: customerName )
+        @customer = myProvisioningobject(obj).where(name: customerName )
         @provisionings = Provisioning.where(customer: @customer)
+        
         @provisionings.each do |provisioning|
           unless provisioning.delayedjob_id.nil?
             begin
@@ -111,29 +105,42 @@ def createCustomerDB(customerName = "nonProvisionedCust" )
           end
         end
 
-end
+end #def createCustomerDB(customerName = "nonProvisionedCust" )
 
 def createCustomerDB_not_working
   	FactoryGirl.create(:target)
-        delta = myProvisioningobject.count
-p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before FactoryGirl.create"
+        delta = myProvisioningobject(obj).count
+p myProvisioningobject(obj).count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before FactoryGirl.create"
         FactoryGirl.create(:customer)
-p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after FactoryGirl.create"
-	customer = myProvisioningobject.find(1)
+p myProvisioningobject(obj).count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after FactoryGirl.create"
+	customer = myProvisioningobject(obj).find(1)
 p customer.name + "<<<<<<<<<<<<<<<< customer.name"
-        delta = myProvisioningobject.count - delta
+        delta = myProvisioningobject(obj).count - delta
 p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta(Customer.count)"
 
 end
 
 def createCustomerDB_manual( arguments = {} )
+  obj = "Customer"
 	# default values
 	arguments[:name] ||= "nonProvisionedCust"
 
         target = Target.new(name: "TestTarget", configuration: "a=b")
 	target.save
-	customer = myProvisioningobject.new(name: "nonProvisionedCust", target_id: target.id)
+	customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id)
         customer.save
+end
+
+def fillFormForNewObject(obj, name="")
+  name = "Example#{obj}" if name == ""
+  case obj
+    when /Customer/
+      fillFormForNewCustomer(name)
+    when /Site/
+      fillFormForNewSite(name)
+    when /User/
+      fillFormForNewUser(name)
+  end  
 end
 
 def fillFormForNewCustomer(name = "Example#{myObject}" )
@@ -201,7 +208,7 @@ def destroyCustomer(customerName = "Example#{myObject}" )
   
   # de-provision the customer, if it exists on the target system
   # else delete the customer from the database
-  customers = myProvisioningobject.where(name: customerName)
+  customers = myProvisioningobject(obj).where(name: customerName)
   #p @customers[0].inspect
   unless customers[0].nil?
     Delayed::Worker.delay_jobs = false
@@ -211,7 +218,7 @@ def destroyCustomer(customerName = "Example#{myObject}" )
   end
   
   # delete the customer from the database if it still exists
-  customers = myProvisioningobject.where(name: customerName)
+  customers = myProvisioningobject(obj).where(name: customerName)
   unless customers[0].nil?
     Delayed::Worker.delay_jobs = false
     visit provisioningobject_path(customers[0])
@@ -235,6 +242,18 @@ def destroyObjectByName(obj, name = "")
   myObjects = myProvisioningobject(obj).where(name: name)
   #p @customers[0].inspect
   #p myObjects.inspect
+  
+  # TODO: prio 2 Ticket:
+  #       for Sites and Users, more than one object with the same name is allowed, 
+  #       1) the current procedure will delete only one of them. Is this the desired 
+  #       2) more importantly: it might delete the wrong item, e.g. you want to delete Cust3/Site1, but you might delete Cust1/Site1 instead...
+  #       Better not to delete by name at all? Or only, if one, but only one item has this name? Still, a Site is determined by Customer name 
+  #       and Site name only. So, if we delete a Site by name, it is better to specify the Customer name as well.
+  # Best: test deletions by creating the object, memorize the object id and delete by id instead of by name...
+  #       test creations like follows: initialize by checking no duplicate name etc. is on the system. If there is a duplicate name etc on the system, choose another name etc for the creation test.
+  #
+  # Workaround: make sure the names are unique...
+  #
   unless myObjects[0].nil?
     Delayed::Worker.delay_jobs = false
     visit provisioningobject_path(myObjects[0])
@@ -252,12 +271,6 @@ def destroyObjectByName(obj, name = "")
   end  
 end
 
-#{ "Customer" , "Site" }.each do |obj|
-Array["Customergg", "Site"].each do |obj|
-  describe "#{obj} new" do
-    #expect(obj).to be("Customer")
-  end
-end
   
   
 # shared example:
@@ -285,7 +298,7 @@ describe Site do
   #end
 end
 
-Array["Customer", "Site", "User"].each do |obj|
+objectList.each do |obj|
   describe "Provisioningobject #{obj}" do  
     describe "index" do
       before(:each) { visit provisioningobjects_path(obj)  }
@@ -316,7 +329,8 @@ Array["Customer", "Site", "User"].each do |obj|
       before { 
         # TODO: de-provision and delete customer, if it exists already
         destroyObjectByName(obj)
-        visit new_provisioningobject_path(obj) }
+        visit new_provisioningobject_path(obj) 
+        }
       
       it "should have the header 'New #{myObject(obj)}'" do
         expect(page).to have_selector('h2', text: "New #{myObject(obj)}")
@@ -378,244 +392,210 @@ Array["Customer", "Site", "User"].each do |obj|
         #end
       end # describe "with invalid information" do
       
-    end    
+    end #describe "Create #{myObject(obj)}" do 
     
-  end #describe Provisioningobject do
-end
-
-# Customers
-describe "#{myObjects}" do
+    #describe "Create Customer" do
+    describe "Create #{myObject}" do
+      before { visit new_provisioningobject_path(obj) }
+      let(:submit) { "Save" }
   
-    
-  #describe "Create Customer" do
-  describe "Create #{myObject}" do
-    before { visit new_provisioningobject_path }
-    let(:submit) { "Save" }
+      describe "with valid information" do
+        # does not work yet (is just ignored):
+        #let(:target) { FactoryGirls.create(:target) }
+        before do
+          #createTarget
+          fillFormForNewObject(obj)
+        end
 
-    
-    
-    describe "with valid information" do
-      # does not work yet (is just ignored):
-      #let(:target) { FactoryGirls.create(:target) }
-      before do
-        #createTarget
-        fillFormForNewCustomer
-      end
+        # TODO: also make it available for obj="Site" and obj="User"
+        if obj == "Customer"  
+          it "has a valid factory" do
+            FactoryGirl.create(:target).should be_valid if obj == "Customer"  # only test once: for obj = "Customer"          
+            FactoryGirl.create(:customer).should be_valid
+            # TODO: not yet available:
+            # FactoryGirl.create(:site).should be_valid if obj == "Site"
+            # FactoryGirl.create(:user).should be_valid if obj == "User"         
+          end      
 
-      ############## FactoryGirl not yet functional ###########
-      it "has a valid factory" do
-        FactoryGirl.create(:target).should be_valid
-        FactoryGirl.create(:customer).should be_valid
-      end
-
-      it "should add a customer to the database (FactoryGirlTest)" do
-        FactoryGirl.create(:target)
-        delta = myProvisioningobject.count
-        	p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
-        #FactoryGirl.attributes_for(:customer, name: "dhgkshk")
-      	FactoryGirl.create(:customer)
-      	customer = myProvisioningobject.find(1)
-              	p customer.name + "<<<<<<<<<<<<<<<< customer.name"
-      	delta = myProvisioningobject.count - delta
-              	p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta"
-      	expect(delta).to eq(1)
-              #expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
-              #expect(FactoryGirl.build(:customer)).to change(Customer, :count).by(1)
-      	p myProvisioningobject.count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
-      end
-      
-      it "should create a customer (1st 'Save' button)" do
-        expect { click_button submit, match: :first }.to change(myProvisioningobject, :count).by(1)       
-      end
-      
-      it "should create a customer (2nd 'Save' button)" do
-        expect { first('.index').click_button submit, match: :first }.to change(myProvisioningobject, :count).by(1)
-      end
-      
-      it "should create a customer with status 'provisioning success'" do
-        # synchronous operation, so we will get deterministic test results:         
-        Delayed::Worker.delay_jobs = false
+          it "should add a customer to the database (FactoryGirlTest)" do
+            FactoryGirl.create(:target)
+            delta = myProvisioningobject(obj).count
+              #p myProvisioningobject(obj).count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
+            #FactoryGirl.attributes_for(:customer, name: "dhgkshk")
+            FactoryGirl.create(:customer)
+            customer = myProvisioningobject(obj).find(1)
+              #p customer.name + "<<<<<<<<<<<<<<<< customer.name"
+            delta = myProvisioningobject(obj).count - delta
+              #p delta.to_s + "<<<<<<<<<<<<<<<<<<<<< delta"
+            expect(delta).to eq(1)
+                  #expect(FactoryGirl.create(:customer)).to change(Customer, :count).by(1)
+                  #expect(FactoryGirl.build(:customer)).to change(Customer, :count).by(1)
+              #p myProvisioningobject(obj).count.to_s + "<<<<<<<<<<<<<<<<<<<<<"
+          end
+        end # if obj == "Customer" 
         
-        # TODO: should redirect to customer_path(created_customer_id)
-        click_button submit, match: :first
-        # for debugging:
-        #p page.html.gsub(/[\n\t]/, '')
-        
-        # redirected page should show provisioning success
-        expect(page.html.gsub(/[\n\t]/, '')).to match(/provisioning success/) #have_selector('h2', text: 'Customers')
-        
-        # /customers/<id> should show provisioning success
-        customers = myProvisioningobject.where(name: "Example#{myObject}" )
-        visit provisioningobject_path(customers[0])
-        # for debugging:
-        #p page.html.gsub(/[\n\t]/, '')
-        page.html.gsub(/[\n\t]/, '').should match(/provisioning success/)
-               
-      end
-      
-      
-      it "should create a provisioning task" do
-        expect { click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
-      end
-      
-      it "should create a provisioning task (2nd 'Save' button)" do
-        expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
-      end
-      
-      #it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomer'" do
-      it "should create a provisioning task with action='action=Add #{myObject}' and 'customerName=Example#{myObject}'" do
-        click_button submit, match: :first
-        createdProvisioningTask = Provisioning.find(Provisioning.last)
-        createdProvisioningTask.action.should match(/action=Add #{myObject}/)
-        createdProvisioningTask.action.should match(/customerName=Example#{myObject}/)
-      end
-      
-      #it "should create a provisioning task that finishes successfully or throws an Error 'Customer exists already'" do
-      it "should create a provisioning task that finishes successfully or throws an Error '#{myObject} exists already'" do
-        Delayed::Worker.delay_jobs = false
-        click_button submit, match: :first
-        createdProvisioningTask = Provisioning.find(Provisioning.last)
-        begin
-          createdProvisioningTask.status.should match(/finished successfully/)
-        rescue
-          createdProvisioningTask.status.should match(/#{myObject} exists already/)          
+        it "should create a #{obj} (1st 'Save' button)" do
+          expect { click_button submit, match: :first }.to change(myProvisioningobject(obj), :count).by(1)       
         end
         
-      end  
-      
-    end # of describe "with valid information" do
-    
-  end # of describe "Create Customer" do
-    
-  #describe "Destroy Customer" do
-  describe "Destroy #{myObject}" do
-    #describe "De-Provision Customer" do
-    describe "De-Provision #{myObject}" do
-      before {
-        # synchronous hancdling to make test results more deterministic
-        Delayed::Worker.delay_jobs = false
-        #createTarget
-        createCustomer
-        Delayed::Worker.delay_jobs = true
-        
-        customers = myProvisioningobject.where(name: "Example#{myObject}" )            
-        visit provisioningobject_path(customers[0])
-        #p page.html.gsub(/[\n\t]/, '')
+        it "should create a #{obj} (2nd 'Save' button)" do
+          expect { first('.index').click_button submit, match: :first }.to change(myProvisioningobject(obj), :count).by(1)
+        end
        
-      }
-         
-      let(:submit) { "Delete #{myObject}" }
-      let(:submit2) { "Destroy" }
-      
-      # TODO: add destroy use cases
-        # De-Provisioning of customer
-        # Deletion of customer from database
-      it "should delete a customer with status 'deletion success'" do
-        # synchronous operation, so we will get deterministic test results:         
-        Delayed::Worker.delay_jobs = false
-        
-        click_link submit, match: :first
-        expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h2', text: 'Customers')
-        
-        # /customers/<id> should show provisioning success
-        customers = myProvisioningobject.where(name: "Example#{myObject}" )
-        #p customers
-        visit provisioningobject_path(customers[0])
-        # for debugging:
-        #p page.html.gsub(/[\n\t]/, '')
-        page.html.gsub(/[\n\t]/, '').should match(/deletion success/)      
-      end
-    end # of describe "De-Provision Customer" do
+        describe "Provisioning", provisioning: true, untested: true do
+          it "should create a customer with status 'provisioning success'" do
+            # synchronous operation, so we will get deterministic test results:         
+            Delayed::Worker.delay_jobs = false
+            
+            # TODO: should redirect to customer_path(created_customer_id)
+            click_button submit, match: :first
+            # for debugging:
+            #p page.html.gsub(/[\n\t]/, '')
+            
+            # redirected page should show provisioning success
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/provisioning success/) #have_selector('h2', text: 'Customers')
+            
+            # /customers/<id> should show provisioning success
+            customers = myProvisioningobject(obj).where(name: "Example#{obj}" )
+            visit provisioningobject_path(customers[0])
+            # for debugging:
+            #p page.html.gsub(/[\n\t]/, '')
+            page.html.gsub(/[\n\t]/, '').should match(/provisioning success/)                    
+          end
+          
+          it "should create a provisioning task" do
+            expect { click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
+          end
+          
+          it "should create a provisioning task (2nd 'Save' button)" do
+            expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
+          end
+          
+          #it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomer'" do
+          it "should create a provisioning task with action='action=Add #{myObject}' and 'customerName=Example#{myObject}'" do
+            click_button submit, match: :first
+            createdProvisioningTask = Provisioning.find(Provisioning.last)
+            createdProvisioningTask.action.should match(/action=Add #{myObject}/)
+            createdProvisioningTask.action.should match(/customerName=Example#{myObject}/)
+          end
+          
+          #it "should create a provisioning task that finishes successfully or throws an Error 'Customer exists already'" do
+          it "should create a provisioning task that finishes successfully or throws an Error '#{myObject} exists already'" do
+            Delayed::Worker.delay_jobs = false
+            click_button submit, match: :first
+            createdProvisioningTask = Provisioning.find(Provisioning.last)
+            begin
+              createdProvisioningTask.status.should match(/finished successfully/)
+            rescue
+              createdProvisioningTask.status.should match(/#{myObject} exists already/)          
+            end
+            
+          end  
+
+        end # describe "Provisioning" do
+      end # describe "with valid information" do 
+    end # describe "Create #{myObject}" do 
     
-    #describe "Delete Customer from database using manual database seed" do
-    describe "Delete #{myObject} from database using manual database seed" do
-      before {
-        createCustomerDB_manual(name: "nonProvisionedCust")
-        customers = myProvisioningobject.where(name: "nonProvisionedCust" )
-                #p customers.inspect
-        #visit customer_path(customers[0])
-        visit provisioningobject_path(customers[0])
-                #p page.html.gsub(/[\n\t]/, '')
-      }
-
-
-      let(:submit) { "Delete #{myObject}" }
-      let(:submit2) { "Destroy" }
-
-      it "should remove a customer from the database, if not found on the target system" do
-        Delayed::Worker.delay_jobs = false
-	
-	expect(page).to have_link("Delete #{myObject}")
-
-        delta = myProvisioningobject.count
-		#p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before click"
-        click_link "Delete #{myObject}"
-        	# replacing by following line causes error "Unable to find link :submit" (why?)
-        	#click_link :submit
-			#p page.html.gsub(/[\n\t]/, '')
-		# following line causes error: 
-        	#expect(click_link "Delete Customer").to change(Customer, :count).by(-1)
-        delta = myProvisioningobject.count - delta
-        expect(delta).to eq(-1)
-		#p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after click"
-      end
-    end
-
-
-    #describe "Delete Customer from database" do
-    describe "Delete #{myObject} from database" do
-      
-      before {
-        # setting Delayed::Worker.delay_jobs = true causes the provisioning task not to be executed (assumption: rake jobs:work task is not started for the test enviroment)
-        #Delayed::Worker.delay_jobs = true
-#        Delayed::Worker.delay_jobs = false
-#        #createTarget
-#        createCustomer("nonProvisionedCust")
-#        customers = Customer.where(name: "nonProvisionedCust" )
-#        visit customer_path(customers[0])
-#
-#        p page.html.gsub(/[\n\t]/, '')       
-	
-#	# I have problems with FactoryGirls for adding database entries.
-#	# workaround: create customer by click and remove the delayed job this creates
-#        # the following works only, if delayed jobs is not up and running; i.e. no rake jobs:work must be up and running
-#	Delayed::Worker.delay_jobs = true
-#	createCustomer("nonProvisionedCust")
-#
-#        # delete all delayed jobs:
-#    	@customer = Customer.where(name: "nonProvisionedCust")
-#		p "-------------------------- " + @customer.inspect
-#    	@provisionings = Provisioning.where(customer: @customer)
-#    	@provisionings.each do |provisioning|
-#      	  unless provisioning.delayedjob_id.nil?
-#            begin
-#              #activeProvisioningJob = Delayed::Job.find(provisioning.delayedjob_id)
-#              Delayed::Job.find(provisioning.delayedjob_id).destroy
-#            rescue
-#              # keep: activeProvisioningJob = nil
-#            end
-#          end
-#        end
-	
-	createCustomerDB( "nonProvisionedCust" )
-	#createCustomerDB_not_working
-        customers = myProvisioningobject.where(name: "nonProvisionedCust" )
-        visit provisioningobject_path(customers[0])
-	
-	# debug:
-        #p page.html.gsub(/[\n\t]/, '')
-	
-       }
+    #describe "Destroy Customer" do
+    describe "Destroy #{myObject}", untested: true do
+      #describe "De-Provision Customer" do
+      describe "De-Provision #{myObject}", provisioning: true, untested: true do
+        before {
+          # synchronous hancdling to make test results more deterministic
+          Delayed::Worker.delay_jobs = false
+          #createTarget
+          createObject(obj)
+          Delayed::Worker.delay_jobs = true
+          
+          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" )            
+          visit provisioningobject_path(myObjects[0])
+          #p page.html.gsub(/[\n\t]/, '')
          
-      let(:submit) { "Delete #{myObject}" }
-      let(:submit2) { "Destroy" }
+        }
+           
+        let(:submit) { "Delete #{obj}" }
+        let(:submit2) { "Destroy" }
+        
+        # TODO: add destroy use cases
+          # De-Provisioning of customer
+          # Deletion of customer from database
+        it "should de-provision a #{obj} with status 'deletion success'" do
+          # synchronous operation, so we will get deterministic test results:         
+          Delayed::Worker.delay_jobs = false
+          
+          click_link submit, match: :first
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h2', text: 'Customers')
+          
+          # /customers/<id> should show deletion success
+          myObjects = myProvisioningobject(obj).where(name: "Example#{myObject}" )
+          #p customers
+          visit provisioningobject_path(myObjects[0])
+          # for debugging:
+          #p page.html.gsub(/[\n\t]/, '')
+          page.html.gsub(/[\n\t]/, '').should match(/deletion success/)      
+        end
+      end # of describe "De-Provision Customer" do
       
-      it "(working) should remove a customer from the database, if not found on the target system" do
-        expect { click_link submit, match: :first }.to change(myProvisioningobject, :count).by(-1)
-      end
-      
-    end # of describe "Delete Customer from database" do
-  
-  end # of describe "Destroy Customer" do
+      #describe "Delete Customer from database using manual database seed" do
+      # TODO: only supported for Customers. Make it available for Sites and Users.
+      if obj == "Customer"
+        describe "Delete #{obj} from database using manual database seed" do
+          before {
+            createCustomerDB_manual(name: "nonProvisionedCust")
+            customers = myProvisioningobject(obj).where(name: "nonProvisionedCust" )
+                    #p customers.inspect
+            #visit customer_path(customers[0])
+            visit provisioningobject_path(customers[0])
+                    #p page.html.gsub(/[\n\t]/, '')
+          }
     
-end # describe "Customers" do
+    
+          let(:submit) { "Delete #{obj}" }
+          let(:submit2) { "Destroy" }
+    
+          it "should remove a #{obj} from the database, if not found on the target system" do
+            Delayed::Worker.delay_jobs = false
+      
+            expect(page).to have_link("Delete #{myObject}")
+    
+            delta = myProvisioningobject(obj).count
+        #p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before click"
+            click_link "Delete #{obj}"
+              # replacing by following line causes error "Unable to find link :submit" (why?)
+              #click_link :submit
+          #p page.html.gsub(/[\n\t]/, '')
+        # following line causes an error: 
+              #expect(click_link "Delete Customer").to change(Customer, :count).by(-1)
+            delta = myProvisioningobject(obj).count - delta
+            expect(delta).to eq(-1)
+        #p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count after click"
+          end
+        end
+      end # if obj == "Customer"
+      
+      # TODO: only supported for obj="Customer". Make available for "Site" and "User"
+      if obj == "Customer"
+        #describe "Delete Customer from database" do
+        describe "Delete #{obj} from database" do
+          
+          before {        
+            createCustomerDB( "nonProvisionedCust" )
+            customers = myProvisioningobject(obj).where(name: "nonProvisionedCust" )
+            visit provisioningobject_path(customers[0])
+            #p page.html.gsub(/[\n\t]/, '')
+           }
+             
+          let(:submit) { "Delete #{myObject}" }
+          let(:submit2) { "Destroy" }
+          
+          it "(working) should remove a customer from the database, if not found on the target system" do
+            expect { click_link submit, match: :first }.to change(myProvisioningobject(obj), :count).by(-1)
+          end
+          
+        end # of describe "Delete Customer from database" do
+      end #if obj == "Customer"
+    
+    end # of describe "Destroy Customer" do
+
+  end # describe Provisioningobject do
+end # Array["Customer", "Site", "User"].each do |obj|
