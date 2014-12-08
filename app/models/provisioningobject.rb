@@ -4,6 +4,10 @@ class Provisioningobject < ActiveRecord::Base
   def new
   end
   
+  def path
+    return "/#{provisioningobject.class.to_s.downcase}/#{provisioningobject.id}"
+  end
+  
   def activeJob?
     # will return true, if the object has an active job
     
