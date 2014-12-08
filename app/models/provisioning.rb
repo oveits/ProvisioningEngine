@@ -163,13 +163,8 @@ class Provisioning < ActiveRecord::Base
           abort 'provisioning.deliver: OSV export error'
         #when /ERROR.*Site Name .* exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
         when /ERROR.*Site.*exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
-        #when /exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
-        #when /ERROR.*exists already.*$/
         # failure: object exists already
           returnvalue = 100
-          #resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/exists already.*$|Customer.*exists already.*$i|Cannot create user with phone number .*phone number is in use already.*$/] + '" at ' + Time.now.to_s
-          #resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Site Name .* exists already.*$|Customer.*exists already.*$i|Cannot create user with phone number .*phone number is in use already.*$/] + '" at ' + Time.now.to_s
-          #resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Site.*exists already.*$|Customer.*exists already.*$i|Cannot create user with phone number .*phone number is in use already.*$/] + '" at ' + Time.now.to_s
           resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Site.*exists already.*$|Customer.*exists already.*|phone number is in use already.*$/] + '" at ' + Time.now.to_s
           #resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/[^:]*exists already.*$/] + '" at ' + Time.now.to_s
           # TODO: update Site Data as seen from OSV

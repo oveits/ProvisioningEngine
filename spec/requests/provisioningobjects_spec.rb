@@ -73,6 +73,7 @@ def createCustomer(name = "" )
   obj = "Customer"
   
   fillFormForNewCustomer(name)
+#abort "createCustomer: abort"
   click_button 'Save', match: :first 
 end
 
@@ -175,8 +176,10 @@ end
 def fillFormForNewSite(name = "" )
   name = "ExampleSite" if name == ""
   if Customer.where(name: 'ExampleCustomer').count == 0
+    delayed_worker_delay_jobs_before = Delayed::Worker.delay_jobs
+    Delayed::Worker.delay_jobs = false
     createCustomer
-    #Customer.create(name: 'ExampleCustomer', configuration: 'a=b')
+    Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
   visit new_provisioningobject_path("Site") # for refreshing after creating the target
   fill_in "Name",         with: name        
@@ -198,11 +201,16 @@ end
 def fillFormForNewUser(name = "" )
   name = "ExampleUser" if name == ""
   if Customer.where(name: 'ExampleCustomer').count == 0
+    delayed_worker_delay_jobs_before = Delayed::Worker.delay_jobs
+    Delayed::Worker.delay_jobs = false
     createCustomer
-    #Customer.create(name: 'ExampleCustomer', configuration: 'a=b')
+    Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
   if Site.where(name: 'ExampleSite').count == 0
+    delayed_worker_delay_jobs_before = Delayed::Worker.delay_jobs
+    Delayed::Worker.delay_jobs = false
     createObject("Site", name = "ExampleSite" ) 
+    Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
   visit new_provisioningobject_path("User") # for refreshing after creating the target
   fill_in "Name",         with: name        
@@ -555,6 +563,12 @@ objectList.each do |obj|
           #createTarget
           begin
             createObject(obj)
+            # DONE: need to de-provision any children befre trying to de-provision the object
+            #       idea: in case of a obj=="Customer", createObject("Site") and destroyObjectByName("Site")
+	    #       better idea: createObject of the child, so the children will be found and de-provisioned recursively
+	    createObject("Site") if obj == "Customer"
+	    createObject("User") if obj == "Customer" || obj == "Site"
+
           #rescue
             # go on, if createObject was not successful
           end
@@ -690,3 +704,7 @@ describe "Customer can be de-provisioned, even if a manually added site is prese
   #   destroyCustomer
   # should be successful, because before deleting, all sites should be synchronized back from the target systems to the PE
 end
+
+#describe "Site" do
+  #its "SiteCode should be unique for the target" do
+    #expect  
