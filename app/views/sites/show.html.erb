@@ -26,9 +26,15 @@
 			<li><%= link_to 'New User', new_site_user_path(@site) %></li>
 			<br />
 			<h3>Change/Delete</h3>
-			<li><%= link_to 'Edit Site', edit_site_path(@site) %></li>
-			<li><%= link_to 'Provision', provision_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
-			<li><%= link_to 'Synchronize', synchronize_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+                        <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
+			  <li><%= link_to 'Edit Site', edit_site_path(@site) %></li>
+			<% end %>
+                        <% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
+			  <li><%= link_to 'Provision', provision_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<% end %>
+			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+			  <li><%= link_to 'Synchronize', synchronize_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+			<% end %>
 			<li><%= link_to 'Delete Site', @site, method: :delete, data: { confirm: 'Are you sure?' } %></li>
 			<br />
 			<h3>Show related</h3>
