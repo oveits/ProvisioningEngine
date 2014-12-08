@@ -1,4 +1,8 @@
 export HTTP_PROXY=
 export http_proxy=
 
-bundle exec rspec spec/requests/customers_spec.rb "$@"
+# always same order, with description for documentation:
+bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
+
+# randomized, but without description:
+#bundle exec rspec spec/requests/provisioningobjects_spec.rb "$@"

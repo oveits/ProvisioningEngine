@@ -33,12 +33,12 @@
 	<div class="actions">
 		<ul>
 			<h3>Create</h3>
-			<li><%= link_to 'New', new_user_path %></li>
+			<li><%= link_to 'New User', new_user_path %></li>
 			<br />
 			<h3>Change/Delete</h3>
-			<li><%= link_to 'Edit', edit_user_path(@user) %></li>
+			<li><%= link_to 'Edit User', edit_user_path(@user) %></li>
 			<li><%= link_to 'Provision', provision_user_path(@user), method: :patch, data: { confirm: 'Are you sure?' } %></li>
-			<li><%= link_to 'Delete', @user, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+			<li><%= link_to 'Delete User', @user, method: :delete, data: { confirm: 'Are you sure?' } %></li>
 			<% if false %>
 			synchronize not yet supported for class user
 			<li><%= link_to 'Synchronize', synchronize_user_path(@user), method: :patch, data: { confirm: 'Are you sure?' } %></li>

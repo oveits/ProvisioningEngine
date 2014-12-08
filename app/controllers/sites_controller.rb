@@ -77,7 +77,11 @@ class SitesController < ApplicationController
   end
   
   def create 
+    ro = 'readonly'; rw = 'readwrite'
+    @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
+
     @object = Site.new(site_params)
+    @site = @object
     @className = @object.class.to_s
 
     respond_to do |format|         

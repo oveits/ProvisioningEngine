@@ -1,10 +1,14 @@
 class Validate_ExtensionLength < ActiveModel::Validator
   def validate(record)
     
-    @site = Site.find(record.site)
+    if !record.site.nil?
+      @site = Site.find(record.site)
+    end
     
-    if record.extension.length.to_i != @site.extensionlength.to_i
-      record.errors[:extension] << "length must be #{@site.extensionlength.to_s}" # + " but is #{record.extension.length.to_s}"      
+    if !@site.nil?
+      if record.extension.length.to_i != @site.extensionlength.to_i
+        record.errors[:extension] << "length must be #{@site.extensionlength.to_s}" # + " but is #{record.extension.length.to_s}"      
+      end
     end
        
   end # def
@@ -123,6 +127,8 @@ class User < Provisioningobject #< ActiveRecord::Base
   # MAIN
   #
   belongs_to :site
+  
+  validates :site, presence: true
   
   validates :name,  #presence: true,
                     length: { in: 3..20  }

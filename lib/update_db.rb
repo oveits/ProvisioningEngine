@@ -55,7 +55,13 @@ class UpdateDB
           targetobject.update_attribute('areacode', element.elements["AreaCode"].text )
           targetobject.update_attribute('localofficecode', element.elements["LocalOfficeCode"].text )
           targetobject.update_attribute('extensionlength', element.elements["ExtensionLength"].text )
-          targetobject.update_attribute('mainextension', element.elements["MainNumber"].text[-targetobject.extensionlength.to_i..-1] )
+          # MainNumber is either nil (if there is no local gateway) or it is a full E.164 number, while mainextension is only an extension.
+          # => we need to calculate the mainextension from the MainNumber to be the last extensionlength digits:
+          if !element.elements["MainNumber"].text.nil? && targetobject.extensionlength.to_i < element.elements["MainNumber"].text.length
+            targetobject.update_attribute('mainextension', element.elements["MainNumber"].text[-targetobject.extensionlength.to_i..-1] )
+          elsif element.elements["MainNumber"].text.nil?
+            targetobject.update_attribute('mainextension', nil)
+          end
           break
         end
       end
