@@ -88,7 +88,11 @@ class UsersController < ApplicationController
   end
   
   def create 
+    ro = 'readonly'; rw = 'readwrite'
+    @myparams = {"id"=>'none', "name"=>rw, "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
+
     @object = User.new(user_params)
+    @user = @object
     @className = @object.class.to_s
     
     respond_to do |format|         

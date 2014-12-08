@@ -14,7 +14,12 @@ end
 class Validate_MainExtension < ActiveModel::Validator
   def validate(record)
     
-    mainextensionlength = record.mainextension.length 
+    # mainextension is defined as the representative homeDN of the local GW. If there is no local GW, the mainextension is nil
+    if record.gatewayIP.nil?
+      return nil
+    else 
+      mainextensionlength = record.mainextension.length 
+    end 
     
     unless mainextensionlength == record.extensionlength.to_i 
       record.errors["Main Extension [#{record.mainextension}]"] << "length is is #{mainextensionlength.to_s}, but must match the #{:extensionlength}=#{record.extensionlength}"
@@ -70,7 +75,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
         inputBody += ", EndpointDefaultHomeDnXtension=#{mainextension}"
         return inputBody
       when :destroy
-        "action=Delete Site, siteName=#{name}, customerName=#{customer.name}"
+        "action=Delete Site, SiteName=#{name}, customerName=#{customer.name}"
       else
         abort "Unsupported provisioning method"
     end

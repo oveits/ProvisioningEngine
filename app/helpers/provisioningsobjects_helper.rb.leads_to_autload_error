@@ -1,0 +1,16 @@
+# OV Provisioningsobject is an abstract class, I have created this helper file manually
+
+module ProvisioningsobjectHelper
+#  def provisioningobjects_path(myclass)
+#    # e.g. will return "/customers/5", if provisioningobject is a Customer with the id = 5
+#    case myclass
+#      when :customer
+#        customers_path
+#    end
+#  end
+#  
+#  def provisioningobject_path(provisioningobject)
+#    # e.g. will return "/customers/5", if provisioningobject is a Customer with the id = 5
+#    return "/#{provisioningobject.class.to_s.downcase}/#{provisioningobject.id}"
+#  end
+end
