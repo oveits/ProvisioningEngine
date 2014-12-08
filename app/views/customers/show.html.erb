@@ -62,7 +62,9 @@
         	<% end %>
         </td>
         <td><%= link_to @customer.status, customer_provisionings_path(@customer) %></td>       
+                        <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
         <td class="actions"><%= link_to 'Edit', edit_customer_path(@customer) %></td>
+			<% end %>
 			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
         <td class="actions"><%= link_to 'Provision', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></td>
 			<% end %>

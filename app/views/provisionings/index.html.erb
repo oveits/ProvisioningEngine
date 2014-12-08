@@ -96,17 +96,21 @@
         <% end %>
         		<% end %>	
         </td>
-        <td class="actions"><%= link_to 'Edit', edit_provisioning_path(provisioning) %></td>
-        <td class="actions"><%= link_to 'Destroy', provisioning, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+	<% if ENV["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] == "true" %>
+          <td class="actions"><%= link_to 'Edit', edit_provisioning_path(provisioning) %></td>
+	<% end %>
+	<% if ENV["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] == "true" %>
+          <td class="actions"><%= link_to 'Destroy', provisioning, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+	<% end %>
         <% if false %>
         <td class="actions"><%= link_to 'Deliver', deliver_provisioning_path(provisioning), :confirm => 'Are you sure?', :method => :post %></td>
         <% end %>
         <td class="actions">
         	<% begin %>
         		<% @job = Delayed::Job.find(provisioning.delayedjob) %>
-        		<%= link_to 'running (click to stop)', stop_provisioning_path(provisioning), method: :delete, data: { confirm: 'Are you sure?' }%>
+        		<%= link_to 'Stop', stop_provisioning_path(provisioning), method: :delete, data: { confirm: 'Are you sure?' }%>
         	<% rescue %>
-        		<%= link_to 'stopped (click to restart)', deliver_provisioning_path(provisioning), method: :put, data: { confirm: 'Are you sure?'} %></td>
+        		<%= link_to 'Retry', deliver_provisioning_path(provisioning), method: :put, data: { confirm: 'Are you sure?'} %></td>
         	<% end %>
       </tr>
     <% end %>

@@ -80,7 +80,9 @@
         <td><%= user.email %></td>
         	<% end %>
         <td><%= user.status %></td>
+                        <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
 	<td class="actions"><%= link_to 'Edit', edit_user_path(user) %></td>
+			<% end %>
 			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
         <td class="actions"><%= link_to 'Provision', provision_user_path(user), method: :patch, data: { confirm: 'Are you sure?' } %></td>
 			<% end %>

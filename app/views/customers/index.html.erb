@@ -48,7 +48,9 @@
         <td><%= link_to customer.status, customer_provisionings_path(customer) %></td>
 
       <% if true %>
+                        <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
         <td class="actions"><%= link_to 'Edit', edit_customer_path(customer) %></td> 
+			<% end %>
         <td class="actions"><%= link_to 'Destroy', customer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
       <% else %>
         <td></td>
