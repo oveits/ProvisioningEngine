@@ -47,35 +47,6 @@ class SitesController < ApplicationController
 
   # POST /sites
   # POST /sites.json
-  def createOld
-    @site = Site.new(site_params)
-    #@customer = Customer.find(params[:customer_id])
-      
-    respond_to do |format|
-      if @site.save
-        @site.status = 'waiting for provisioning'
-        @site.update_attributes(:status => 'waiting for provisioning')
-        format.html { redirect_to @site.customer, notice: 'Site is being created.' }
-        format.json { render :show, status: :created, location: @site }
-
-#        @customer = @site.customer
-#        inputBody = "action=Add Site, customerName=#{@customer.name}, SiteName=#{site_params[:name]}, SC=#{site_params[:sitecode]}"          
-#        inputBody += ", GatewayIP=#{site_params[:gatewayIP]}, CC=#{site_params[:countrycode]}, AC=#{site_params[:areacode]}, LOC=#{site_params[:localofficecode]}, XLen=#{site_params[:extensionlength]}"       
-#        inputBody += ", EndpointDefaultHomeDnXtension=#{site_params[:mainextension]}"
-#
-#        @site.provision(inputBody)
-        @site.provision(:create)
-        
-      else
-        format.html { 
-          ro = 'readonly'; rw = 'readwrite'
-          @myparams = {"id"=>'', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'', "updated_at"=>'', "status"=>'', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
-          render :new }
-        format.json { render json: @site.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-  
   def create 
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
@@ -86,7 +57,7 @@ class SitesController < ApplicationController
 
     respond_to do |format|         
       if @object.save
-        @object.update_attributes(:status => 'waiting for provisioning')
+        #@object.update_attributes!(:status => 'waiting for provisioning')
         @object.provision(:create)
         format.html { redirect_to @object, notice: "#{@className} is being created." }
         format.json { render :show, status: :created, location: @object } 
@@ -124,15 +95,15 @@ class SitesController < ApplicationController
     
     if returnBody[/ERROR/].nil? && !returnBody[/>#{@site.name}</].nil?
       # success
-      @site.update_attributes(:status => 'synchronized')
+      @site.update_attributes!(:status => 'synchronized')
       redirect_to @site.customer, notice: "Site #{@site.name} has been synchronized: target system -> database."
     elsif !returnBody[/ERROR/].nil?
       # failure: Provisioning Error
-      @site.update_attributes(:status => "synchronization failed (#{returnBody[/ERROR.*$/]})")
+      @site.update_attributes!(:status => "synchronization failed (#{returnBody[/ERROR.*$/]})")
       redirect_to @site.customer, notice: "Site #{@site.name} synchronization failed with Error: #{returnBody[/ERROR.*$/]}"
     elsif returnBody[/>#{@site.name}</].nil?
       # failure: Site not (yet) provisionined on target system
-      @site.update_attributes(:status => 'synchronization failed (Site not found)')
+      @site.update_attributes!(:status => 'synchronization failed (Site not found)')
       redirect_to @site.customer, notice: "Site #{@site.name} synchronization failed with Error: Site not found on target system"
     end
   end
@@ -176,7 +147,7 @@ class SitesController < ApplicationController
       flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
       redirectPath = :back
       
-      @object.update_attributes(:status => 'waiting for deletion') unless @object.activeJob?
+      @object.update_attributes!(:status => 'waiting for deletion') unless @object.activeJob?
       #provisionTaskExistsAlready =  @object.provisionNew(provisioningAction, async)
       #provisionTaskExistsAlready =  @object.de_provision(async)
       @object.provision(:destroy)

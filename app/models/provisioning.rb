@@ -54,8 +54,8 @@ class Provisioning < ActiveRecord::Base
           #provisioningjob.perform
       
       # not needed here, sinc hwere, the delayedjob IS the provisioning attribute?
-      #@provisioning.update_attributes(:delayedjob => @delayedjob)
-      update_attributes(:delayedjob_id => delayedjob.id) unless delayedjob.nil?
+      #@provisioning.update_attributes!(:delayedjob => @delayedjob)
+      update_attributes!(:delayedjob_id => delayedjob.id) unless delayedjob.nil?
       return 0
     end
   end # def createdelayedjob
@@ -64,7 +64,7 @@ class Provisioning < ActiveRecord::Base
     
     begin
       p :status
-      update_attributes(:status => 'started at ' + Time.now.to_s)
+      update_attributes!(:status => 'started at ' + Time.now.to_s)
       p :status
       provisioningRequest = HttpPostRequest.new
       
@@ -72,9 +72,9 @@ class Provisioning < ActiveRecord::Base
   
       
       if attempts.nil?
-        update_attributes(:attempts => 1 )
+        update_attributes!(:attempts => 1 )
       else
-        update_attributes(:attempts => attempts + 1 )
+        update_attributes!(:attempts => attempts + 1 )
       end
         
       # map the action of the provisioningEngine to provisioning status
@@ -91,7 +91,7 @@ class Provisioning < ActiveRecord::Base
 	# 	if user is nil and the site is definde, then only the status of the site is updated
 	# 	if both, the user and site are nil and the customer is defined, then the customer status is updated
       targetobjects.each do |targetobject|
-        targetobject.update_attributes(:status => thisaction + ' in progress') unless targetobject.nil?
+        targetobject.update_attributes!(:status => thisaction + ' in progress') unless targetobject.nil?
         break unless targetobject.nil?
       end
 
@@ -104,7 +104,7 @@ class Provisioning < ActiveRecord::Base
           resulttext = "connection timout for #{uriString} at " + Time.now.to_s
           returnvalue = 8
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil?
             break unless targetobject.nil?
           end
           abort 'provisioning.deliver: ' + resulttext
@@ -115,14 +115,14 @@ class Provisioning < ActiveRecord::Base
           # update status of targetobject
           targetobjects.each do |targetobject|
             if thisaction == 'deletion'
-              targetobject.update_attributes(:status => thisaction + ' successful (press "Destroy" again to remove from database)') unless targetobject.nil?
+              targetobject.update_attributes!(:status => thisaction + ' successful (press "Destroy" again to remove from database)') unless targetobject.nil?
             else
-              targetobject.update_attributes(:status => thisaction + ' successful') unless targetobject.nil?
+              targetobject.update_attributes!(:status => thisaction + ' successful') unless targetobject.nil?
             end
             break unless targetobject.nil?
             #abort targetobjects.inspect unless targetobject.nil?
           end
-          #provisioning.update_attributes(:delayedjob => nil)
+          #provisioning.update_attributes!(:delayedjob => nil)
           # 0
           #abort targetobjects.inspect
         when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$/
@@ -130,7 +130,7 @@ class Provisioning < ActiveRecord::Base
           returnvalue = 3        
           resulttext = "last unsuccessful attempt with ERROR[#{returnvalue.to_s}]=\""  + resulttext[/ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$/] + '" at ' + Time.now.to_s
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed (timed out); trying again') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' failed (timed out); trying again') unless targetobject.nil?
             break unless targetobject.nil?
           end
           abort 'provisioning.deliver: connection timout of one or more target systems'
@@ -140,16 +140,16 @@ class Provisioning < ActiveRecord::Base
           resulttext = "finished with success (TEST MODE [#{returnvalue.to_s}])\"" + '" at ' + Time.now.to_s
 	# do not change the status in case of a test mode query:
 #          targetobjects.each do |targetobject|
-#            targetobject.update_attributes(:status => thisaction + ' successful (test mode)') unless targetobject.nil?
+#            targetobject.update_attributes!(:status => thisaction + ' successful (test mode)') unless targetobject.nil?
 #            break unless targetobject.nil? 
 #          end
-          #provisioning.update_attributes(:delayedjob => nil)
+          #provisioning.update_attributes!(:delayedjob => nil)
         when /Script aborted.*$/
         # deletion script or ccc.sh script aborted
           returnvalue = 6
           resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Script aborted.*$/] + '" at ' + Time.now.to_s
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed (script error)') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' failed (script error)') unless targetobject.nil?
             break unless targetobject.nil?
           end
         when /error while loading shared libraries.*$/
@@ -157,7 +157,7 @@ class Provisioning < ActiveRecord::Base
           returnvalue = 7
           resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/error while loading shared libraries.*$/] + '" at ' + Time.now.to_s
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed (OSV export error)') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' failed (OSV export error)') unless targetobject.nil?
             break unless targetobject.nil?       
           end
           abort 'provisioning.deliver: OSV export error'
@@ -169,7 +169,7 @@ class Provisioning < ActiveRecord::Base
           #resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/[^:]*exists already.*$/] + '" at ' + Time.now.to_s
           # TODO: update Site Data as seen from OSV
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' success: was already provisioned') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' success: was already provisioned') unless targetobject.nil?
             p targetobject.status unless targetobject.nil?
             unless targetobject.nil?
               updateDB = UpdateDB.new
@@ -177,14 +177,14 @@ class Provisioning < ActiveRecord::Base
             end
             break unless targetobject.nil? 
           end
-          #provisioning.update_attributes(:delayedjob => nil)
+          #provisioning.update_attributes!(:delayedjob => nil)
           # TODO: update database from information read from target system
         when /ERROR.*does not exist.*$/
         # failure: object already deleted
           returnvalue = 101
           resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/ERROR.*does not exist.*$/][7,400] + '" at ' + Time.now.to_s
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed: was already de-provisioned') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' failed: was already de-provisioned') unless targetobject.nil?
             # instead of updating the status, remove from database (can be commented out)
 	    # now to be done in the controller on returnvalue 101 (implemented for customer only)
             unless targetobject.nil?
@@ -198,16 +198,16 @@ p targetobject.inspect
           returnvalue = 5
           resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext[/OSV.*Success.*$/] unless resulttext[/OSV.*Success.*$/].nil?
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed (import errors)') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' failed (import errors)') unless targetobject.nil?
             break unless targetobject.nil?
           end
-          #provisioning.update_attributes(:delayedjob => nil)
+          #provisioning.update_attributes!(:delayedjob => nil)
         else
         # failure
           returnvalue = 1
           resulttext = "finished with unknown ERROR[#{returnvalue.to_s}]=BODY[0,400]=\"" + resulttext[0,400] + '" at ' + Time.now.to_s unless resulttext.nil? 
           targetobjects.each do |targetobject|
-            targetobject.update_attributes(:status => thisaction + ' failed') unless targetobject.nil?
+            targetobject.update_attributes!(:status => thisaction + ' failed') unless targetobject.nil?
             break unless targetobject.nil? 
           end
       end  # case resulttext
@@ -217,11 +217,11 @@ p targetobject.inspect
       p 'returnvalue = ' + returnvalue.to_s
       p '------------------resulttext------------------'
          
-      update_attributes(:status => resulttext)
+      update_attributes!(:status => resulttext)
       return returnvalue
     
 #    rescue Exception => e
-        update_attributes(:status => e.message)
+        update_attributes!(:status => e.message)
         abort e.message if returnvalue == 3 || returnvalue == 7 || returnvalue == 8
     end
 
@@ -239,8 +239,8 @@ p targetobject.inspect
           #provisioningjob.perform
       
       # not needed here, sinc hwere, the delayedjob IS the provisioning attribute?
-      #@provisioning.update_attributes(:delayedjob => @delayedjob)
-      update_attributes(:delayedjob_id => delayedjob.id)      
+      #@provisioning.update_attributes!(:delayedjob => @delayedjob)
+      update_attributes!(:delayedjob_id => delayedjob.id)      
     end
   end # def createdelayedjob
      
