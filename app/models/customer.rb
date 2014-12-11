@@ -128,6 +128,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
                      #uniqueness: true, 
                      uniqueness: {:case_sensitive => false},
                      length: { in: 3..20  }
+    validates_format_of :name, :with => /\A[A-Z,a-z,0-9,_]{1,100}+\Z/, message: "Customer Name contains invalid characters: Customer Name needs to consist of 1 to 21 characters: A-Z, a-z, 0-9 and/or _"
     validates :target_id, presence: true
     
 #    validates_with ValidateWithProvisioningEngine

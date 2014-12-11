@@ -31,7 +31,9 @@
 <table>
   <thead>
     <tr>
+<% if false %>
       <th>Name</th>
+<% end %>
       	<% if @customer.nil? %>
       <th>Customer</th>
       	<% end %>
@@ -52,7 +54,9 @@
   <tbody>
     <% @users.each do |user| %>
       <tr>
+	<% if false %>
         <td><%= link_to user.name, user %></td>
+	<% end %>
         
         	<% if @customer.nil? %>
         <td>	

@@ -131,7 +131,8 @@ class User < Provisioningobject #< ActiveRecord::Base
   validates :site, presence: true
   
   validates :name,  #presence: true,
-                    length: { in: 3..20  }
+                    #length: { in: 3..20  }
+                    length: { maximum: 20  }
   validates :extension, #presence: true,
                     uniqueness: { scope: :site, message: "is already taken for this #{:site}" }
                     #length: { is: @site.extensionlength.to_i  }
