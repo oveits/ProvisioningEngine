@@ -39,7 +39,6 @@ class CustomersController < ApplicationController
 
     respond_to do |format|         
       if @object.save
-        @object.update_attributes(:status => 'waiting for provisioning')
         @object.provision(:create)
         format.html { redirect_to @object, notice: "#{@className} is being created." }
         format.json { render :show, status: :created, location: @object } 
@@ -88,7 +87,6 @@ class CustomersController < ApplicationController
       flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
       redirectPath = :back
       
-      @object.update_attributes(:status => 'waiting for deletion') unless @object.activeJob?
       #provisionTaskExistsAlready =  @object.provisionNew(provisioningAction, async)
       #provisionTaskExistsAlready =  @object.de_provision(async)
       @object.provision(:destroy)
@@ -132,15 +130,15 @@ class CustomersController < ApplicationController
     
     if returnBody[/ERROR/].nil? && !returnBody[/>#{@object.name}</].nil?
       # success
-      @object.update_attributes(:status => 'synchronized')
+      @object.update_attributes!(:status => 'synchronized')
       redirect_to @object.customer, notice: "Customer #{@object.name} has been synchronized: target system -> database."
     elsif !returnBody[/ERROR/].nil?
       # failure: Provisioning Error
-      @object.update_attributes(:status => "synchronization failed (#{returnBody[/ERROR.*$/]})")
+      @object.update_attributes!(:status => "synchronization failed (#{returnBody[/ERROR.*$/]})")
       redirect_to @object.customer, notice: "Customer #{@object.name} synchronization failed with Error: #{returnBody[/ERROR.*$/]}"
     elsif returnBody[/>#{@object.name}</].nil?
       # failure: Customer not (yet) provisionined on target system
-      @object.update_attributes(:status => 'synchronization failed (Customer not found)')
+      @object.update_attributes!(:status => 'synchronization failed (Customer not found)')
       redirect_to @object.customer, notice: "Customer #{@object.name} synchronization failed with Error: Customer not found on target system"
     end
   end
@@ -148,7 +146,7 @@ class CustomersController < ApplicationController
   def provision
     # TODO: test! It is not tested since I had removed the provision button!
     @customer = Customer.find(params[:id])
-    #@customer.update_attributes(:status => 'waiting for provisioning')
+    #@customer.update_attributes!(:status => 'waiting for provisioning')
     respond_to do |format|
 #      if @customer.provision("action=Add Customer, customerName=#{customer_params[:name]}")
       if @customer.provision(:create)

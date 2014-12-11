@@ -49,8 +49,6 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       if @user.save
-        #@user.status = 'waiting for provisioning'
-        @user.update_attributes(:status => 'waiting for deletion')
         format.html { redirect_to @user, notice: 'User is being created.' }
         format.json { render :show, status: :created, location: @user }
         
@@ -97,7 +95,6 @@ class UsersController < ApplicationController
     
     respond_to do |format|         
       if @object.save
-        @object.update_attributes(:status => 'waiting for provisioning')
         @object.provision(:create)
         format.html { redirect_to @object, notice: "#{@className} is being created." }
         format.json { render :show, status: :created, location: @object } 
@@ -159,7 +156,6 @@ class UsersController < ApplicationController
     inputBody ="action=Delete User, X=#{@user.extension}, customerName=#{@customer.name}, SiteName=#{@site.name}"
     
     if @user.provision(inputBody)
-      @user.update_attributes(:status => 'waiting for deletion')
       respond_to do |format|
         format.html { redirect_to users_path, notice: "User #{@user.name} is being destroyed (background process)." }
         format.json { head :no_content }
@@ -186,7 +182,6 @@ class UsersController < ApplicationController
       flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
       redirectPath = :back
       
-      @object.update_attributes(:status => 'waiting for deletion') unless @object.activeJob?
       @object.provision(:destroy)
     else
       flash[:success] = "#{@className} #{@object.name} deleted."
