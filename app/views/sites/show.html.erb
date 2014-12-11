@@ -1,5 +1,10 @@
 <div class="index">
-	<h2>Site <%= @site.name %> of Customer <%= link_to @site.customer.name, @site.customer %></h2>
+<% if @site.customer.nil? %>
+<% customername = "UNKNOWN" %>
+<% else %>
+<% customername = @site.customer.name %>
+<% end%>
+       <h2>Site <%= @site.name %> of Customer <%= link_to customername, @site.customer %></h2>
 </div>
 
 
@@ -65,11 +70,15 @@
 			<tr>
 			    <td><%= f.label attribute[0] %></td>
 			    <td>
-			    <% begin %>
-			    <%= Customer.find(attribute[1]).name unless attribute[1].nil? %>
-			    <% rescue %>
-			    <%= attribute[1] unless attribute[1].nil? %>
-			    <% end %>
+                            <% if attribute[0] == "customer_id" %>
+			      <% begin %>
+			        <%= Customer.find(attribute[1]).name unless attribute[1].nil? %>
+			      <% rescue %>
+			        <%= attribute[1] unless attribute[1].nil? %>
+			      <% end %>
+                            <% else %>
+                              <%= attribute[1] unless attribute[1].nil? %>
+                            <% end %>
 			    </td>
 			</tr>
 			<% end %>
