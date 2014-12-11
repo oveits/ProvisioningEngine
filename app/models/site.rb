@@ -1,3 +1,31 @@
+class Validate_Sitecode < ActiveModel::Validator
+  def validate(record)
+
+    # TODO: once the templates without SiteCode are available, uncomment the follwing line:
+    #       return true if record.sitecode.nil? || record.sitecode == ""
+
+    # find all sites with the requested sitecode
+    @sites = Site.where(sitecode: record.sitecode)
+
+    # for update_attributes, which is saving the object, we need to exclude the "this" site. 
+    # Otherwise, this validation would always fail, if the site is saved already 
+    @sites = @sites.where.not(id: record.id) unless record.id.nil?
+
+    duplicate = false
+    @sites.each do |site|
+      if site.customer.target == record.customer.target
+        duplicate = true
+        break
+      end
+    end
+
+    if duplicate
+      record.errors["Sitecode [#{record.sitecode}]"] << "is already taken for target \"#{record.customer.target.name}\"!"
+    end
+
+  end # def
+end
+
 class Validate_OfficeCode < ActiveModel::Validator
   def validate(record)
     
@@ -156,6 +184,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
 #  p 'RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR'
   
   belongs_to :customer
+  validates :customer, presence: true 
   has_many :users, dependent: :destroy
   validates :name,  presence: true,
                     uniqueness: { scope: :customer, message: "is already taken for this customer" },
@@ -167,7 +196,8 @@ class Site < Provisioningobject #< ActiveRecord::Base
   validates_format_of :areacode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
   validates_format_of :localofficecode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
   validates_format_of :extensionlength, :with => /\A[1-9]$|^1[1-2]\Z/, message: "must be a number between 1..12" 
-  validates_with Validate_OfficeCode, Validate_MainExtension 
+  validates_with Validate_OfficeCode, Validate_MainExtension
+  validates_with Validate_Sitecode 
   
   
   #attr_readonly :all

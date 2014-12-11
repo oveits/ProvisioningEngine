@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.configure do |c|
-  c.filter_run_excluding broken: true #, provisioning: true #, untested: true
+  #c.filter_run_excluding broken: true #, provisioning: true #, untested: true
 end
 
 objectList = Array["Customer", "Site", "User"]
@@ -281,6 +281,7 @@ def destroyObjectByName(obj, name = "")
   #
   # Workaround: make sure the names are unique...
   #
+#abort myObjects.inspect
   if myObjects.count == 1
   #unless myObjects[0].nil?
     Delayed::Worker.delay_jobs = false
@@ -548,6 +549,12 @@ objectList.each do |obj|
             end
           end  
 
+          it "should save an #{obj} with status 'waiting for provisioning'" do
+            Delayed::Worker.delay_jobs = true
+            click_button submit, match: :first
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for provisioning/)
+          end
+
 
         end # describe "Provisioning" do
       end # describe "with valid information" do 
@@ -589,7 +596,7 @@ objectList.each do |obj|
             else
               @site=@sites[0]
             end
-            @site.update_attributes(:status => "provisioning success: was already provisioned")
+            @site.update_attributes!(:status => "provisioning success: was already provisioned")
           end
           Delayed::Worker.delay_jobs = true
           
@@ -598,20 +605,28 @@ objectList.each do |obj|
           # TODO: better to perform this count check only on createObject(obj); better to say myObject=createObject(obj) 
           #       and rely on createObject(obj) to return an object only, if the count is 1
           if myObjects.count == 1
-            myObjects[0].update_attributes(:status => "provisioning success: was already provisioned")
+            myObjects[0].update_attributes!(:status => "provisioning success: was already provisioned")
             visit provisioningobject_path(myObjects[0])
 #abort myObjects[0].inspect
           else
             abort "Found more than one #{obj} with name Example#{obj}" unless obj == "User"
             abort "Found more than one #{obj} with Extension \"30800\"" unless obj == "User"
           end
-          p page.html.gsub(/[\n\t]/, '')
+          #p page.html.gsub(/[\n\t]/, '')
          
         }
            
         let(:submit) { "Delete #{obj}" }
         let(:submit2) { "Destroy" }
         
+	it "should update the status of #{obj} 'waiting for deletion'" do
+          Delayed::Worker.delay_jobs = true
+      #p page.html.gsub(/[\n\t]/, '')
+      #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
+          click_link submit, match: :first
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
+        end
+
         # TODO: add destroy use cases
         #       1) De-Provisioning of customer
         #       2) Deletion of customer from database

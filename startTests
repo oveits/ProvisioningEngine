@@ -2,7 +2,7 @@ export HTTP_PROXY=
 export http_proxy=
 
 # always same order, with description for documentation:
-#bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
+bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
 
 # randomized, but without description:
-bundle exec rspec spec/requests/provisioningobjects_spec.rb "$@"
+#bundle exec rspec spec/requests/provisioningobjects_spec.rb "$@"

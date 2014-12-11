@@ -36,15 +36,23 @@ class Provisioningobject < ActiveRecord::Base
   end
   
   def provision(method, async=true)
-#    provisionNew(provisioningAction(method), async)
-#  end
-#  
-#  def provisionNew(inputBody, async)
+
+    # update the status of the object; throws an exception, if the object cannot be saved.
+    case method
+      when :create
+        methodNoun = "provisioning"
+      when :destroy
+        methodNoun = "de-provisioning"
+      else
+        abort "provision(method=#{method}, async=#{async}): Unknown method"
+    end
+    update_attributes!(status: "waiting for #{methodNoun}")
+
+    # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     inputBody = provisioningAction(method)
 
     @provisioningobject = self
 #abort @provisioningobject.inspect
-    # e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     
     unless target.nil?
       actionAppend = target.configuration.gsub(/\r/, '')
