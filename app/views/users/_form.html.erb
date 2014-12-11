@@ -1,7 +1,7 @@
 <% @alwaysDropDown = true %>
 <% if true %>
 <%    ro = 'readonly'; rw = 'readwrite' %>
-<%    @myparams = {"id"=>'none', "name"=>rw, "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw } %>
+<%    @myparams = {"id"=>'none', "name"=>'none', "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw } %>
 <% end %>
 
 
@@ -61,12 +61,12 @@
 			    <td>
 			    <% begin %>
 			    	<% if @alwaysDropDown %>
-			    		<%= f.select(:site_id, Site.all.map {|site| [site.customer.name + ": " + site.name,site.id]}, :prompt => "Select a Customer Site", :selected => @site.id) %>
+			    		<%= f.select(:site_id, Site.where.not(customer_id: nil).map {|site| [site.customer.name + ": " + site.name,site.id]}, :prompt => "Select a Customer Site", :selected => @site.id) %>
 			    	<% else %>
 		    			<%= f.text_field attribute[0], :value => @site.id,:readonly => true, :style => myreadonlystyle %>
 			    	<% end %>
 			    <% rescue %>
-			    	<%= f.select(:site_id, Site.all.map {|site| [site.customer.name + ": " + site.name,site.id]}, :prompt => "Select a Customer Site") %>
+			    	<%= f.select(:site_id, Site.where.not(customer_id: nil).map {|site| [site.customer.name + ": " + site.name,site.id]}, :prompt => "Select a Customer Site") %>
 			    <% end %>		    
 			    </td>
 			    </tr>

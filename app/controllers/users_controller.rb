@@ -30,7 +30,7 @@ class UsersController < ApplicationController
     end
     
     ro = 'readonly'; rw = 'readwrite'
-    @myparams = {"id"=>'none', "name"=>rw, "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
+    @myparams = {"id"=>'none', "name"=>'none', "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
 
   end
 

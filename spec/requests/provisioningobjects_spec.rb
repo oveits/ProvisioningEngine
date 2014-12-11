@@ -182,6 +182,7 @@ def fillFormForNewSite(name = "" )
     Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
   visit new_provisioningobject_path("Site") # for refreshing after creating the target
+#p page.html.gsub(/[\n\t]/, '')
   fill_in "Name",         with: name        
   select "ExampleCustomer", :from => "site[customer_id]"
   fill_in "Sitecode",         with: "99821"
@@ -213,7 +214,7 @@ def fillFormForNewUser(name = "" )
     Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
   visit new_provisioningobject_path("User") # for refreshing after creating the target
-  fill_in "Name",         with: name        
+  #fill_in "Name",         with: name        
   select "ExampleSite", :from => "user[site_id]"
   fill_in "Extension",         with: "30800"
   fill_in "Givenname",         with: "Oliver" 
@@ -384,20 +385,37 @@ objectList.each do |obj|
   
       describe "with invalid information" do
         #it "should not create a customer" do
-        it "should not create a #{myobject}" do
+        it "should not create a #{obj}" do
           #expect { click_button submit, match: :first }.not_to change(Customer, :count)
           expect { click_button submit, match: :first }.not_to change(Object.const_get(obj), :count)
           #expect { click_button submit, match: :first }.not_to change(myProvisioningobject(obj), :count)
         end
+
+        if obj == "Customer" or obj == "Site"
+          describe "with unicode characters (Umlauts) in the name" do
+            it "should not create a #{obj} and throw an error containing 'prohibited this'" do
+              #expect { click_button submit, match: :first }.not_to change(Customer, :count)
+              fillFormForNewObject(obj, "Example#{obj}Ü")
+              expect { click_button submit, match: :first }.not_to change(Object.const_get(obj), :count)
+	      expect(page.html.gsub(/[\n\t]/, '')).to match(/prohibited this/)
+              #expect { click_button submit, match: :first }.not_to change(myProvisioningobject(obj), :count)
+            end
+	  end
+	end
         
         #it "should not create a customer on second 'Save' button" do
-        it "should not create a #{myobject} on second 'Save' button" do
+        it "should not create a #{obj} on second 'Save' button" do
           expect { first('.index').click_button submit, match: :first }.not_to change(myProvisioningobject(obj), :count)
         end
         
+        it "should throw an error message" do
+          click_button submit, match: :first
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/prohibited this/)
+        end
+
         describe "with duplicate data" do
           #it "should not create a customer" do
-          it "should not create a #{myobject(obj)}" do
+          it "should not create a #{obj}" do
             createObject(obj)
             expect { createObject(obj) }.not_to change(myProvisioningobject(obj), :count) 
             if obj=="User" 
@@ -561,14 +579,17 @@ objectList.each do |obj|
     end # describe "Create #{obj}" do 
     
     #describe "Destroy Customer" do
-    describe "Destroy #{obj}", untested: true do
+    describe "Destroy #{obj}" do
       #describe "De-Provision Customer" do
-      describe "De-Provision #{obj}", provisioning: true, untested: true do
+      describe "De-Provision #{obj}", provisioning: true do
         before {
-          # synchronous hancdling to make test results more deterministic
+          # synchronous handling to make test results more deterministic
           Delayed::Worker.delay_jobs = false
           #createTarget
           begin
+            # TODO: Still broken?: if an object is in the database, but not provisioned, the object will be deleted from the DB instead of performing
+            # TODO: better make sure the object is provisioned
+
             createObject(obj)
             # DONE: need to de-provision any children befre trying to de-provision the object
             #       idea: in case of a obj=="Customer", createObject("Site") and destroyObjectByName("Site")

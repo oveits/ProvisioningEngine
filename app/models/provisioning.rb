@@ -221,8 +221,8 @@ p targetobject.inspect
       return returnvalue
     
 #    rescue Exception => e
-        update_attributes!(:status => e.message)
-        abort e.message if returnvalue == 3 || returnvalue == 7 || returnvalue == 8
+#        update_attributes!(:status => e.message)
+#        abort e.message if returnvalue == 3 || returnvalue == 7 || returnvalue == 8
     end
 
   end # def deliver
