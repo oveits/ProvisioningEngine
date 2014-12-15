@@ -185,7 +185,7 @@ def fillFormForNewSite(name = "" )
 #p page.html.gsub(/[\n\t]/, '')
   fill_in "Name",         with: name        
   select "ExampleCustomer", :from => "site[customer_id]"
-  fill_in "Sitecode",         with: "99821"
+  #fill_in "Sitecode",         with: "99821"
   fill_in "Countrycode",         with: "49" 
   fill_in "Areacode",         with: "99" 
   fill_in "Localofficecode",         with: "7007" 
@@ -530,7 +530,7 @@ objectList.each do |obj|
               when /Site/
                 createdProvisioningTask.action.should match(/customerName=ExampleCustomer/)
                 createdProvisioningTask.action.should match(/SiteName=ExampleSite/)
-                createdProvisioningTask.action.should match(/SC=99821/)
+                #createdProvisioningTask.action.should match(/SC=99821/)
                 createdProvisioningTask.action.should match(/CC=49/)
                 createdProvisioningTask.action.should match(/AC=99/)
                 createdProvisioningTask.action.should match(/LOC=7007/)
