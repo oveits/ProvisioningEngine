@@ -2,7 +2,7 @@ class Validate_Sitecode < ActiveModel::Validator
   def validate(record)
 
     # TODO: once the templates without SiteCode are available, uncomment the follwing line:
-    #       return true if record.sitecode.nil? || record.sitecode == ""
+           return true if record.sitecode.nil? || record.sitecode == ""
 
     # find all sites with the requested sitecode
     @sites = Site.where(sitecode: record.sitecode)
@@ -190,8 +190,8 @@ class Site < Provisioningobject #< ActiveRecord::Base
                     uniqueness: { scope: :customer, message: "is already taken for this customer" },
                     length: { in: 3..20  }
   validates_format_of :name, :with => /\A[a-zA-Z][a-zA-Z0-9\-\.]+\Z/, message: "must start with a character a-z or A-Z and can contain characters, numbers, '-' and '.'"
-  validates :sitecode, presence: true
-  validates_format_of :sitecode, :with => /\A[1-9][0-9]{0,6}\Z/, message: "must be a number of length 1 to 7" 
+  #validates :sitecode, presence: true
+  validates_format_of :sitecode, :with => /\A\Z|\A[1-9][0-9]{0,6}\Z/, message: "must be a number of length 1 to 7" 
   validates_format_of :gatewayIP, :with => Regexp.new('\A\Z|' + validIPAddressRegex.source + '|' + validRFC952HostnameRegex.source), message: "must be either empty or a valid IP address or Domain Name" 
   validates_format_of :countrycode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
   validates_format_of :areacode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
