@@ -49,8 +49,8 @@ class UpdateDB
       doc.root.elements["Sites"].elements.each do |element|
         if element.elements["SiteName"].text == targetobject.name
           # Note: update_attributes does a validation, and update_attribute does not. We cannot update the extensionlength and mainextension at the same time, since they depend on each other
-          targetobject.update_attribute('sitecode', element.elements["SiteCode"].text )
-          targetobject.update_attribute('gatewayIP', element.elements["GatewayIP"].text )
+          targetobject.update_attribute('sitecode', element.elements["SiteCode"].text ) unless element.elements["SiteCode"].nil?
+          targetobject.update_attribute('gatewayIP', element.elements["GatewayIP"].text ) unless element.elements["GatewayIP"].nil?
           targetobject.update_attribute('countrycode', element.elements["CountryCode"].text )
           targetobject.update_attribute('areacode', element.elements["AreaCode"].text )
           targetobject.update_attribute('localofficecode', element.elements["LocalOfficeCode"].text )
