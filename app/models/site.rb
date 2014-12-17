@@ -191,6 +191,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
                     length: { in: 3..20  }
   validates_format_of :name, :with => /\A[a-zA-Z][a-zA-Z0-9\-\.]+\Z/, message: "must start with a character a-z or A-Z and can contain characters, numbers, '-' and '.'"
   #validates :sitecode, presence: true
+  validates_format_of :countrycode, :with => /\A44\Z|\A49\Z/, message: "currently only 44 or 49 supported"
   validates_format_of :sitecode, :with => /\A\Z|\A[1-9][0-9]{0,6}\Z/, message: "must be a number of length 1 to 7" 
   validates_format_of :gatewayIP, :with => Regexp.new('\A\Z|' + validIPAddressRegex.source + '|' + validRFC952HostnameRegex.source), message: "must be either empty or a valid IP address or Domain Name" 
   validates_format_of :countrycode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
