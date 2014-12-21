@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140821221257) do
+ActiveRecord::Schema.define(version: 20141217211253) do
 
   create_table "customers", force: true do |t|
     t.string   "name"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 20140821221257) do
     t.datetime "updated_at"
     t.string   "status"
     t.integer  "target_id"
+    t.string   "language"
   end
 
   add_index "customers", ["target_id"], name: "index_customers_on_target_id"

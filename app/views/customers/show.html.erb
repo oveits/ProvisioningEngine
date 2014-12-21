@@ -45,6 +45,7 @@
       <th>ID</th>
       <th>Customer</th>
       <th>Target/Site</th>
+      <th>Language</th>
       <th>Status</th>
       <th colspan="4"></th>
     </tr>
@@ -61,6 +62,7 @@
         	[id] <%= @customer.target_id %>
         	<% end %>
         </td>
+        <td><%= @customer.language %></td>
         <td><%= link_to @customer.status, customer_provisionings_path(@customer) %></td>       
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
         <td class="actions"><%= link_to 'Edit', edit_customer_path(@customer) %></td>
