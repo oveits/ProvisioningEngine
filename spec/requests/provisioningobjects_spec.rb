@@ -165,6 +165,7 @@ def fillFormForNewCustomer(name = "ExampleCustomer" )
   visit new_provisioningobject_path("Customer") # for refreshing after creating the target
   fill_in "Name",         with: name        
   select "TestTarget", :from => "customer[target_id]"
+  select "german", :from => "customer[language]"
   
   # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
   # Expected drop down in HTML page:

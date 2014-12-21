@@ -1,3 +1,10 @@
+class ValidateLanguage < ActiveModel::Validator
+  def validate(record)
+    #abort record.inspect
+    # returnString = @customer.provision("testMode=testMode, action=Add Customer, customerName=#{customer_params[:name]}")
+  end
+end
+
 class ValidateWithProvisioningEngine < ActiveModel::Validator
   def validate(record)
     # returnString = @customer.provision("testMode=testMode, action=Add Customer, customerName=#{customer_params[:name]}")
@@ -69,7 +76,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     
     case method
       when :create
-        "action=Add Customer, customerName=#{name}"
+        "action=Add Customer, customerName=#{name}, customerLanguage=#{language}"
       when :destroy
         "action=Delete Customer, customerName=#{name}"
       else
@@ -120,10 +127,13 @@ class Customer < Provisioningobject #< ActiveRecord::Base
 #    end 
 #  end # def
   
+    LANGUAGES = [LANGUAGE_ENGLISH_US = 'englishUS', LANGUAGE_ENGLISH_GB = 'englishGB', LANGUAGE_GERMAN = 'german'] # spanish, frensh, italian, portuguesePT, portugueseBR, dutch, russian, turkish
+
   
     has_many :sites, dependent: :destroy
     has_many :provisionings
     
+    validates :language, inclusion: {in: LANGUAGES}
     validates :name, presence: true,
                      #uniqueness: true, 
                      uniqueness: {:case_sensitive => false},
@@ -132,6 +142,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     validates :target_id, presence: true
     
 #    validates_with ValidateWithProvisioningEngine
+#    validates_with ValidateLanguage
 #    handle_asynchronously :create_on_OSV
 end
 
