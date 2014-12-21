@@ -45,13 +45,13 @@
 		<% myreadonlystyle = "background:#eee none; color:#222"  %>
 		<% @customer.attributes.each do |attribute| %> 
 			<tr>
-				<% if myparams[attribute[0]] == rw %>
+			<% if myparams[attribute[0]] == rw %>
 			    <td><%= f.label attribute[0] %></td>
 			    <td><%= f.text_field attribute[0]  %></td>
-			    <% elsif myparams[attribute[0]] == ro %>
+	 		<% elsif myparams[attribute[0]] == ro %>
 			    <td><%= f.label attribute[0] %></td>
 			    <td><%= f.text_field attribute[0],:readonly => true, :style => myreadonlystyle %></td>
-			    <% elsif myparams[attribute[0]] == 'showTargetDropDown' %>
+		 	<% elsif myparams[attribute[0]] == 'showTargetDropDown' %>
 			    <td><%= f.label attribute[0] %></td>
 			    <td>
 			    <% begin %>
@@ -65,7 +65,12 @@
 			    <% end %>		    
 			    </td>
 
-			    <% end %>
+			<% elsif myparams[attribute[0]] == 'showLanguageDropDown' %>
+			    <td><%= f.label attribute[0] %></td>
+			    <td>
+				<%= f.select(:language, Customer::LANGUAGES.map {|language| [language,language]}, :prompt => "Select the customer main language") %>
+			    </td>
+		 	<% end %>
 			</tr>
 			<% end %>
 			<tr>

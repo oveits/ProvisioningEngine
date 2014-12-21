@@ -16,14 +16,16 @@ class CustomersController < ApplicationController
   def new
     @customer = Customer.new
     ro = 'readonly'; rw = 'readwrite'
-    @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
+    #@myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
+    @myparams = {"id"=>'ro', "name"=>rw, "language"=>'showLanguageDropDown', "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
+    #@myparams = {"id"=>'ro', "name"=>rw, "language"=>rw, "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
 
   end
 
   # GET /customers/1/edit
   def edit
     ro = 'readonly'; rw = 'readwrite'
-    @myparams = {"id"=>ro, "name"=>rw, "customer_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "target_id"=>ro }
+    @myparams = {"id"=>ro, "name"=>rw, "language"=>'showLanguageDropDown', "customer_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "target_id"=>ro }
   end
 
   # POST /customers
@@ -31,7 +33,7 @@ class CustomersController < ApplicationController
   def create 
     # TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
     ro = 'readonly'; rw = 'readwrite'
-    @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
+    @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
 
     @object = Customer.new(customer_params)
     @customer = @object
@@ -171,6 +173,6 @@ class CustomersController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def customer_params
-      params.require(:customer).permit(:name, :target_id)
+      params.require(:customer).permit(:name, :target_id, :language)
     end
 end
