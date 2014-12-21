@@ -142,8 +142,9 @@ def createCustomerDB_manual( arguments = {} )
 
         target = Target.new(name: "TestTarget", configuration: "a=b")
 	target.save
-	customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id)
-        customer.save
+	#customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id)
+	customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id, language: Customer::LANGUAGE_GERMAN)
+        customer.save!
 end
 
 def fillFormForNewObject(obj, name="")

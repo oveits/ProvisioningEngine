@@ -127,6 +127,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
 #    end 
 #  end # def
   
+    # see http://rails-bestpractices.com/posts/708-clever-enums-in-rails
     LANGUAGES = [LANGUAGE_ENGLISH_US = 'englishUS', LANGUAGE_ENGLISH_GB = 'englishGB', LANGUAGE_GERMAN = 'german'] # spanish, frensh, italian, portuguesePT, portugueseBR, dutch, russian, turkish
 
   
