@@ -105,7 +105,19 @@ class Provisioningobject < ActiveRecord::Base
       end
     end 
   end # def
-  
+
+def dropdownlist(type)
+  if type == :countrycode
+    COUNTRYCODES
+  end 
+end 
+
+    # see http://rails-bestpractices.com/posts/708-clever-enums-in-rails
+    LANGUAGES = [LANGUAGE_ENGLISH_US = 'englishUS', LANGUAGE_ENGLISH_GB = 'englishGB', LANGUAGE_GERMAN = 'german'] # spanish, frensh, italian, portuguesePT, portugueseBR, dutch, russian, turkish
+    COUNTRYCODES = [COUNTRYCODE_US = '1', COUNTRYCODE_GB = '44', COUNTRYCODE_DE = '49']
+    LIST = {}
+    LIST[:countrycode] = COUNTRYCODES
+
 end
 
 

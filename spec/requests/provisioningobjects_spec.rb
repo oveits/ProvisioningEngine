@@ -188,7 +188,8 @@ def fillFormForNewSite(name = "" )
   fill_in "Name",         with: name        
   select "ExampleCustomer", :from => "site[customer_id]"
   #fill_in "Sitecode",         with: "99821"
-  fill_in "Countrycode",         with: "49" 
+  #fill_in "Countrycode",         with: "49" 
+  select "49", :from => "site[countrycode]"
   fill_in "Areacode",         with: "99" 
   fill_in "Localofficecode",         with: "7007" 
   fill_in "Extensionlength",         with: "5" 
