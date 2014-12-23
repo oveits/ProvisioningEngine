@@ -56,15 +56,20 @@
 			    <td>
 			    <% begin %>
 			    	<% if @alwaysDropDown %>
-			    		<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, :prompt => "Select a Customer", :selected => @customer.id) %>
+			    		<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, :prompt => "Select a #{:customer}", :selected => @customer.id) %>
 			    	<% else %>
 		    			<%= f.text_field attribute[0], :value => @customer.id,:readonly => true, :style => myreadonlystyle %>
 			    	<% end %>
 			    <% rescue %>
-			    	<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, :prompt => "Select a Customer") %>
+			    	<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, :prompt => "Select a #{:customer}") %>
 			    <% end %>		    
 			    </td>
 			    </tr>
+                        <% elsif myparams[attribute[0]] == 'showDropDown' %>
+                                <tr>
+                            <td><%= f.label attribute[0] %></td>
+			    <td><%= f.select(attribute[0], Provisioningobject::LIST[attribute[0].to_sym].map {|countrycode| [countrycode,countrycode]}, :prompt => "Select a #{:countrycode}") %></td>
+                            </tr>
 			<% else # default: show as readonly %>
 				<tr>
 			    <td><%= f.label attribute[0] %></td>
