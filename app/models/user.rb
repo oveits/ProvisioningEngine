@@ -133,6 +133,7 @@ class User < Provisioningobject #< ActiveRecord::Base
   validates :name,  #presence: true,
                     #length: { in: 3..20  }
                     length: { maximum: 20  }
+  #validates :extension, unique_on_target: {:scope => [:countrycode, :areacode, :localofficecode]}
   validates :extension, #presence: true,
                     uniqueness: { scope: :site, message: "is already taken for this #{:site}" }
                     #length: { is: @site.extensionlength.to_i  }

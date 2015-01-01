@@ -135,6 +135,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     has_many :provisionings
     
     validates :language, inclusion: {in: LANGUAGES}
+    #validates :name, unique_on_target: {:case_sensitive => false, :myclass => self.inspect.gsub(/\(.*/,'')}
     validates :name, presence: true,
                      #uniqueness: true, 
                      uniqueness: {:case_sensitive => false},
