@@ -1,8 +1,8 @@
 class Validate_Sitecode < ActiveModel::Validator
   def validate(record)
 
-    # TODO: once the templates without SiteCode are available, uncomment the follwing line:
-           return true if record.sitecode.nil? || record.sitecode == ""
+    # allow for NULL sitecode:
+    return true if record.sitecode.nil? || record.sitecode == ""
 
     # find all sites with the requested sitecode
     @sites = Site.where(sitecode: record.sitecode)
@@ -201,6 +201,12 @@ class Site < Provisioningobject #< ActiveRecord::Base
   validates_format_of :extensionlength, :with => /\A[1-9]$|^1[1-2]\Z/, message: "must be a number between 1..12" 
   validates_with Validate_OfficeCode, Validate_MainExtension
   validates_with Validate_Sitecode 
+  validates :sitecode, unique_on_target: true 
+  validates :mainextension, unique_on_target: {:scope => [:countrycode, :areacode, :localofficecode]} 
+  validates :gatewayIP, unique_on_target: true 
+
+  # does not work:
+  #validates :gatewayIP, uniqueness: { scope: :target, message: "is already taken for this target" }
   
   
   #attr_readonly :all

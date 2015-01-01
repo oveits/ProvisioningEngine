@@ -4,6 +4,19 @@ RSpec.configure do |c|
   #c.filter_run_excluding broken: true #, provisioning: true #, untested: true
 end
 
+# if set to false, the Gatewayip input is kept empty, when a new site is created
+#$setgatewayip = false
+$setgatewayip = true
+#TODO: replace with
+#      setgatewayipList = Array[nil, "47.68.190.57"]
+#      and iterate over the list
+
+$customerName="ExampleCustomerV8"; $target = "OSVIP=192.168.160.7,XPRIP=192.168.160.7,UCIP=192.168.160.7" # OSV V8 (CSL9DEVEL)
+#$customerName="ExampleCustomerV7R1"; $target = "OSVIP=192.168.160.4,XPRIP=192.168.113.102,UCIP=192.168.113.101" # OSV V7R1 (CSL9)
+#TODO: replace with 
+#      versionList = Array["V7R1", "V8"]
+#      and iterate over versionList, and set customerName and and target accordingly 
+
 objectList = Array["Customer", "Site", "User"]
 #objectList = Array["Customer"]
 #objectList = Array["Site"]
@@ -42,15 +55,8 @@ def myobjects(obj=myObject)
 end
 
 def provisioningobject_path(thisobject)
-  #customer_path
+  # returns e.g. customer_path
   path = send("#{myobject(thisobject.class.to_s)}_path", thisobject.id)
-#  if thisobject.class.to_s == "Integer"
-#    send("#{myobject}_path".to_sym, thisobject)
-#  elsif !thisobject.id.nil?
-#    send("#{myobject}_path".to_sym, thisobject.id)
-#  else
-#    abort "provisioningobject_path: called with argument that has no id" + thisobject.inspect
-#  end
 end
 
 def myProvisioningobject(obj)
@@ -83,7 +89,7 @@ def createSite(name = "ExampleSite" )
   click_button 'Save', match: :first 
 end
 
-def createCustomer(name = "ExampleCustomer" )      
+def createCustomer(name = $customerName )      
   # add and provision customer "ExampleCustomer with target = TestTarget" 
   fillFormForNewCustomer(name)
   click_button 'Save', match: :first 
@@ -140,7 +146,7 @@ def createCustomerDB_manual( arguments = {} )
 	# default values
 	arguments[:name] ||= "nonProvisionedCust"
 
-        target = Target.new(name: "TestTarget", configuration: "a=b")
+        target = Target.new(name: "TestTarget", configuration: $target)
 	target.save
 	#customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id)
 	customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id, language: Customer::LANGUAGE_GERMAN)
@@ -148,7 +154,8 @@ def createCustomerDB_manual( arguments = {} )
 end
 
 def fillFormForNewObject(obj, name="")
-  name = "Example#{obj}" if name == ""
+  name = $customerName if name == "" && obj == "Customer"
+  name = "Example#{obj}" if name == "" && obj != "Customer"
   case obj
     when /Customer/
       fillFormForNewCustomer(name)
@@ -159,9 +166,9 @@ def fillFormForNewObject(obj, name="")
   end  
 end
 
-def fillFormForNewCustomer(name = "ExampleCustomer" )
+def fillFormForNewCustomer(name = $customerName )
   if Target.where(name: 'TestTarget').count == 0
-    Target.create(name: 'TestTarget', configuration: 'a=b')
+    Target.create(name: 'TestTarget', configuration: $target)
   end
   visit new_provisioningobject_path("Customer") # for refreshing after creating the target
   fill_in "Name",         with: name        
@@ -177,7 +184,7 @@ end
 
 def fillFormForNewSite(name = "" )
   name = "ExampleSite" if name == ""
-  if Customer.where(name: 'ExampleCustomer').count == 0
+  if Customer.where(name: $customerName).count == 0
     delayed_worker_delay_jobs_before = Delayed::Worker.delay_jobs
     Delayed::Worker.delay_jobs = false
     createCustomer
@@ -186,7 +193,7 @@ def fillFormForNewSite(name = "" )
   visit new_provisioningobject_path("Site") # for refreshing after creating the target
 #p page.html.gsub(/[\n\t]/, '')
   fill_in "Name",         with: name        
-  select "ExampleCustomer", :from => "site[customer_id]"
+  select $customerName, :from => "site[customer_id]"
   #fill_in "Sitecode",         with: "99821"
   #fill_in "Countrycode",         with: "49" 
   select "49", :from => "site[countrycode]"
@@ -194,6 +201,7 @@ def fillFormForNewSite(name = "" )
   fill_in "Localofficecode",         with: "7007" 
   fill_in "Extensionlength",         with: "5" 
   fill_in "Mainextension",         with: "10000" 
+  fill_in "Gatewayip",         with: "47.68.190.57" unless $setgatewayip == false
   
   # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
   # Expected drop down in HTML page:
@@ -204,7 +212,7 @@ end
 
 def fillFormForNewUser(name = "" )
   name = "ExampleUser" if name == ""
-  if Customer.where(name: 'ExampleCustomer').count == 0
+  if Customer.where(name: $customerName).count == 0
     delayed_worker_delay_jobs_before = Delayed::Worker.delay_jobs
     Delayed::Worker.delay_jobs = false
     createCustomer
@@ -217,7 +225,7 @@ def fillFormForNewUser(name = "" )
     Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
   visit new_provisioningobject_path("User") # for refreshing after creating the target
-  #fill_in "Name",         with: name        
+  #fill_in "Name",         with: name        # not possible, since name input field might not be displayed (depending on the application.yaml file content)
   select "ExampleSite", :from => "user[site_id]"
   fill_in "Extension",         with: "30800"
   fill_in "Givenname",         with: "Oliver" 
@@ -231,7 +239,7 @@ def fillFormForNewUser(name = "" )
           #    <option value="21">Cust2</option></select>
 end
 
-def destroyCustomer(customerName = "ExampleCustomer" )
+def destroyCustomer(customerName = $customerName )
   obj = "Customer"
   # for test: create the customer, if it does not exist:
   Delayed::Worker.delay_jobs = true
@@ -261,8 +269,10 @@ end
 def destroyObjectByName(obj, name = "")
   
   # default name:
-  name = "Example#{obj}" if name == ""
+  name = $customerName if name == "" && obj == "Customer"
+  name = "Example#{obj}" if name == "" && obj != "Customer"
   # for test: create the customer, if it does not exist:
+  delayedJobsBefore = Delayed::Worker.delay_jobs
   Delayed::Worker.delay_jobs = true
 
   # TODO: not yet supported:
@@ -270,7 +280,9 @@ def destroyObjectByName(obj, name = "")
   
   # de-provision the customer, if it exists on the target system
   # else delete the customer from the database
-  myObjects = myProvisioningobject(obj).where(name: name)
+  myObjects = myProvisioningobject(obj).where(name: name) unless obj == "User"
+  myObjects = myProvisioningobject(obj).where(extension: "30800") if obj == "User"  # not sufficient: need to specify the site as well.
+  #myObjects = myProvisioningobject(obj).where(name: name) if obj == "User"  # not possible, since name input field might not be displayed (depending on the application.yaml file content)
   #p @customers[0].inspect
   #p myObjects.inspect
   
@@ -290,7 +302,8 @@ def destroyObjectByName(obj, name = "")
   #unless myObjects[0].nil?
     Delayed::Worker.delay_jobs = false
     visit provisioningobject_path(myObjects[0])
-    click_link "Destroy", match: :first
+    #click_link "Destroy", match: :first
+    click_link "Delete #{obj}", match: :first
     Delayed::Worker.delay_jobs = true
   elsif myObjects.count > 1
     abort "destroyObjectByName(#{obj}, #{name}): found more than one #{obj} with name=#{name}. Aborting..."
@@ -298,15 +311,19 @@ def destroyObjectByName(obj, name = "")
   
   # delete the customer from the database if it still exists
   myObjects = myProvisioningobject(obj).where(name: name)
+  myObjects = myProvisioningobject(obj).where(extension: "30800") if obj == "User"  # works only, if no other user with extension=30800 is created in the test database
+  #myObjects = myProvisioningobject(obj).where(name: name) if obj == "User"  # not possible, since name input field might not be displayed (depending on the application.yaml file content)
   #unless myObjects[0].nil?
   if myObjects.count == 1
     Delayed::Worker.delay_jobs = false
     visit provisioningobject_path(myObjects[0])
-    click_link "Destroy", match: :first
+    #click_link "Destroy", match: :first
+    click_link "Delete #{obj}", match: :first
     Delayed::Worker.delay_jobs = true
   elsif myObjects.count > 1
     abort "destroyObjectByName(#{obj}, #{name}): found more than one #{obj} with name=#{name}. Aborting..."
   end  
+  Delayed::Worker.delay_jobs = delayedJobsBefore
 end
 
   
@@ -398,7 +415,7 @@ objectList.each do |obj|
           describe "with unicode characters (Umlauts) in the name" do
             it "should not create a #{obj} and throw an error containing 'prohibited this'" do
               #expect { click_button submit, match: :first }.not_to change(Customer, :count)
-              fillFormForNewObject(obj, "Example#{obj}Ü")
+              fillFormForNewObject(obj, "Umlaut#{obj}Ü")
               expect { click_button submit, match: :first }.not_to change(Object.const_get(obj), :count)
 	      expect(page.html.gsub(/[\n\t]/, '')).to match(/prohibited this/)
               #expect { click_button submit, match: :first }.not_to change(myProvisioningobject(obj), :count)
@@ -421,10 +438,22 @@ objectList.each do |obj|
           it "should not create a #{obj}" do
             createObject(obj)
             expect { createObject(obj) }.not_to change(myProvisioningobject(obj), :count) 
-            if obj=="User" 
+          end
+          
+          it "should should throw certain error messages" do
+            createObject(obj)
+            createObject(obj)
+            if obj=="Site"
+              #p "============================"
+              p page.html.gsub(/[\n\t]/, '').gsub(/\/\//, '').inspect
+              expect(page).to have_selector('li', text: "#{:name.capitalize} is already taken for this customer")
+              expect(page.html.gsub(/[\n\t]/, '')).to match(/#{:mainextension.capitalize} \[10000\] is already taken for target/)
+              expect(page.html.gsub(/[\n\t]/, '')).to match(/#{:gatewayIP.capitalize} \[47\.68\.190\.57\] is already taken for target/) unless $setgatewayip == false
+            end
+            if obj=="User"
               #p "============================"
               #p page.html.gsub(/[\n\t]/, '').inspect
-              expect(page).to have_selector('li', text: "Extension is already taken for this site")   
+              expect(page).to have_selector('li', text: "Extension is already taken for this site")
             end
           end
         end
@@ -499,14 +528,22 @@ objectList.each do |obj|
             click_button submit, match: :first
             # for debugging:
             #p page.html.gsub(/[\n\t]/, '')
+#abort page.html.gsub(/[\n\t]/, '')
             
             # TODO: it should redirect to customer_path(created_customer_id)
 
             # redirected page should show provisioning success
-            expect(page.html.gsub(/[\n\t]/, '')).to match(/provisioning success/) #have_selector('h2', text: 'Customers')
+            if /was already/.match(page.html.gsub(/[\n\t]/, '')) || /phone number is in use already/.match(page.html.gsub(/[\n\t]/, ''))
+              destroyObjectByName(obj)
+#abort User.all.inspect
+#abort page.html.gsub(/[\n\t]/, '')
+              createObject(obj)
+            end
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/provisioning success/)
             
             # /customers/<id> should show provisioning success
-            myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User"
+            myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
+            myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
             myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
             visit provisioningobject_path(myObjects[0])
             # for debugging:
@@ -523,15 +560,15 @@ objectList.each do |obj|
           end
           
           #it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomer'" do
-          it "should create a provisioning task with action='action=Add #{obj}' and 'customerName=ExampleCustomer' etc." do
+          it "should create a provisioning task with action='action=Add #{obj}' and 'customerName=#{$customerName} etc." do
             click_button submit, match: :first
             createdProvisioningTask = Provisioning.find(Provisioning.last)
             createdProvisioningTask.action.should match(/action=Add #{obj}/)
             case obj
               when /Customer/
-                createdProvisioningTask.action.should match(/customerName=ExampleCustomer/)
+                createdProvisioningTask.action.should match(/customerName=#{$customerName}/)
               when /Site/
-                createdProvisioningTask.action.should match(/customerName=ExampleCustomer/)
+                createdProvisioningTask.action.should match(/customerName=#{$customerName}/)
                 createdProvisioningTask.action.should match(/SiteName=ExampleSite/)
                 #createdProvisioningTask.action.should match(/SC=99821/)
                 createdProvisioningTask.action.should match(/CC=49/)
@@ -540,7 +577,7 @@ objectList.each do |obj|
                 createdProvisioningTask.action.should match(/XLen=5/)
                 createdProvisioningTask.action.should match(/EndpointDefaultHomeDnXtension=10000/)
               when /User/
-                createdProvisioningTask.action.should match(/customerName=ExampleCustomer/)
+                createdProvisioningTask.action.should match(/customerName=#{$customerName}/)
                 createdProvisioningTask.action.should match(/SiteName=ExampleSite/)
                 createdProvisioningTask.action.should match(/X=30800/)
                 createdProvisioningTask.action.should match(/givenName=Oliver/)
@@ -555,7 +592,6 @@ objectList.each do |obj|
             Delayed::Worker.delay_jobs = false
             click_button submit, match: :first
             createdProvisioningTask = Provisioning.find(Provisioning.last)
-#abort createdProvisioningTask.inspect
             begin
               createdProvisioningTask.status.should match(/finished successfully/)
             rescue
@@ -621,10 +657,12 @@ objectList.each do |obj|
               @site=@sites[0]
             end
             @site.update_attributes!(:status => "provisioning success: was already provisioned")
-          end
+          end # if obj == "Site"
+
           Delayed::Worker.delay_jobs = true
           
-          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User"
+          myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
           myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
           # TODO: better to perform this count check only on createObject(obj); better to say myObject=createObject(obj) 
           #       and rely on createObject(obj) to return an object only, if the count is 1
@@ -633,7 +671,8 @@ objectList.each do |obj|
             visit provisioningobject_path(myObjects[0])
 #abort myObjects[0].inspect
           else
-            abort "Found more than one #{obj} with name Example#{obj}" unless obj == "User"
+            abort "Found more than one #{obj} with name #{$customerName}" if obj == "Customer"
+            abort "Found more than one #{obj} with name Example#{obj}" unless obj == "User" || obj == "Customer"
             abort "Found more than one #{obj} with Extension \"30800\"" unless obj == "User"
           end
           #p page.html.gsub(/[\n\t]/, '')
@@ -644,6 +683,18 @@ objectList.each do |obj|
         let(:submit2) { "Destroy" }
         
 	it "should update the status of #{obj} 'waiting for deletion'" do
+          Delayed::Worker.delay_jobs = true
+      #p page.html.gsub(/[\n\t]/, '')
+      #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
+          click_link submit, match: :first
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
+        end
+
+	it "should update the status of #{obj} 'waiting for deletion' also for objects that had import errors" do
+          myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
+	  myObjects[0].update_attributes!(:status => "provisioning failed (import errors)")
           Delayed::Worker.delay_jobs = true
       #p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
@@ -662,8 +713,9 @@ objectList.each do |obj|
           expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h2', text: 'Customers')
           
           # /customers/<id> should show deletion success
+          myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
           myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
-          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User"
           #p customers
           visit provisioningobject_path(myObjects[0])
           # for debugging:

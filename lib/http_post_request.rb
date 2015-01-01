@@ -39,7 +39,7 @@ class HttpPostRequest
       end
     end
     
-    p '------------- HttpPostRequest POST Data -----------------'
+    p "------------- HttpPostRequest POST Data to #{uriString} -----------------"
     p postData.inspect
     p '----------------------------------------------------------'
     
