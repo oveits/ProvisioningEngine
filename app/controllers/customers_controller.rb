@@ -58,9 +58,11 @@ class CustomersController < ApplicationController
       if @customer.update(customer_params)
         format.html { redirect_to @customer, notice: 'Customer was successfully updated.' }
         format.json { render :show, status: :ok, location: @customer }
+        format.js
       else
         format.html { render :edit }
         format.json { render json: @customer.errors, status: :unprocessable_entity }
+        format.js
       end
     end
   end
