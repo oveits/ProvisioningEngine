@@ -1,3 +1,6 @@
+<script>
+setTimeout("location.reload(true);",10000);
+</script>
 <div class="index">
 	<h2>Customer <%= @customer.name %></h2>
 </div>
@@ -45,7 +48,9 @@
       <th>ID</th>
       <th>Customer</th>
       <th>Target/Site</th>
+<% if false %>
       <th>Language</th>
+<% end %>
       <th>Status</th>
       <th colspan="4"></th>
     </tr>
@@ -62,8 +67,14 @@
         	[id] <%= @customer.target_id %>
         	<% end %>
         </td>
+<% if false %>
         <td><%= @customer.language %></td>
-        <td><%= link_to @customer.status, customer_provisionings_path(@customer) %></td>       
+<% end %>
+        <td>
+           <span id="<%= "customer_" + @customer.id.to_s %>">
+		<%= link_to @customer.status, customer_provisionings_path(@customer) %>
+           </span>
+        </td>
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
         <td class="actions"><%= link_to 'Edit', edit_customer_path(@customer) %></td>
 			<% end %>

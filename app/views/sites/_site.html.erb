@@ -2,9 +2,13 @@
   <td colspan="2"></td>
   <td><%= link_to site.name, site %></td>
   <% if site.status.nil? %>
-  	<td></td>
+    <td></td>
   <% else %>
-  <td><%= link_to site.status, site_provisionings_path(site) %></td>
+    <td>
+      <span id="<%= "site_" + site.id.to_s %>">
+        <%= link_to site.status, site_provisionings_path(site) %>
+      </span>
+    </td>
   <% end %>
 			<% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
   <td class="actions"><%= link_to 'Edit', edit_site_path(site) %></td>
