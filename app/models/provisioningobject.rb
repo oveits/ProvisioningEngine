@@ -28,7 +28,7 @@ class Provisioningobject < ActiveRecord::Base
   end
   
   def provisioned?
-    if /provisioning success/.match(status) || /provisioning failed \(import errors\)/.match(status)
+    if /provisioning success/.match(status) || /failed \(import errors\)/.match(status)
       true
     else
       false
@@ -46,7 +46,10 @@ class Provisioningobject < ActiveRecord::Base
       else
         abort "provision(method=#{method}, async=#{async}): Unknown method"
     end
-    update_attributes!(status: "waiting for #{methodNoun}")
+    # this will fail for old objects that do not yet obey to the validations:
+    #update_attributes!(status: "waiting for #{methodNoun}")
+    # it is better to update the status, even if the other validations might fail:
+    update_attribute(:status, "waiting for #{methodNoun}")
 
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     inputBody = provisioningAction(method)
