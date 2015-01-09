@@ -107,7 +107,8 @@ class Provisioning < ActiveRecord::Base
             break unless targetobject.nil?
           end
           abort 'provisioning.deliver: ' + resulttext
-        when /Warnings:0    Errors:0     Syntax Errors:0/ 
+        #when /Warnings:0    Errors:0     Syntax Errors:0/ 
+        when /Errors:0     Syntax Errors:0/ 
         # success
           resulttext = 'finished successfully at ' + Time.now.to_s
           returnvalue = 0
