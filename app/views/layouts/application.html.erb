@@ -9,7 +9,24 @@
 </head>
 <body>
 	
-	<% @mymenue = [:customers, :sites, :users, :provisionings, :targets] %>
+<% @mymenue = [:customers, :sites, :users, :provisionings, :targets] %>
+
+<%  # is the link an index?  
+    isindex = @mymenue.find { |menueitem| /#{menueitem.to_s}\Z/.match(request.original_url) } 
+    isindexBool = !isindex.nil?
+%>
+<%  # is the link a show page?
+    isshow = @mymenue.find { |menueitem| /#{menueitem.to_s}\/[1-9][0-9]*\Z/.match(request.original_url) }
+    isshowBool = !isshow.nil?
+%>
+
+<script>
+<% if isindexBool || isshowBool %>
+refresh=setTimeout("location.reload(true);",10000);
+<% else %>
+clearTimeout(refresh)
+<% end %>
+</script>
 	
 <ul class="semiopaquemenu">
 	<% @mymenue.each do |menueitem| %>

@@ -535,6 +535,13 @@ objectList.each do |obj|
             # redirected page should show provisioning success
             if /was already/.match(page.html.gsub(/[\n\t]/, '')) || /phone number is in use already/.match(page.html.gsub(/[\n\t]/, ''))
               destroyObjectByName(obj)
+              if /script error/.match(page.html.gsub(/[\n\t]/, ''))
+                childObj = "Site" if obj == "Customer"
+                childObj = "User" if obj == "Site"
+                createObject(childObj)
+                destroyObjectByName(childObj)
+                destroyObjectByName(obj)
+              end
 #abort User.all.inspect
 #abort page.html.gsub(/[\n\t]/, '')
               createObject(obj)
