@@ -58,11 +58,12 @@ class SitesController < ApplicationController
     @object = Site.new(site_params)
     @site = @object
     @className = @object.class.to_s
+    async = true
 
     respond_to do |format|         
       if @object.save
         #@object.update_attributes!(:status => 'waiting for provisioning')
-        @object.provision(:create)
+        @object.provision(:create, async)
         format.html { redirect_to @object, notice: "#{@className} is being created." }
         format.json { render :show, status: :created, location: @object } 
       else
