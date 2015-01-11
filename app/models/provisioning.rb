@@ -79,10 +79,11 @@ class Provisioning < ActiveRecord::Base
       # map the action of the provisioningEngine to provisioning status
       thisaction = 'provisioning' unless action[/Add/].nil?
       thisaction = 'deletion' unless action[/Delete/].nil?
+      thisaction = 'reading' unless action[/Show/].nil?
       # if not found:
       thisaction = 'unknown action' if thisaction.nil?  
       
-      # update the stats uf the target objects
+      # update the status of the target objects
       targetobjects = [user, site, customer] # extend, if needed; highest priority first (see comment below)
         # e.g. with "provisioning.action = 'Add Customer, ...', update the status of the customer object to 'provisioning in progress'"
         # only the first non-nil object is updated
@@ -92,7 +93,7 @@ class Provisioning < ActiveRecord::Base
       targetobjects.each do |targetobject|
         targetobject.update_attribute(:status, thisaction + ' in progress') unless targetobject.nil?
         break unless targetobject.nil?
-      end
+      end unless thisaction == 'reading'
 
       resulttext = provisioningRequest.perform(action, uriString, httpreadtimeout, httpopentimeout)
       
@@ -105,7 +106,7 @@ class Provisioning < ActiveRecord::Base
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil?
             break unless targetobject.nil?
-          end
+          end unless thisaction == 'reading'
           abort 'provisioning.deliver: ' + resulttext
         #when /Warnings:0    Errors:0     Syntax Errors:0/ 
         when /Errors:0     Syntax Errors:0/ 
@@ -121,7 +122,7 @@ class Provisioning < ActiveRecord::Base
             end
             break unless targetobject.nil?
             #abort targetobjects.inspect unless targetobject.nil?
-          end
+          end unless thisaction == 'reading'
           #provisioning.update_attributes!(:delayedjob => nil)
           # 0
           #abort targetobjects.inspect
@@ -132,7 +133,7 @@ class Provisioning < ActiveRecord::Base
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed (timed out); trying again') unless targetobject.nil?
             break unless targetobject.nil?
-          end
+          end unless thisaction == 'reading'
           abort 'provisioning.deliver: connection timout of one or more target systems'
         when /TEST MODE.*$/
         # test mode
@@ -151,7 +152,7 @@ class Provisioning < ActiveRecord::Base
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed (script error)') unless targetobject.nil?
             break unless targetobject.nil?
-          end
+          end unless thisaction == 'reading'
         when /error while loading shared libraries.*$/
         # OSV shared library export bug
           returnvalue = 7
@@ -159,7 +160,7 @@ class Provisioning < ActiveRecord::Base
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed (OSV export error)') unless targetobject.nil?
             break unless targetobject.nil?       
-          end
+          end unless thisaction == 'reading'
           abort 'provisioning.deliver: OSV export error'
         #when /ERROR.*Site Name .* exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
         when /ERROR.*Site.*exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
@@ -176,7 +177,7 @@ class Provisioning < ActiveRecord::Base
               updateDB.perform(targetobject) 
             end
             break unless targetobject.nil? 
-          end
+          end unless thisaction == 'reading'
           #provisioning.update_attributes!(:delayedjob => nil)
           # TODO: update database from information read from target system
         when /ERROR.*does not exist.*$/
@@ -192,7 +193,7 @@ p targetobject.inspect
               targetobject.destroy unless targetobject == customer
               break
             end 
-          end 
+          end  unless thisaction == 'reading'
         when /Warnings/
         # import errors
           returnvalue = 5
@@ -200,8 +201,12 @@ p targetobject.inspect
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed (import errors)') unless targetobject.nil?
             break unless targetobject.nil?
-          end
+          end unless thisaction == 'reading'
           #provisioning.update_attributes!(:delayedjob => nil)
+        when /xml version/
+        # show command with XML output
+	  returnvalue = 9
+          # keep resulttext, no status change
         else
         # failure
           returnvalue = 1
@@ -209,7 +214,7 @@ p targetobject.inspect
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed') unless targetobject.nil?
             break unless targetobject.nil? 
-          end
+          end unless thisaction == 'reading'
       end  # case resulttext
   
       p '------------------resulttext------------------'
@@ -217,7 +222,8 @@ p targetobject.inspect
       p 'returnvalue = ' + returnvalue.to_s
       p '------------------resulttext------------------'
          
-      update_attribute(:status, resulttext)
+      return resulttext if returnvalue == 9
+      update_attribute(:status, resulttext) unless thisaction == 'reading'
       return returnvalue
     
 #    rescue Exception => e

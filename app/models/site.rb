@@ -104,6 +104,8 @@ class Site < Provisioningobject #< ActiveRecord::Base
         return inputBody
       when :destroy
         "action=Delete Site, SiteName=#{name}, customerName=#{customer.name}"
+      when :read
+	"action=Show Sites, SiteName=#{name}, customerName=#{customer.name}"
       else
         abort "Unsupported provisioning method"
     end

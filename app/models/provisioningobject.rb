@@ -43,13 +43,15 @@ class Provisioningobject < ActiveRecord::Base
         methodNoun = "provisioning"
       when :destroy
         methodNoun = "de-provisioning"
+      when :read
+         methodNoun = "reading"
       else
         abort "provision(method=#{method}, async=#{async}): Unknown method"
     end
     # this will fail for old objects that do not yet obey to the validations:
     #update_attributes!(status: "waiting for #{methodNoun}")
     # it is better to update the status, even if the other validations might fail:
-    update_attribute(:status, "waiting for #{methodNoun}")
+    update_attribute(:status, "waiting for #{methodNoun}") unless method == :read
 
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     inputBody = provisioningAction(method)
@@ -95,10 +97,10 @@ class Provisioningobject < ActiveRecord::Base
        #@provisioning.createdelayedjob
        #@provisioning.deliver
        if async == true
-         @provisioning.deliverasynchronously
+         returnvalue = @provisioning.deliverasynchronously
        else
 #abort @provisioning.inspect
-         @provisioning.deliver
+         returnvalue = @provisioning.deliver
        end
        # success
        #return 0
@@ -107,6 +109,7 @@ class Provisioningobject < ActiveRecord::Base
         abort 'provisioning error: ' + message.to_s
       end
     end 
+    returnvalue
   end # def
 
 def dropdownlist(type)
