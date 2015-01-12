@@ -11,13 +11,14 @@ $setgatewayip = true
 #      setgatewayipList = Array[nil, "47.68.190.57"]
 #      and iterate over the list
 
-$customerName="ExampleCustomerV8"; $target = "OSVIP=192.168.160.7,XPRIP=192.168.160.7,UCIP=192.168.160.7" # OSV V8 (CSL9DEVEL)
-#$customerName="ExampleCustomerV7R1"; $target = "OSVIP=192.168.160.4,XPRIP=192.168.113.102,UCIP=192.168.113.101" # OSV V7R1 (CSL9)
+$customerName="ExampleCustomerV8"; $targetname = "TestTargetV8"; $target = "OSVIP=192.168.160.7,XPRIP=192.168.160.7,UCIP=192.168.160.7" # OSV V8 (CSL9DEVEL)
+#$customerName="ExampleCustomerV7R1"; $targetname = "TestTargetV7R1"; $target = "OSVIP=192.168.160.4,XPRIP=192.168.113.102,UCIP=192.168.113.101" # OSV V7R1 (CSL9)
 #TODO: replace with 
 #      versionList = Array["V7R1", "V8"]
 #      and iterate over versionList, and set customerName and and target accordingly 
 
 objectList = Array["Customer", "Site", "User"]
+#objectList = Array["Customer", "User"]
 #objectList = Array["Customer"]
 #objectList = Array["Site"]
 #objectList = Array["User"]
@@ -168,7 +169,7 @@ def createCustomerDB_manual( arguments = {} )
 	# default values
 	arguments[:name] ||= "nonProvisionedCust"
 
-        target = Target.new(name: "TestTarget", configuration: $target)
+        target = Target.new(name: $targetname, configuration: $target)
 	target.save
 	#customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id)
 	customer = myProvisioningobject(obj).new(name: "nonProvisionedCust", target_id: target.id, language: Customer::LANGUAGE_GERMAN)
@@ -189,15 +190,15 @@ def fillFormForNewObject(obj, name="")
 end
 
 def fillFormForNewCustomer(name = $customerName )
-  if Target.where(name: 'TestTarget').count == 0
-    Target.create(name: 'TestTarget', configuration: $target)
+  if Target.where(name: $targetname).count == 0
+    Target.create(name: $targetname, configuration: $target)
   end
   visit new_provisioningobject_path("Customer") # for refreshing after creating the target
   fill_in "Name",         with: name        
-  select "TestTarget", :from => "customer[target_id]"
+  select $targetname, :from => "customer[target_id]"
   select "german", :from => "customer[language]"
   
-  # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
+  # Note: select $targetname selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
   # Expected drop down in HTML page:
           #    <select id="customer_target_id" name="customer[target_id]">
           #    <option value="">Select a Target</option>
@@ -216,8 +217,7 @@ def fillFormForNewSite(name = "" )
 #p page.html.gsub(/[\n\t]/, '')
   fill_in "Name",         with: name        
   select $customerName, :from => "site[customer_id]"
-  #fill_in "Sitecode",         with: "99821"
-  #fill_in "Countrycode",         with: "49" 
+  #fill_in "Sitecode",         with: "99821" if /V7R1/.match($customerName) # not here, since Sitecode is not visible
   select "49", :from => "site[countrycode]"
   fill_in "Areacode",         with: "99" 
   fill_in "Localofficecode",         with: "7007" 
@@ -225,7 +225,7 @@ def fillFormForNewSite(name = "" )
   fill_in "Mainextension",         with: "10000" 
   fill_in "Gatewayip",         with: "47.68.190.57" unless $setgatewayip == false
   
-  # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
+  # Note: select $targetname selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
   # Expected drop down in HTML page:
           #    <select id="site_customer_id" name="site[customer_id]"><option value="">Select a Customer</option>
           #    <option value="18">Cust1</option>
@@ -254,7 +254,7 @@ def fillFormForNewUser(name = "" )
   fill_in "Familyname",         with: "Veits" 
   fill_in "Email",         with: "oliver.veits@company.com" 
   
-  # Note: select "TestTarget" selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
+  # Note: select $targetname selects the <option value=_whatever_>TestTarget</option> in the following select part of the HTML page:
   # Expected drop down in HTML page:
           #    <select id="site_customer_id" name="site[customer_id]"><option value="">Select a Customer</option>
           #    <option value="18">Cust1</option>
@@ -333,10 +333,15 @@ def destroyObjectByName(obj, name = "")
   # Workaround: make sure the names are unique...
   #
 #abort myObjects.inspect
+#p myObjects.count.to_s + "<-------------------------------------------------------- myObjects.count.to_s"
+#p obj.to_s + "<-------------------------------------------------------- obj.to_s"
+#p name.to_s + "<-------------------------------------------------------- name.to_s"
+
   if myObjects.count == 1
   #unless myObjects[0].nil?
     Delayed::Worker.delay_jobs = false
     visit provisioningobject_path(myObjects[0])
+#p page.html.gsub(/[\n\t]/, '')
     #click_link "Destroy", match: :first
     click_link "Delete #{obj}", match: :first
     Delayed::Worker.delay_jobs = delayedJobsBefore
@@ -481,7 +486,7 @@ objectList.each do |obj|
             createObject(obj)
             if obj=="Site"
               #p "============================"
-              p page.html.gsub(/[\n\t]/, '').gsub(/\/\//, '').inspect
+              #p page.html.gsub(/[\n\t]/, '').gsub(/\/\//, '').inspect
               expect(page).to have_selector('li', text: "#{:name.capitalize} is already taken for this customer")
               expect(page.html.gsub(/[\n\t]/, '')).to match(/#{:mainextension.capitalize} \[10000\] is already taken for target/)
               expect(page.html.gsub(/[\n\t]/, '')).to match(/#{:gatewayIP.capitalize} \[47\.68\.190\.57\] is already taken for target/) unless $setgatewayip == false
@@ -551,12 +556,24 @@ objectList.each do |obj|
           #createTarget
 	  Delayed::Worker.delay_jobs = false
           createObject(obj)
+	  if /V7R1/.match($customerName)
+            # correct Sitecode for V7R1 targets:
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/must not be empty for V7R1 targets/)
+            fill_in "Sitecode",         with: "99821"
+            click_button submit, match: :first
+          end
+#p page.html.gsub(/[\n\t]/, '')
           destroyObjectByNameRecursive(obj)
           fillFormForNewObject(obj)
+          if /V7R1/.match($customerName)
+            click_button submit, match: :first
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/must not be empty for V7R1 targets/)
+            fill_in "Sitecode",         with: "99821"
+          end
         end
 
         it "should create a #{obj} (1st 'Save' button)" do
-          expect { click_button submit, match: :first }.to change(myProvisioningobject(obj), :count).by(1)       
+          expect { click_button submit, match: :first }.to change(myProvisioningobject(obj), :count).by(1) 
         end
         
         it "should create a #{obj} (2nd 'Save' button)" do
