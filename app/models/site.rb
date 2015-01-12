@@ -26,6 +26,18 @@ class Validate_Sitecode < ActiveModel::Validator
   end # def
 end
 
+class Validate_Sitecode_V7R1 < ActiveModel::Validator
+  def validate(record)
+    # for OSV V7R1, empty sitecodes are not supported
+    if record.sitecode.nil? || record.sitecode == ""
+abort record.inspect
+      if /V7R1/.match(record.customer.target.name)
+        record.errors[:sitecode] << "must not be empty for V7R1 targets"
+      end 
+    end 
+  end
+end
+
 class Validate_OfficeCode < ActiveModel::Validator
   def validate(record)
     
@@ -203,6 +215,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
   validates_format_of :extensionlength, :with => /\A[1-9]$|^1[1-2]\Z/, message: "must be a number between 1..12" 
   validates_with Validate_OfficeCode, Validate_MainExtension
   validates_with Validate_Sitecode 
+  #validates_with Validate_Sitecode_V7R1
   validates :sitecode, unique_on_target: true 
   validates :mainextension, unique_on_target: {:scope => [:countrycode, :areacode, :localofficecode]} 
   validates :gatewayIP, unique_on_target: true 
