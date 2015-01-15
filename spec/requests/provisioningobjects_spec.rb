@@ -11,7 +11,20 @@ $setgatewayip = true
 #      setgatewayipList = Array[nil, "47.68.190.57"]
 #      and iterate over the list
 
-$customerName="ExampleCustomerV8"; $targetname = "TestTargetV8"; $target = "OSVIP=192.168.160.7,XPRIP=192.168.160.7,UCIP=192.168.160.7" # OSV V8 (CSL9DEVEL)
+$FPAFOmitBool = true
+if $FPAFOmitBool
+  $FPAFOmit = ",FPAFOmit=true"
+else
+  $FPAFOmit = ""
+end
+
+# CSL9DEVEL:
+#$customerName="ExampleCustomerV8"; $targetname = "TestTargetV8"; $target = "OSVIP=192.168.160.7,XPRIP=192.168.160.7,UCIP=192.168.160.7" # OSV V8 (CSL9DEVEL)
+
+# CSL8:
+$customerName="ExampleCustomerV8"; $targetname = "TestTargetV8"; $target = "OSVIP=192.168.112.140,XPRIP=192.168.113.102,UCIP=192.168.112.133,OSVauthUsername=srx,OSVauthPassword=2GwN!gb4,OSVauthPasswordRoot=Asd123!.,OSVauthPasswordSysad=Asd123!.,XPRauthUsername=Administrator,XPRauthPassword=Pa$$w0rd,UCauthUsername=Administrator@system,UCauthPassword=Pa$$w0rd#{$FPAFOmit}" 
+
+# CSL9:
 #$customerName="ExampleCustomerV7R1"; $targetname = "TestTargetV7R1"; $target = "OSVIP=192.168.160.4,XPRIP=192.168.113.102,UCIP=192.168.113.101" # OSV V7R1 (CSL9)
 #TODO: replace with 
 #      versionList = Array["V7R1", "V8"]
