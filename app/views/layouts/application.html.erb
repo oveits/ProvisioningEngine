@@ -24,7 +24,11 @@
 <% if isindexBool || isshowBool %>
 refresh=setTimeout("location.reload(true);",10000);
 <% else %>
-clearTimeout(refresh)
+//if(clearTimeout(refresh)){
+//refresh=setTimeout("location.reload(true);",1000);
+clearTimeout(refresh);
+  //window.alert("resetted automatic refresh" + refresh);
+//}
 <% end %>
 </script>
 	
