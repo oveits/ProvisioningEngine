@@ -1,0 +1,28 @@
+# Place all the behaviors and hooks related to the matching controller here.
+# All this logic will automatically be available in application.js.
+# You can use CoffeeScript in this file: http://coffeescript.org/
+
+pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$"
+regex = ///#{pattern}///
+
+mySetReload = ->
+	if regex.test(window.location.pathname) # == pattern
+		# stop last running refresh, if it exists:
+		clearTimeout(window.myRefresh) if window.myRefresh?
+		# restart last running refresh
+		# window.myRefresh defines a global variable that can be accessed across pages.
+		window.myRefresh = setTimeout("location.reload(true);",5000);
+		# for test: 
+		alert window.myRefresh
+	else
+		clearTimeout(window.myRefresh) if window.myRefresh?
+		# for test:
+		alert window.myRefresh
+		# to make sure, the timeout is cleared only, if a timeout is still running:
+		window.myRefresh = null
+
+# TODO: Note that application.js.coffee throws an error "$ is not defined" or similar. This iw, why I have moved the code to application.js, where I can omit the wrapping in an unnamed function, which coffee always is doing
+# works for full reload:
+$(document).ready(mySetReload);
+# works also for fast
+$(document).on('page:load', mySetReload);$
