@@ -22,13 +22,17 @@
 
 <script>
 <% if isindexBool || isshowBool %>
-refresh=setTimeout("location.reload(true);",10000);
+      if (window.myRefresh != null) {
+        clearTimeout(window.myRefresh);
+      }
+      window.myRefresh = setTimeout("location.reload(true);",5000);
+      //alert(window.myRefresh);
 <% else %>
-//if(clearTimeout(refresh)){
-//refresh=setTimeout("location.reload(true);",1000);
-clearTimeout(refresh);
-  //window.alert("resetted automatic refresh" + refresh);
-//}
+      if (window.myRefresh != null) {
+        clearTimeout(window.myRefresh);
+      }
+      //alert(window.myRefresh);
+      window.myRefresh = null;
 <% end %>
 </script>
 	
