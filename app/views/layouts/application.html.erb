@@ -8,7 +8,30 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
-	
+
+<span id="noscriptmessage">
+<div style="color:red">
+   This site requires javascript enabled! Please enable javascript and disable any script blocker for this site!
+</div>
+</span>
+
+<script>
+// remvove the mynoscript alert, if javascript is enabled
+// <noscript> ALERT! </noscript> does not work in case of a script blocker like scriptSafe.
+// the deployed method works also in case of a script blocker
+document.getElementById("noscriptmessage").innerHTML="";
+</script>
+
+<% if false %>
+<div>
+    <% if javascript_enabled? # Selenium::WebDriver::Remote::Capabilities#javascript_enabled? %>
+    <p>Javascript Enabled!</p>
+    <%- else -%>
+    <p>No Javascript</p>
+    <%- end -%>
+</div>	
+<% end %>
+
 <% @mymenue = [:customers, :sites, :users, :provisionings, :targets] %>
 
 <%  # is the link an index?  
