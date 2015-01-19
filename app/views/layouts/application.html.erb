@@ -3,8 +3,13 @@
 <head>
   <title>ProvisioningPortalv4</title>
   <%= stylesheet_link_tag "main" %>
+<% if true # turbolinks?  ; how to remove turbolinks: http://blog.steveklabnik.com/posts/2013-06-25-removing-turbolinks-from-rails-4 %>
   <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
   <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+<% else %>
+  <%= stylesheet_link_tag    'application', media: 'all' %>
+  <%= javascript_include_tag 'application' %>
+<% end %>
   <%= csrf_meta_tags %>
 </head>
 <body>
@@ -48,7 +53,7 @@ document.getElementById("noscriptmessage").innerHTML="";
       if (window.myRefresh != null) {
         clearTimeout(window.myRefresh);
       }
-      window.myRefresh = setTimeout("location.reload(true);",10000);
+      window.myRefresh = setTimeout("location.reload(true);",100000000);
       //alert(window.myRefresh);
 <% else %>
       if (window.myRefresh != null) {

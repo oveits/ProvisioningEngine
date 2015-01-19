@@ -1,3 +1,11 @@
+<% if false %>
+<a id="aaa" href="" onclick="this.style.backgroundColor='#990000'; return false;">Original Content </a>
+<a href="" onclick="document.getElementById('aaa').innerHTML+='X';return false;">Append X</a>
+<a href="" class="changecolour">paint it</a>
+<a href="#" data-background-color="#009900" data-text-color="#FFFFFF">Paint it green</a>
+<a href="#" data-mybackground-color="#000099" data-text-color="#FF5050">Paint it blue</a>
+<% end %>
+
 <%= form_for(@target) do |f| %>
   <% if @target.errors.any? %>
     <div id="error_explanation">
@@ -37,3 +45,10 @@
   </div
 
 <% end %>
+
+<% if false 
+@customer=Customer.find(17)
+form_for(@customer, remote:true) do |f| 
+end
+end %>
+
