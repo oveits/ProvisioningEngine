@@ -58,6 +58,8 @@ class TargetsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to targets_url, notice: 'Target was successfully destroyed.' }
       format.json { head :no_content }
+      # needed for ajax according to http://stackoverflow.com/questions/22879329/rails-ajax-with-post-function-why-template-missing
+      format.js { render nothing: true }
     end
   end
 
