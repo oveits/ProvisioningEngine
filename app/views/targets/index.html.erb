@@ -36,7 +36,7 @@
         <td><%= link_to target.name, target %></td>
         <td><%= target.configuration %></td>
         <td class="actions"><%= link_to 'Edit', edit_target_path(target) %></td>
-<% ajax_destroy = true %>
+<% ajax_destroy = false %>
 <% if ajax_destroy %>
 	<td class="actions"><%= link_to 'Ajax Destroy', target, remote: true,  method: :delete, data: { mytest: 'test', confirm: 'Are you sure?' } %></td>
 <% else %>
