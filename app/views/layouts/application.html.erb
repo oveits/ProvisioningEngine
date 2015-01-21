@@ -48,12 +48,13 @@ document.getElementById("noscriptmessage").innerHTML="";
     isshowBool = !isshow.nil?
 %>
 
+<% if false # this is now done by "app/assets/javascripts/page_reload.js" %>
 <script>
 <% if isindexBool || isshowBool %>
       if (window.myRefresh != null) {
         clearTimeout(window.myRefresh);
       }
-      window.myRefresh = setTimeout("location.reload(true);",10000);
+      window.myRefresh = setTimeout("location.reload(true);",10000000);
       //alert(window.myRefresh);
 <% else %>
       if (window.myRefresh != null) {
@@ -63,6 +64,7 @@ document.getElementById("noscriptmessage").innerHTML="";
       window.myRefresh = null;
 <% end %>
 </script>
+<% end %>
 	
 <ul class="semiopaquemenu">
 	<% @mymenue.each do |menueitem| %>
