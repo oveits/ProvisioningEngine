@@ -68,7 +68,11 @@
         <td><%= @customer.language %></td>
 <% end %>
         <td>
+<% if false # just for testing %>
            <span id="<%= "customer_" + @customer.id.to_s %>">
+<% else %>
+	   <span id="<%= "status" %>">
+<% end %>
 		<%= link_to @customer.status, customer_provisionings_path(@customer) %>
            </span>
         </td>
