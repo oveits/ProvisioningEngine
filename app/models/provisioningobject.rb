@@ -28,10 +28,13 @@ class Provisioningobject < ActiveRecord::Base
   end
   
   def provisioned?
-    if /provisioning success/.match(status) || /failed \(import errors\)/.match(status) || /deletion failed/.match(status)
-      true
-    else
-      false
+    case status
+      when /was already de-provisioned/
+        false
+      when /provisioning success|failed \(import errors\)|deletion failed/
+        true
+      else
+        false
     end
   end
   
