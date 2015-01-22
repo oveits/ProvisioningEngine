@@ -1,9 +1,13 @@
   var mySetReload, pattern, regex;
 
 
-  //pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
-  // same without customers/[1-9][0-9]
+  pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
+  // same without customers/[1-9][0-9]*
   pattern = "/customers$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
+  // same without sites/[1-9][0-9]*
+  pattern = "/customers$|sites$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
+  // same without users/[1-9][0-9]*
+  pattern = "/customers$|sites$|users$|provisionings$|provisionings/[1-9][0-9]*$";
   //pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$" //|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$||provisionings/[1-9][0-9]*$";
   regex = RegExp("" + pattern);
 

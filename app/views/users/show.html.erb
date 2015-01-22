@@ -79,7 +79,7 @@
 
   		<tbody>
 
-			<% @user.attributes.each do |attribute| %>
+		<% @user.attributes.each do |attribute| %>
 			
 			<% # insert customer row before site row %>
 			<% if attribute[0] == 'site_id' %>
@@ -108,11 +108,11 @@
 				    <%= link_to Site.find(attribute[1]).name, Site.find(attribute[1]) unless attribute[1].nil? %>
 				    <% end %>
 			    <% rescue %>
-			    	<%= attribute[1] unless attribute[1].nil? %>
+			    	<span id="<%= attribute[0] %>"> <%= attribute[1] unless attribute[1].nil? %> </span>
 			    <% end %>
 			    </td>
 			</tr>
-			<% end %>
+		<% end %>
 			
 			
 		</tbody>

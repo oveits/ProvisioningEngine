@@ -1,7 +1,11 @@
 require 'spec_helper'
 
 RSpec.configure do |c|
-  #c.filter_run_excluding broken: true #, provisioning: true #, untested: true
+  # run all test cases, but not the broken ones:
+  c.filter_run_excluding broken: true #, provisioning: true #, untested: true
+
+  # TODO: this filter does not work: run only broken test cases
+  #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
 end
 
 # if set to false, the Gatewayip input is kept empty, when a new site is created
@@ -18,23 +22,42 @@ else
   $FPAFOmit = ""
 end
 
-# CSL9DEVEL:
-#$customerName="ExampleCustomerV8"; $targetname = "TestTargetV8"; $target = "OSVIP=192.168.160.7,XPRIP=192.168.160.7,UCIP=192.168.160.7" # OSV V8 (CSL9DEVEL)
-
-# CSL8:
-$customerName="ExampleCustomerV8"; $targetname = "TestTargetV8"; $target = "OSVIP=192.168.112.140,XPRIP=192.168.113.102,UCIP=192.168.112.133,OSVauthUsername=srx,OSVauthPassword=2GwN!gb4,OSVauthPasswordRoot=Asd123!.,OSVauthPasswordSysad=Asd123!.,XPRauthUsername=Administrator,XPRauthPassword=Pa$$w0rd,UCauthUsername=Administrator@system,UCauthPassword=Pa$$w0rd#{$FPAFOmit}" 
-
-# CSL9:
-#$customerName="ExampleCustomerV7R1"; $targetname = "TestTargetV7R1"; $target = "OSVIP=192.168.160.4,XPRIP=192.168.113.102,UCIP=192.168.113.101" # OSV V7R1 (CSL9)
-#TODO: replace with 
+#TODO: add iteration over versions
 #      versionList = Array["V7R1", "V8"]
-#      and iterate over versionList, and set customerName and and target accordingly 
+#      and iterate over versionList, and set targetsolution
 
 objectList = Array["Customer", "Site", "User"]
 #objectList = Array["Customer", "User"]
 #objectList = Array["Customer"]
 #objectList = Array["Site"]
 #objectList = Array["User"]
+
+targetsolution = "CSL8"
+#targetsolution = "CSL9"
+#targetsolution = "CSL9DEVEL"
+#targetsolution = "CSL11"
+
+case targetsolution
+  when /CSL8/
+    $customerName="ExampleCustomerV8"; 
+    $targetname = "TestTargetV8"; 
+    $target = "OSVIP=192.168.112.140,XPRIP=192.168.113.102,UCIP=192.168.112.133,OSVauthUsername=srx,OSVauthPassword=2GwN!gb4,OSVauthPasswordRoot=Asd123!.,OSVauthPasswordSysad=Asd123!.,XPRauthUsername=Administrator,XPRauthPassword=Pa$$w0rd,UCauthUsername=Administrator@system,UCauthPassword=Pa$$w0rd#{$FPAFOmit}"
+  when /CSL9DEVEL/
+    $customerName="ExampleCustomerV8"; 
+    $targetname = "TestTargetV8"; 
+    $target = "OSVIP=192.168.160.7,XPRIP=192.168.160.7,UCIP=192.168.160.7" # OSV V8 (CSL9DEVEL)
+  when /CSL9/
+    $customerName="ExampleCustomerV7R1"; 
+    $targetname = "TestTargetV7R1"; 
+    $target = "OSVIP=192.168.160.4,XPRIP=192.168.113.102,UCIP=192.168.113.101" # OSV V7R1 (CSL9)
+  when /CSL11/
+    $customerName="ExampleCustomerV8"; 
+    $targetname = "TestTargetV8"; 
+    $target = "OSVIP=192.168.163.10,XPRIP=192.168.113.172,UCIP=192.168.113.165,OSVauthUsername=srx,OSVauthPassword=2GwN!gb4,OSVauthPasswordRoot=T@R63dis,OSVauthPasswordSysad=Asd123!.,XPRauthUsername=Administrator,XPRauthPassword=Pa$$w0rd,UCauthUsername=Administrator@system,UCauthPassword=Asd123!.#{$FPAFOmit}"
+  else
+    abort "unknown target solution #{targetsolution}"
+end
+
 
 def parent(obj)
   case obj
@@ -401,7 +424,7 @@ describe Site do
 end
 
 objectList.each do |obj|
-  describe "Provisioningobject #{obj}" do  
+  describe "On target solution #{targetsolution}" do  
     describe "index" do
       before(:each) { visit provisioningobjects_path(obj)  }
       # not needed:
@@ -742,6 +765,29 @@ objectList.each do |obj|
     
     #describe "Destroy Customer" do
     describe "Destroy #{obj}" do
+      describe "Delete #{obj} from database" do
+        before {
+          Delayed::Worker.delay_jobs = false
+	  createObject(obj)
+	  #fillFormForNewObject(obj)
+        }
+	
+	let(:submit) { "Delete #{obj}" }
+        let(:submit2) { "Destroy" }
+
+        it "should delete an #{obj} from the database, if the status contains 'was already de-provisioned'" do
+          myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
+          myObjects[0].update_attributes!(:status => 'deletion failed: was already de-provisioned (press "Destroy" or "Delete" again to remove from database)')
+      #p page.html.gsub(/[\n\t]/, '')
+      #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
+	  expect { click_link submit, match: :first }.to change(myProvisioningobject(obj), :count).by(-1)
+      p page.html.gsub(/[\n\t]/, '')
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/deleted/)  # flash
+        end
+      end # describe "Delete #{obj} from database" do
+
       #describe "De-Provision Customer" do
       describe "De-Provision #{obj}", provisioning: true do
         before {
@@ -813,15 +859,15 @@ objectList.each do |obj|
           expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
         end
 
-	it "should update the status of #{obj} 'waiting for deletion' also for objects that had import errors" do
+	it "should update the status of #{obj} 'waiting for de-provisioning' also for objects that had import errors" do
           myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
           myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
           myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
 	  myObjects[0].update_attributes!(:status => "provisioning failed (import errors)")
           Delayed::Worker.delay_jobs = true
-      #p page.html.gsub(/[\n\t]/, '')
-      #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
+      		#p page.html.gsub(/[\n\t]/, '')
           click_link submit, match: :first
+      		#p page.html.gsub(/[\n\t]/, '')
           expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
         end
 
