@@ -1,61 +1,56 @@
-//setWorker = 
 function worker() {
-  var pattern = "customers/[1-9][0-9]*";
-  if( document.URL.match(new RegExp(pattern, "g"))) {
-  $.ajax({
-    //url: '17.json', 
-    url: document.URL + ".json",
-    success: function(data) {
-      // both next lines work fine:
-      console.log(data.status);
-      //alert(data.status); 
-      var beforeobj = $('#status');
-      if(beforeobj == null)  {
-      return;
-      }
-      console.log("beforeobj: " + beforeobj);
-      //alert($('#customer_status'));
-      var oldhtml = document.getElementById("status").innerHTML;
-      // does not seem to be the same as:
-      //var oldhtml = $('#customer_status').innerHTML;
-      console.log("oldhtml: " + oldhtml);
-      var oldtext = oldhtml.replace(/<[^>]*>/g, "").replace(/^[\s\n\r]*/, "").replace(/[\s\n\r]*$/, "").replace(/\(/g,"\\\(").replace(/\)/g,"\\\)");
-      //console.log(beforeobj);
-      console.log("oldtext: ---" + oldtext + "---");
-      var regex = new RegExp(oldtext,"g");
-      console.log("regex: " + regex);
- 
-      // in oldhtml, replace old text by new text:
-      //var newhtml = oldhtml.replace(/provisioning successful/, data.status + " (newhtml)");
-      //var newhtml = oldhtml.replace(regex, data.status + " newhtml");
-      var newhtml = oldhtml.replace(regex, data.status);
-      console.log("newhtml: " + newhtml);
-      //$('#customer_status').html(data.status + " changed by jquery/ajax");
+  var urlpattern = "customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$";
+  // perform ajax updates only on pages, which need this function (currently customers/xy only)
+  if( document.URL.match(new RegExp(urlpattern, "g"))) {
+    $.ajax({
+      // get full information in json format and update the field(s)
+      url: document.URL + ".json",
+      success: function(data) {
+        // both next lines work fine:
+           //console.log(data.status);
+        //alert(data.status); 
+        var oldobj = $('#status');
+          console.log("oldobj: " + oldobj);
+        if(oldobj == null)  {
+          // return if no element with id=status was found on the page
+          return;
+        }
+        var oldhtml = oldobj.get(0).innerHTML;
+        // same as: var oldhtml = document.getElementById("status").innerHTML;
+           //console.log("oldhtml: " + oldhtml);
+        // find the text that is to be replaced:
+        var oldtext = oldhtml.replace(/<[^>]*>/g, "").replace(/^[\s\n\r]*/, "").replace(/[\s\n\r]*$/, "").replace(/\(/g,"\\\(").replace(/\)/g,"\\\)");
+           //console.log("oldtext: ---" + oldtext + "---");
+        var newtext = data.status;
 
-      //$('#customer_status').html(newhtml);
-      // should be the same:
-      //$('#customer_status').get(0).innerHTML = newhtml;
-      // and is the same as:
-      document.getElementById("status").innerHTML = newhtml;
-      console.log("updated");
-    },
-    complete: function() {
-      // Schedule the next request when the current one's complete
-      if(!document.getElementById("status").innerHTML.match(/success/g)){
-         setTimeout(worker, 5000);
-         console.log("updating in 5 sec");
-      } else {
-         setTimeout(worker, 60000);
-         console.log("updating in 60 sec");
+        // we want to replace oldtext by newtext, so we eed a RegExp of oldtext
+        var regex = new RegExp(oldtext,"g");
+           //console.log("regex: " + regex);
+ 
+        var newhtml = oldhtml.replace(regex, newtext);
+           //console.log("newhtml: " + newhtml);
+        //$('#customer_status').get(0).innerHTML = newhtml;
+        //document.getElementById("status").innerHTML = newhtml;
+        // is the same as:
+        // $('#status').get(0).innerHTML = newhtml;
+        // is the same as:
+        oldobj.get(0).innerHTML = newhtml;
+        console.log("status updated to \"" + newtext + "\"");
+      },
+      complete: function() {
+        // Schedule the next request when the current one's complete
+        if(!document.getElementById("status").innerHTML.match(/success/g) && !document.getElementById("status").innerHTML.match(/fail/g)){
+           setTimeout(worker, 5000);
+           console.log("updating in 5 sec");
+        } else {
+           // if the status is not success or failure, we update more othen, than if it is in such a "final" state
+           setTimeout(worker, 60000);
+           console.log("updating in 60 sec");
+        }
       }
-    }
-  });
-} else { 
-   // this is a workaround only: if the the link is switched to by turbolink, the script is not reloaded, so it does not start again. 
-   // TODO: search for a better solution based on document
-   //$(document).on('page:load', mySetReload);
-   //setTimeout(worker, 10000); 
-}
+    });
+  } 
 };
+
 $(document).on('page:load', worker);
 $(document).ready(worker);

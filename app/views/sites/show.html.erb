@@ -78,7 +78,7 @@
 			        <%= attribute[1] unless attribute[1].nil? %>
 			      <% end %>
                             <% else %>
-                              <%= attribute[1] unless attribute[1].nil? %>
+                              <span id="<%= attribute[0] %>"> <%= attribute[1] unless attribute[1].nil? %> </span>
                             <% end %>
 			    </td>
 			</tr>
