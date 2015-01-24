@@ -1,5 +1,5 @@
 <div class="index">
-	<h2>Provisioning <%= @provisioning.action %></h2>
+	<h2>Provisioning <%= @provisioning.action.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></h2>
 </div>
 
 
@@ -51,9 +51,9 @@
 			    <td><%= f.label attribute[0] %></td>
 			    <td>
 			    <% begin %>
-			    <%= Customer.find(attribute[1]).action unless attribute[1].nil? %>
+			    <%= Customer.find(attribute[1]).action.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless attribute[1].nil? %>
 			    <% rescue %>
-			    <%= attribute[1] unless attribute[1].nil? %>
+			    <%= attribute[1].to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless attribute[1].nil? %>
 			    <% end %>
 			    </td>
 			</tr>
