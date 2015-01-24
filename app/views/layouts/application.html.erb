@@ -12,7 +12,9 @@
 <% end %>
   <%= csrf_meta_tags %>
 </head>
-<body>
+
+<!-- on unload trick found on http://stackoverflow.com/questions/158319/cross-browser-onload-event-and-the-back-button, but it does not seem to work for chrome (still using the local cache upon back/forward button)  -->
+<body onunload="">
 
 <span id="noscriptmessage">
 <div style="color:red">
