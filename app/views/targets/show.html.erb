@@ -50,7 +50,7 @@
 			<% @target.attributes.each do |attribute| %> 
 			<tr>
 			    <td><%= f.label attribute[0] %></td>
-			    <td><%= attribute[1] unless attribute[1].nil? %></td>
+			    <td><%= attribute[1].to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless attribute[1].nil? %></td>
 			</tr>
 			<% end %>
 			
