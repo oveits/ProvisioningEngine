@@ -12,17 +12,42 @@
   regex = RegExp("" + pattern);
 
   mySetReload = function() {
+//    if (window.myRefresh != null) {
+//      clearTimeout(window.myRefresh);
+//      window.myRefresh = null;
+//      //alert("Cleared page refresh");
+//    }
+    myClearReload();
+    //if (regex.test(window.location.pathname)) {
+      //window.myRefresh = setTimeout("location.reload(true);", 10000);
+      window.myRefresh = setTimeout("myReload();", 10000);
+      console.log("set timout for page reload");
+      //alert(window.myRefresh);
+    //} 
+  };  //  mySetReload = function()
+  
+  myReload = function() {
+    if (regex.test(window.location.pathname)) {
+      // this is autmatically loading/starting mySetReload because of the document ready and document page reload statements:
+      location.reload(true);
+      console.log("reloaded");
+    } else {
+      // if there was no reload, we still want to start another timeout:
+      mySetReload();
+      console.log("skipped page reload for this page URL");
+    }
+  };
+
+  myClearReload = function() {
     if (window.myRefresh != null) {
       clearTimeout(window.myRefresh);
       window.myRefresh = null;
-      //alert("Cleared page refresh");
-    }
-    if (regex.test(window.location.pathname)) {
-      window.myRefresh = setTimeout("location.reload(true);", 10000);
-      //alert(window.myRefresh);
-    } 
-  };  //  mySetReload = function()
+      console.log("Cleared page refresh");
+    }};
 
   $(document).ready(mySetReload);
 
   $(document).on('page:load', mySetReload);
+  $( window ).unload(myClearReload);
+  //$( window ).beforeunload(myClearReload);
+//$(window).unload(function(){ alert('do unload stuff here'); }); 
