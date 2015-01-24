@@ -33,8 +33,8 @@ objectList = Array["Customer", "Site", "User"]
 #objectList = Array["User"]
 
 targetsolution = "CSL8"
-#targetsolution = "CSL9"
-#targetsolution = "CSL9DEVEL"
+#targetsolution = "CSL9" # currently not working
+#targetsolution = "CSL9DEVEL" # currently not working (because of new ccc.sh version)
 #targetsolution = "CSL11"
 
 case targetsolution
@@ -53,7 +53,7 @@ case targetsolution
   when /CSL11/
     $customerName="ExampleCustomerV8"; 
     $targetname = "TestTargetV8"; 
-    $target = "OSVIP=192.168.163.10,XPRIP=192.168.113.172,UCIP=192.168.113.165,OSVauthUsername=srx,OSVauthPassword=2GwN!gb4,OSVauthPasswordRoot=T@R63dis,OSVauthPasswordSysad=Asd123!.,XPRauthUsername=Administrator,XPRauthPassword=Pa$$w0rd,UCauthUsername=Administrator@system,UCauthPassword=Asd123!.#{$FPAFOmit}"
+    $target = "OSVIP=192.168.163.10,XPRIP=192.168.113.172,UCIP=192.168.113.165,OSVauthUsername=srx,OSVauthPassword=2GwN!gb4,OSVauthPasswordRoot=T@R63dis,OSVauthPasswordSysad=Asd123!.,XPRauthUsername=Administrator,XPRauthPassword=Pa$$w0rd,UCauthUsername=Administrator@system,UCauthPassword=Asd123!.,OSVswitchID=5#{$FPAFOmit}"
   else
     abort "unknown target solution #{targetsolution}"
 end

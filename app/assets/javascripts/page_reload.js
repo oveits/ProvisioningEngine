@@ -12,20 +12,16 @@
   regex = RegExp("" + pattern);
 
   mySetReload = function() {
-    if (regex.test(window.location.pathname)) {
-      if (window.myRefresh != null) {
-        clearTimeout(window.myRefresh);
-      }
-      return window.myRefresh = setTimeout("location.reload(true);", 10000);
-      //alert(window.myRefresh);
-    } else {
-      if (window.myRefresh != null) {
-        clearTimeout(window.myRefresh);
-      }
-      //alert(window.myRefresh);
-      return window.myRefresh = null;
+    if (window.myRefresh != null) {
+      clearTimeout(window.myRefresh);
+      window.myRefresh = null;
+      //alert("Cleared page refresh");
     }
-  };
+    if (regex.test(window.location.pathname)) {
+      window.myRefresh = setTimeout("location.reload(true);", 10000);
+      //alert(window.myRefresh);
+    } 
+  };  //  mySetReload = function()
 
   $(document).ready(mySetReload);
 
