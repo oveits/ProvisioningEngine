@@ -1,5 +1,5 @@
 <% @alwaysDropDown = true 
-   inputFieldSize = 30
+   inputFieldSize = 1000
    placeholders = {};
    placeholders[:name] = "e.g. Munich" 
    placeholders[:areacode] = "e.g. 89 for Munich"
@@ -9,7 +9,7 @@
    placeholders[:gatewayIP] = "e.g. 10.1.1.1 or gateway.domain.com"
 %>
 <style>
-select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
+select {min-width:<%= inputFieldSize*17.2/30 %>em;}
 </style>
 
 

@@ -27,7 +27,8 @@
   };  //  mySetReload = function()
   
   myReload = function() {
-    if (regex.test(window.location.pathname)) {
+      //console.log($('form').get(0));
+    if ( regex.test(window.location.pathname) && $('form').get(0) == null ) {
       // this is autmatically loading/starting mySetReload because of the document ready and document page reload statements:
       location.reload(true);
       console.log("reloaded");
