@@ -26,3 +26,8 @@ doc/
 
 # Ignore application configuration
 #/config/application.yml
+
+# Ignore private data:
+*.cert
+*.pem
+*.key
