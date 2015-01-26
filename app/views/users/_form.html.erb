@@ -1,4 +1,17 @@
-<% @alwaysDropDown = true %>
+<% @alwaysDropDown = true 
+   inputFieldSize = 35
+   placeholders = {};
+   placeholders[:name] = "e.g. Thomas Müller"
+   placeholders[:extension] = "e.g. 20800 (assuming extension length = 5)"
+   placeholders[:givenname] = "e.g. Thomas"
+   placeholders[:familyname] = "e.g. Müller"
+   placeholders[:email] = "e.g. thomas.mueller@bayernmuenchen.de"
+%>
+<style>
+select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
+</style>
+
+
 <% if true %>
 <%    ro = 'readonly'; rw = 'readwrite' %>
 <%    @myparams = {"id"=>'none', "name"=>'none', "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw } %>
@@ -51,7 +64,11 @@
 			<% if myparams[attribute[0]] == rw %>
 				<tr>
 			    <td><%= f.label attribute[0] %></td>
-			    <td><%= f.text_field attribute[0]  %></td>
+                            <% if placeholders[attribute[0].to_sym].nil? %>
+                            <td><%= f.text_field attribute[0], size: inputFieldSize, autofocus: true, placeholder: attribute[0]  %></td>
+                            <% else %>
+                            <td><%= f.text_field attribute[0], size: inputFieldSize, autofocus: true, placeholder: "#{placeholders[attribute[0].to_sym]}"  %></td>
+                            <% end %>
 			    </tr>
 			<% elsif myparams[attribute[0]] == 'none' %>
 

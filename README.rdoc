@@ -57,3 +57,11 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
   1. rdoc README.rdoc -o ./tmp/doc
   2. open (application root)/tmp/doc/README_rdoc.html in a browser 
   
+* NginX
+  * sudo apt-get update
+  * sudo apt-get install nginx
+  * cd /etc/nginx
+  * sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.pem
+  * change config: sudo vi /etc/nginx/sites-enabled/default
+  * observe error logs: sudo tail -F /var/log/nginx/error.log
+  * in other terminal: sudo service nginx start
