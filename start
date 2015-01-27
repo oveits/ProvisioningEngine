@@ -1,5 +1,5 @@
 export HTTP_PROXY=
 export http_proxy=
 
-sudo ./startWebPortal.sh
+sudo ./startWebPortal_development.sh
 sudo ./startDelayedJobs.sh

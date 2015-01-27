@@ -1,2 +1,2 @@
-sudo ./stopWebPortal.sh
-sudo ./stopDelayedJobs.sh
+sudo ./stopWebPortal_development.sh
+sudo ./stopDelayedJobs_development.sh

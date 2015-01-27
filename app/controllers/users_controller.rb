@@ -100,6 +100,7 @@ class UsersController < ApplicationController
         format.json { render :show, status: :created, location: @object } 
       else
         format.html { render :new  }                   
+        #format.html { redirect_to new_user_path, renter :new } #render :new  }                   
         format.json { render json: @object.errors, status: :unprocessable_entity }
       end
     end

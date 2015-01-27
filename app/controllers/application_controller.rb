@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   
   def root
-    redirect_to customers_path
+    redirect_to dev_customers_path
   end
   
   add_flash_types :error, :success
