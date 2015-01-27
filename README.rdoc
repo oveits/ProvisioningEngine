@@ -51,6 +51,9 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
   * heroku rake db:migrate
 * heroku rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
 * heroku open # this will open a browser with the correct link
+
+* synchronize local git with remote git repository:
+  * git pull
   
 === Tipps
 * Pre-view this rdoc: 
