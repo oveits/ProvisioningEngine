@@ -16,7 +16,9 @@
 <nav>
 	<div class="actions">
 		<ul>
-			<li><%= link_to 'New Provisioning', new_provisioning_path %></li>
+<% if false %>
+			<li><%= link_to 'New Provisioning (currently not working and not needed)', new_provisioning_path %></li>
+<% end %>
 			<li><%= link_to 'Clear Table', removeAll_provisionings_path, method: :delete, data: { confirm: 'Are you sure?' } %></li>
 		</ul>
 	</div>
@@ -47,8 +49,11 @@
     <% @provisionings.reverse_each do |provisioning| %>
       <tr>
         <td><%= provisioning.id %></td>
-        <td><%= provisioning.action.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless provisioning.action.nil? %></td>
-        <td><%= provisioning.status.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless provisioning.status.nil? %></td>
+        <td><%= provisioning.action.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
+        <td><%= provisioning.status.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
+<% if false %>
+        <td><%= errortest.status.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
+<% end %>
         <td>
         
         <% @user = nil; @site = nil; @customer = nil %>       
