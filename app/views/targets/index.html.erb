@@ -34,7 +34,7 @@
     <% @targets.each do |target| %>
       <tr>
         <td><%= link_to target.name, target %></td>
-        <td><pre><%= target.configuration.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></pre></td>
+        <td><pre><%= target.configuration.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></pre></td>
         <td class="actions"><%= link_to 'Edit', edit_target_path(target) %></td>
 <% ajax_destroy = false %>
 <% if ajax_destroy %>

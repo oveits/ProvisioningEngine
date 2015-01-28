@@ -1,5 +1,5 @@
 <div class="index">
-	<h2>Provisioning <%= @provisioning.action.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></h2>
+	<h2>Provisioning <%= @provisioning.action.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></h2>
 </div>
 
 

@@ -18,7 +18,7 @@
 # hide passwords:
 #
 provisioning_wo_passwd = @provisioning
-provisioning_wo_passwd.action = @provisioning.action.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******')
+provisioning_wo_passwd.action = @provisioning.action.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless @provisioning.action.nil?
 
 json.merge! provisioning_wo_passwd.attributes
 
