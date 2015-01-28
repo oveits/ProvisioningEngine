@@ -47,8 +47,8 @@
     <% @provisionings.reverse_each do |provisioning| %>
       <tr>
         <td><%= provisioning.id %></td>
-        <td><%= provisioning.action.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
-        <td><%= provisioning.status.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
+        <td><%= provisioning.action.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless provisioning.action.nil? %></td>
+        <td><%= provisioning.status.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless provisioning.status.nil? %></td>
         <td>
         
         <% @user = nil; @site = nil; @customer = nil %>       
