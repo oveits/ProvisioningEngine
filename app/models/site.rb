@@ -208,7 +208,9 @@ class Site < Provisioningobject #< ActiveRecord::Base
   #validates_format_of :countrycode, :with => /\A44\Z|\A49\Z/, message: "currently only 44 or 49 supported"
   validates :countrycode, inclusion: {in: COUNTRYCODES, message: "currently only supported for one of the values #{COUNTRYCODES.inspect.gsub('"', '')}"} #COUNTRYCODES.inspect
   validates_format_of :sitecode, :with => /\A\Z|\A[1-9][0-9]{0,6}\Z/, message: "must be a number of length 1 to 7" 
-  validates_format_of :gatewayIP, :with => Regexp.new('\A\Z|' + validIPAddressRegex.source + '|' + validRFC952HostnameRegex.source), message: "must be either empty or a valid IP address or Domain Name" 
+  # FQDN not yet supported:
+  #validates_format_of :gatewayIP, :with => Regexp.new('\A\Z|' + validIPAddressRegex.source + '|' + validRFC952HostnameRegex.source), message: "must be either empty or a valid IP address or Domain Name" 
+  validates_format_of :gatewayIP, :with => Regexp.new( '\A\Z|' + validIPAddressRegex.source ), message: "must be either empty or a valid IP address" 
   validates_format_of :countrycode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
   validates_format_of :areacode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"
   validates_format_of :localofficecode, :with => /\A[1-9][0-9]{0,}\Z/, message: "must be a number"

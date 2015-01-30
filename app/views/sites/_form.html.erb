@@ -6,10 +6,11 @@
    placeholders[:localofficecode] = "e.g. 7007"
    placeholders[:extensionlength] = "e.g. 5"
    placeholders[:mainextension] = "e.g. 10000, if #{:extensionlength} = 5"
-   placeholders[:gatewayIP] = "e.g. 10.1.1.1 or gateway.domain.com (optional)"
+   #placeholders[:gatewayIP] = "e.g. 10.1.1.1 or gateway.domain.com (optional)"
+   placeholders[:gatewayIP] = "e.g. 10.1.1.1 (optional)"
 %>
 <style>
-select {min-width:<%= (inputFieldSize*15.75/30 + 18.2 - 15.75)%>em;}
+select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
 </style>
 
 
@@ -72,7 +73,7 @@ select {min-width:<%= (inputFieldSize*15.75/30 + 18.2 - 15.75)%>em;}
 			    <td>
 			    <% begin %>
 			    	<% if @alwaysDropDown %>
-			    		<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, {:prompt => "Select a #{:customer}", :selected => @customer.id}, {:style => "min-width: 700px;background-color: yellow;"}) %>
+			    		<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, {:prompt => "Select a #{:customer}", :selected => @customer.id} ) %>
 			    	<% else %>
 		    			<%= f.text_field attribute[0], size: inputFieldSize, :value => @customer.id,:readonly => true, :style => myreadonlystyle %>
 			    	<% end %>
