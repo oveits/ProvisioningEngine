@@ -30,7 +30,17 @@
       //console.log($('form').get(0));
     if ( regex.test(window.location.pathname) && $('form').get(0) == null ) {
       // this is autmatically loading/starting mySetReload because of the document ready and document page reload statements:
-      location.reload(true);
+
+      //location.reload(true);
+      // replaced by next 3 Turbolink lines and a mySetReload command see: https://coderwall.com/p/ii0a_g/page-reload-refresh-every-5-sec-using-turbolinks-js-rails-jquery
+      // 1) disable page scrolling to top after loading page content
+      Turbolinks.enableTransitionCache(true);
+      // 2) pass current page url to visit method
+      Turbolinks.visit(location.toString());
+      // 3) enable page scroll reset in case user clicks other link
+      Turbolinks.enableTransitionCache(false);
+      // needed, since we do not reload the page anymore:
+      mySetReload();
       console.log("reloaded");
     } else {
       // if there was no reload, we still want to start another timeout:
