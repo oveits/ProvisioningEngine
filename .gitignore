@@ -31,3 +31,4 @@ doc/
 *.cert
 *.pem
 *.key
+provisioningobjects_spec.rb
