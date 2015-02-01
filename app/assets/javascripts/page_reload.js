@@ -1,15 +1,15 @@
   var mySetReload, pattern, regex;
 
 
-  pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
+  pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$/";
   // same without customers/[1-9][0-9]*
-  pattern = "/customers$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
+  //pattern = "/customers$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
   // same without sites/[1-9][0-9]*
-  pattern = "/customers$|sites$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
+  //pattern = "/customers$|sites$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
   // same without users/[1-9][0-9]*
-  pattern = "/customers$|sites$|users$|provisionings$|provisionings/[1-9][0-9]*$";
-  //pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$" //|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$||provisionings/[1-9][0-9]*$";
-  regex = RegExp("" + pattern);
+  //pattern = "/customers$|sites$|users$|provisionings$|provisionings/[1-9][0-9]*$";
+  regexInclude = RegExp("" + pattern);
+  regexIncludeEvenIfForm = RegExp("" + "/customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$/");
 
   mySetReload = function() {
 //    if (window.myRefresh != null) {
@@ -28,7 +28,7 @@
   
   myReload = function() {
       //console.log($('form').get(0));
-    if ( regex.test(window.location.pathname) && $('form').get(0) == null ) {
+    if ( regexInclude.test(window.location.pathname) && ( $('form').get(0) == null  || regexIncludeEvenIfForm.test(window.location.pathname))) {
       // this is autmatically loading/starting mySetReload because of the document ready and document page reload statements:
 
       //location.reload(true);
@@ -40,7 +40,7 @@
       // 3) enable page scroll reset in case user clicks other link
       Turbolinks.enableTransitionCache(false);
       // needed, since we do not reload the page anymore:
-      mySetReload();
+      //mySetReload();
       console.log("reloaded");
     } else {
       // if there was no reload, we still want to start another timeout:

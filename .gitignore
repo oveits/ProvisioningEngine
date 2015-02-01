@@ -32,3 +32,4 @@ doc/
 *.pem
 *.key
 provisioningobjects_spec.rb
+*private*

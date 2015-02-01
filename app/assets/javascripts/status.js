@@ -1,5 +1,7 @@
 function worker() {
-  var urlpattern = "customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$";
+  //var urlpattern = "customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$";
+  //var urlpattern = "customers/[1-9][0-9]*$|sites/[1-9][0-9]*$";
+  var urlpattern = "dummydummydummydummydummy$";
   // perform ajax updates only on pages, which need this function (currently customers/xy only)
   if( document.URL.match(new RegExp(urlpattern, "g"))) {
     $.ajax({
