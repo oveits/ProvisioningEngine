@@ -6,7 +6,20 @@
   <% else %>
     <td>
       <span id="<%= "site_" + site.id.to_s %>">
-        <%= link_to site.status, site_provisionings_path(site) %>
+          <% case site.status
+               when /success/
+                 statuscolor = "#008800"  # dark green
+               when /failure/
+                 statuscolor = "red"
+               when /progress/
+                 statuscolor = "orange"
+               else
+                 statuscolor = "black"
+             end
+          %>
+
+          <%= link_to site.status, site_provisionings_path(site), {:style => "color: #{statuscolor}"}%>
+        <% link_to site.status, site_provisionings_path(site) %>
       </span>
     </td>
   <% end %>

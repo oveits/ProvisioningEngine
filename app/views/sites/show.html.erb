@@ -78,7 +78,25 @@
 			        <%= attribute[1] unless attribute[1].nil? %>
 			      <% end %>
                             <% else %>
-                              <span id="<%= attribute[0] %>"> <%= attribute[1] unless attribute[1].nil? %> </span>
+                              <span id="<%= attribute[0] %>"> 
+          <% case attribute[1]
+               when /success/
+                 statuscolor = "#008800"  # dark green
+               when /failure/
+                 statuscolor = "red"
+               when /progress/
+                 statuscolor = "orange"
+               else
+                 statuscolor = "black"
+             end
+          %>
+
+<% if attribute[0].to_s.match(/status/) %>
+          <%= link_to @site.status, site_provisionings_path(@site), {:style => "color: #{statuscolor}"}%>
+<% else %>
+<%= attribute[1] unless attribute[1].nil? %> 
+<% end %>
+                               </span>
                             <% end %>
 			    </td>
 			</tr>

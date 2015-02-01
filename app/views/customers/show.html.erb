@@ -69,7 +69,19 @@
 <% end %>
         <td>
 	   <span id="<%= "status" %>">
-		<%= link_to @customer.status, customer_provisionings_path(@customer) %>
+          <% case @customer.status
+               when /success/
+                 statuscolor = "#008800"  # dark green
+               when /failure/
+                 statuscolor = "red"
+               when /progress/
+                 statuscolor = "orange"
+               else
+                 statuscolor = "black"
+             end
+          %>
+
+          <%= link_to @customer.status, customer_provisionings_path(@customer), {:style => "color: #{statuscolor}"}%>
            </span>
         </td>
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
