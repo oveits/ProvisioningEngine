@@ -1,15 +1,15 @@
   var mySetReload, pattern, regex;
 
 
-  pattern = "/customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$/";
+  pattern = "customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
   // same without customers/[1-9][0-9]*
   //pattern = "/customers$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
   // same without sites/[1-9][0-9]*
   //pattern = "/customers$|sites$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
   // same without users/[1-9][0-9]*
   //pattern = "/customers$|sites$|users$|provisionings$|provisionings/[1-9][0-9]*$";
-  regexInclude = RegExp("" + pattern);
-  regexIncludeEvenIfForm = RegExp("" + "/customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$/");
+  regexInclude = RegExp(pattern);
+  regexIncludeEvenIfForm = RegExp("customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$");
 
   mySetReload = function() {
 //    if (window.myRefresh != null) {
@@ -20,7 +20,7 @@
     myClearReload();
     //if (regex.test(window.location.pathname)) {
       //window.myRefresh = setTimeout("location.reload(true);", 10000);
-      window.myRefresh = setTimeout("myReload();", 10000);
+      window.myRefresh = setTimeout("myReload();", 5000);
       console.log("set timout for page reload");
       //alert(window.myRefresh);
     //} 
