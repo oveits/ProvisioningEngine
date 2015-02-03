@@ -32,13 +32,14 @@ objectList = Array["Customer", "Site", "User"]
 #objectList = Array["Site"]
 #objectList = Array["User"]
 
+objectList2 = Array["Provisioning", "Target"]
+
 #targetsolutionList = Array["CSL8", "CSL9", "CSL9DEVEL", "CSL11", "CSL12"]
 #targetsolutionList = Array["CSL8"]
 #targetsolutionList = Array["CSL9"]
-targetsolutionList = Array["CSL9DEVEL"]
+#targetsolutionList = Array["CSL9DEVEL"]
 #targetsolutionList = Array["CSL11"]
-#targetsolutionList = Array["CSL12"]
-
+targetsolutionList = Array["CSL12"]
 
 def parent(obj)
   case obj
@@ -440,25 +441,14 @@ describe Site do
 end
 
 targetsolutionList.each do |targetsolution|
-   $customerName = "zzzzz___TestCustomer"
-   #$targetname = targetsolutionVars[targetsolution][:targetname]
-   #$target = targetsolutionVars[targetsolution][:target]
   describe "On target solution '#{targetsolution}'" do  
     before do
-       FactoryGirl.create("target_#{targetsolution}".to_sym).should be_valid
-       #Target.all.count.should be(1)
-       myTarget = Target.last
-       myTarget.update_attributes!(configuration: myTarget.configuration + $FPAFOmit)
-       $targetname = targetsolution
-    end
-    it "should create a target with name '#{targetsolution}'" do
-       FactoryGirl.create("target_#{targetsolution}".to_sym).should be_valid
-       #Target.all.count.should be(1)
-       myTarget = Target.last
-       myTarget.name.should match(/#{targetsolution}/)
-       #FactoryGirl.create(:target).should be_valid
-       #FactoryGirl.create("target_#{targetsolution}".to_sym).should be_valid
-       #expect(FactoryGirl.create("target_#{targetsolution}")).to 
+      FactoryGirl.create("target_#{targetsolution}".to_sym)
+      myTarget = Target.last
+      $customerName = "ExampleCustomerV8" #targetsolutionVars[targetsolution][:customerName]
+      $targetname = Target.last.name #targetsolutionVars[targetsolution][:targetname]
+      $target = Target.last.configuration + $FPAFOmit #targetsolutionVars[targetsolution][:target]
+      Target.last.destroy!
     end
 objectList.each do |obj|
     describe "index" do
@@ -995,9 +985,8 @@ objectList.each do |obj|
   end # describe Provisioningobject do
 end # objectList.each do |obj|
 
-# rest objectlist:
-objectList = Array["Provisioning", "Target"]
-objectList.each do |obj|
+# rest objectlist: e.g. Array["Provisioning", "Target"]
+objectList2.each do |obj| # second objectList
   describe "On target solution '#{targetsolution}'" do
     describe "index" do
       before(:each) do
@@ -1014,9 +1003,9 @@ objectList.each do |obj|
         expect(page).to have_selector('h2', text: obj)
         expect(page.html.gsub(/[\n\t]/, '')).to match(/<h[^>]>[\s]*#{obj}/)
       end
-   end
-end # objectList.each do |obj|
-end # targetsolutionList.each do |targetsolution|
+    end
+  end 
+end # objectList2.each do |obj| # second objectList
 
 describe "Customer can be de-provisioned, even if a manually added site is present" do
   # TODO:
@@ -1028,4 +1017,4 @@ end
 
 
 
-end
+end # targetsolutionList.each do |targetsolution|
