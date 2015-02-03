@@ -34,12 +34,12 @@ objectList = Array["Customer", "Site", "User"]
 
 objectList2 = Array["Provisioning", "Target"]
 
-#targetsolutionList = Array["CSL8", "CSL9", "CSL9DEVEL", "CSL11", "CSL12"]
+#targetsolutionList = Array["CSL8", "CSL9", "CSL9DEV", "CSL11", "CSL12"]
 #targetsolutionList = Array["CSL8"]
 #targetsolutionList = Array["CSL9"]
-#targetsolutionList = Array["CSL9DEVEL"]
+targetsolutionList = Array["CSL9DEV"]
 #targetsolutionList = Array["CSL11"]
-targetsolutionList = Array["CSL12"]
+#targetsolutionList = Array["CSL12"]
 
 def parent(obj)
   case obj
