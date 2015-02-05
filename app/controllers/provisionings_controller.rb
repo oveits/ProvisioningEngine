@@ -104,7 +104,8 @@ class ProvisioningsController < ApplicationController
             p "@delayedjob.id = " + @delayedjob.id.to_s
             p '++++++++++++++++++++++++++++++++'
             
-            @provisioning..update_attributes!(:delayedjob => @delayedjob)
+       #abort @provisioning.inspect
+            @provisioning.update_attributes!(:delayedjob_id => @delayedjob.id)
             #
             # Note: delayedjob attribute will be removed again at the end of the ProvisioningJob
             #
