@@ -1,6 +1,8 @@
 export HTTP_PROXY=
 export http_proxy=
 
+[ -w /var/log/WebPortal.log ] || ( sudo touch /var/log/WebPortal.log; sudo chown provisioningengine:provisioningengine /var/log/WebPortal.log  )
+
 ~/.rbenv/shims/rake jobs:work >> /var/log/WebPortal.log &
   sleep 2
   myDelayedJobsPid=`ps -ef | grep "rake jobs:work" | grep -v grep | grep -v shims | awk '{print $2}'`
