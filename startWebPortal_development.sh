@@ -1,5 +1,6 @@
 export HTTP_PROXY=
 export http_proxy=
+export WEBPORTAL_BASEURL="/dev"
 
 ~/.rbenv/shims/rails s -p 3001 >> /var/log/WebPortal.log &
   sleep 2

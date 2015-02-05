@@ -2,6 +2,17 @@ Rails.application.routes.draw do
   
   #root 'welcome#index'
   #root 'customers#index'
+    # OV added. See http://stackoverflow.com/questions/13303695/rails-assets-path-incorrect-in-a-scoped-production-application
+if ENV["WEBPORTAL_BASEURL"] == "false" || ENV["WEBPORTAL_BASEURL"].nil?
+  baseURL = '/'
+else
+  baseURL = ENV["WEBPORTAL_BASEURL"]
+end
+
+#abort baseURL
+#baseURL = '/'
+
+scope(path: baseURL) do
   
   root 'application#root'
  
@@ -122,4 +133,5 @@ Rails.application.routes.draw do
   #     # (app/controllers/admin/products_controller.rb)
   #     resources :products
   #   end
-end
+end # scope(path: baseURL) do
+end # Rails.application.routes.draw do
