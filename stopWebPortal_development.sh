@@ -1,5 +1,6 @@
 myWebPortalPid=`ps -ef | grep "rails s -p 3001" | grep -v grep | grep -v shims | awk '{print $2}'`
 
+
 echo myWebPortalPid=$myWebPortalPid
 
 if [ "_$myWebPortalPid" != "_" ]; then
