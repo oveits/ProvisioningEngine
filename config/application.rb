@@ -19,6 +19,13 @@ module ProvisioningPortalv4
     # OV: added:
     #config.active_record.schema_format :sql
     
+    # OV added. See http://stackoverflow.com/questions/13303695/rails-assets-path-incorrect-in-a-scoped-production-application
+    if ENV["WEBPORTAL_BASEURL"] == "false" || ENV["WEBPORTAL_BASEURL"].nil? || /^\/$/.match(ENV["WEBPORTAL_BASEURL"])
+      baseURL = '/assets'
+    else
+      baseURL = ENV["WEBPORTAL_BASEURL"] + '/assets'
+    end
+    config.assets.prefix = baseURL #'/assets'
     
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
