@@ -1,0 +1,7 @@
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Target Functions
+                    </a>
+                </li>
+                <li><%= link_to 'New Target', new_target_path %></li>
+

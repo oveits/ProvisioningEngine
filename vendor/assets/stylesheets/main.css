@@ -156,7 +156,7 @@ padding-bottom: 12px; /* large padding to get menu item to protrude downwards */
 
 
 /* Buttons and button links  First ones are the action buttons!!*/
-input[type=submit],
+input[type=submit_removed],
 .actions ul li a,
 .actions a {
 	font-weight:normal;

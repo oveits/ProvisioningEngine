@@ -1,44 +1,11 @@
-<div class="index">
-	<h2>Target <%= @target.name %></h2>
-</div>
-
-
-<%= form_for(@target) do |f| %>
-  <% if @target.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@target.errors.count, "error") %> prohibited this target from being saved:</h2>
-
-      <ul>
-      <% @target.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-
+                        <h1>Target <%= @target.name %></h1>
+                        <p>Manage Provisioning Targets</p>
+<!-- <div class="view"> -->
 <div>
-<nav>
-	<div class="actions">
-		<ul>
-			<h3>Create</h3>
-			<li><%= link_to 'New Target', new_target_path %></li>
-			<br />
-			<h3>Change/Delete</h3>
-			<li><%= link_to 'Edit Target', edit_target_path(@target) %></li>
-			<li><%= link_to 'Delete Target', @target, method: :delete, data: { confirm: 'Are you sure?' } %></li>
-
-		</ul>
-	</div>
-</nav>
-</div>
-
-<div class="index">
 <p id="notice"><%= notice %></p>
 <p id="error"><%= error %></p>
 <p id="success"><%= success %></p>
-
-
+</div>
   	<table>
   		<thead>
   			<th>Attribute</th>
@@ -49,7 +16,7 @@
 
 			<% @target.attributes.each do |attribute| %> 
 			<tr>
-			    <td><%= f.label attribute[0] %></td>
+			    <td><%= attribute[0] %></td>
 			    <td><%= attribute[1].to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless attribute[1].nil? %></td>
 			</tr>
 			<% end %>
@@ -57,7 +24,9 @@
 			
 		</tbody>
 	</table>
-	  </div>
-<% end %>
+</div>
+
+
+
 
 

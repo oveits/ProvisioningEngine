@@ -1,19 +1,6 @@
-<div class="view">
-<h2>Customers</h2>
-</div>
+<h1>Customers</h1>
 
 <div>
-<nav>
-	<div class="actions">
-		<ul>
-			<li><%= link_to 'New Customer', new_customer_path %></li>
-			<li><%= link_to 'Clear Table', removeAll_customers_path, method: :delete, data: { confirm: 'Are you sure?' } %></li> 
-		</ul>
-	</div>
-</nav>
-</div>
-
-<div class="index">
 <p id="notice"><%= notice %></p>
 <p id="error"><%= error %></p>
 <p id="success"><%= success %></p>
@@ -62,9 +49,9 @@
 
       <% if true %>
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
-        <td class="actions"><%= link_to 'Edit', edit_customer_path(customer) %></td> 
+        <td><%= link_to 'Edit', edit_customer_path(customer) %></td> 
 			<% end %>
-        <td class="actions"><%= link_to 'Destroy', customer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Destroy', customer, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
       <% else %>
         <td></td>
         <td></td>
@@ -80,5 +67,4 @@
   <% end %>
 </table>
 </div>
-
 

@@ -1,39 +1,7 @@
-<div class="index">
-	<h2>Customer <%= @customer.name %></h2>
-</div>
+<h2>Customer <%= @customer.name %></h2>
 
 
 <div>
-<nav>
-	<div class="actions">
-		<ul>
-			<h3>Create</h3>
-			<li><%= link_to 'New Customer', new_customer_path %></li>
-			<li><%= link_to 'Add Site', new_customer_site_path(@customer) %></li>
-			<br />
-			<h3>Change/Delete</h3>
-			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-			<li><%= link_to 'Provision Customer', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></li>
-			<% end %>
-			<li><%= link_to 'Delete Customer', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></li>
-			<br />
-			<h3>Show related</h3>
-			<% if false %>
-			<li><%= link_to 'All Customers', customers_path %></li>	
-			<% end %>
-			<li><%= link_to "Sites", customer_sites_path(customer = @customer) %></li>
-			<% if false %>
-			<li><%= link_to 'Users', customer_users_path(@customer) %></li>
-			<% end %>
-			<li><%= link_to 'Provisioning Tasks', customer_provisionings_path(@customer) %></li>
-		</ul>
-	</div>
-</nav>
-</div>
-
-
-
-<div class="index">
 	
 <p id="notice"><%= notice %></p>
 <p id="error"><%= error %></p>

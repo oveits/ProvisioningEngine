@@ -1,0 +1,55 @@
+<% myclass = request.original_url.gsub(/http.*\/(customers|sites|users|provisionings|targets)(\/[a-z]*){0,1}(\/[1-9][0-9]*){0,1}$/, '\1')
+    
+%>
+<% case request.original_url %>
+<%     when /#{myclass}$|#{myclass}\/$|#{myclass}\/\#$|#{myclass}\/index.html$/ %> 
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Functions
+                    </a>
+                </li>
+                <li><%= link_to 'New User', new_user_path %></li>
+
+<%     when /#{myclass}\/[1-9][0-9]*$/ %>
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Create
+                    </a>
+                </li>
+                <li><%= link_to 'New User', new_user_path %></li>
+
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Change/Delete
+                    </a>
+                </li>
+                <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
+                <li><%= link_to 'Edit User', edit_user_path(@user) %></li>
+                <% end %>
+                <% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
+                <li><%= link_to 'Provision', provision_user_path(@user), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+                <% end %>
+<% if false %>
+                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+                <%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, data: { confirm: 'Are you sure?' }%>
+                <% end %>
+<% end %>
+                <li><%= link_to 'Delete User', @user, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+<% if false %>
+                synchronize not yet supported for class user
+                <li><%= link_to 'Synchronize', synchronize_user_path(@user), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+<% end %>
+
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Show related...
+                    </a>
+                </li>
+                <% if false %>
+                <li><%= link_to 'All Sites', sites_path %></li>
+                <% end %>
+                <li><%= link_to 'Users', site_users_path(@site) %></li>
+                <li><%= link_to 'Provisioning Tasks', site_provisionings_path(@site) %></li>
+
+
+<% end %>     

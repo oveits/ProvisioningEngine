@@ -1,36 +1,20 @@
 <% webportal_provisioningbutton_visible = ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] %>
 
-<div class="view">
-	<h2>
+	<h1>
 		Sites
 	<% if !@customer.nil? %>
 		of Customer <%= link_to @customer.name, @customer %>
 	<% end %>	
-	</h2>
-</div>
+	</h1>
 
 <div>
-<nav>
-	<div class="actions">
-		<ul>
-			<% if @customer.nil? %>
-			<li><%= link_to 'New Site', new_site_path %></li>
-			<% else %>
-			<li><%= link_to 'New Site', new_customer_site_path(@customer) %></li>
-			<% end %>
-		</ul>
-	</div>
-</nav>
-</div>
-
-<div class="view">
 <p id="notice"><%= notice %></p>
 <p id="error"><%= error %></p>
 <p id="success"><%= success %></p>
 </div>
 
 
-<div class="index" >
+<div>
 <table>
   <thead>
     <tr>
@@ -72,15 +56,15 @@
           <%= link_to site.status, site_provisionings_path(site), {:style => "color: #{statuscolor}"}%>
         </td>
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
-        <td class="actions"><%= link_to 'Edit', edit_site_path(site) %></td>
+        <td><%= link_to 'Edit', edit_site_path(site), class: "btn btn-default" %></td>
 			<% end %>
 			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-        <td class="actions"><%= link_to 'Provision', provision_site_path(site), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Provision', provision_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 			<% end %>
 			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
-        <td class="actions"><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 			<% end %>
-        <td class="actions"><%= link_to 'Destroy', site, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Destroy', site, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
       </tr>
     <% end %>
   </tbody>
