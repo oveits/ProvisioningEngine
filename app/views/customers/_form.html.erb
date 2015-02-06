@@ -1,5 +1,5 @@
 <% @alwaysDropDown = true 
-   inputFieldSize = 50
+   inputFieldSize = 55
    placeholders = {};
    placeholders[:name] = "e.g. Unify"
 %>
@@ -21,24 +21,10 @@ select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
   <% end %>
   
   <div>
-<nav>
-	<div class="actions">
-		<ul>
-			<li><%= f.submit 'Save', class: "action-button" %></li>
-			<li>
-				<% begin %>
-			  	<%= link_to 'Cancel', customer_path(@customer) %>
-			  	<% rescue %>
-			  	<%= link_to 'Cancel', customers_path %>
-			  	<% end %>
-			</li>
-		</ul>
-	</div>
-</nav>
 
 </div>
 
-  <div class="index">
+  <div>
   	 <table> 
   		<thead>
   			<th>Attribute</th>
@@ -85,14 +71,14 @@ select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
 			</tr>
 			<% end %>
 			<tr>
-				<td class="actions">
-				  	<%= f.submit 'Save'%>
+				<td>
+				  	<%= f.submit 'Save', type: "submit", class: "btn btn-default" %>
 				</td>
-				<td class="actions">
+				<td>
 				  	<% begin %>
-				  	<%= link_to 'Cancel', customer_path(@customer) %>
+				  	<%= link_to 'Cancel', customer_path(@customer), class: "btn btn-default"  %>
 				  	<% rescue %>
-				  	<%= link_to 'Cancel', customers_path %>
+				  	<%= link_to 'Cancel', customers_path, role: "button", class: "btn btn-default" %>
 				  	<% end %>
 				</td>
 			</tr>

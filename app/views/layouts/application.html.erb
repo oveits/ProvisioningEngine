@@ -33,6 +33,79 @@
 document.getElementById("noscriptmessage").innerHTML="";
 </script>
 
+
+<% if true %>
+<header class="navbar navbar-fixed-top navbar-inverse">
+      <div class="container">
+      <div style="height: 35px; margin=50px">
+<%= image_tag("ProvisioningEngine_Harmony_Sans_white_and_green_transparent_365x50.gif", :alt => "ProvisioningEngine", title: "ProvisioningEngine", id: "logo" , size: "292x40")%>
+      </div>
+        <nav>
+          <ul class="nav navbar-nav navbar-right">
+            <li><%= link_to "Home",   '#' %></li>
+            <li><%= link_to "Help",   '#' %></li>
+            <li><%= link_to "Log in", '#' %></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-left">
+            <li><%= link_to "Customers",   :customers %></li>
+            <li><%= link_to "Sites",   :sites %></li>
+            <li><%= link_to "Users", :users %></li>
+            <li><%= link_to "Provisioning Tasks", :provisionings %></li>
+            <li><%= link_to "Targets", :targets %></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <div id="main-container" class="container-fluid">
+      <div class="row">
+ <div id="wrapper">
+
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper" >
+            <ul class="sidebar-nav">
+
+                <%= render "sidebar" %>
+
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+<!--
+                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+--> 
+                        <%= yield %>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+    </div>
+    <!-- /#wrapper -->
+<!--
+        <div id="sidebar" class="col-xs-2">
+sidebar content
+        </div>
+        <div id="main-content" class="col-xs-9">
+main content
+        </div>
+-->
+
+    <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
+
+      </div>
+    </div>
+<% end %>
 <% if false %>
 <div>
     <% if javascript_enabled? # Selenium::WebDriver::Remote::Capabilities#javascript_enabled? %>
@@ -43,6 +116,7 @@ document.getElementById("noscriptmessage").innerHTML="";
 </div>	
 <% end %>
 
+<% if false %>
 <% @mymenue = [:customers, :sites, :users, :provisionings, :targets] %>
 
 <%  # is the link an index?  
@@ -134,5 +208,6 @@ document.getElementById("noscriptmessage").innerHTML="";
 
 <%= yield %>
 
+<% end %>
 </body>
 </html>

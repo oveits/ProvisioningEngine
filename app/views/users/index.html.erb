@@ -1,6 +1,5 @@
 <% if !@site.nil?; @customer = @site.customer; end %>
-<div class="view">
-	<h2>
+	<h1>
 		Users	
 	<% if !@site.nil? %>
 		of Site <%= link_to @site.name, @site %>
@@ -8,39 +7,28 @@
 			of Customer <%= link_to @customer.name, @customer %>
 		<% end %>
 	<% end %>	
-	</h2>
-</div>
+	</h1>
 
 <div>
-<nav>
-	<div class="actions">
-		<ul>
-			<li><%= link_to 'New User', new_user_path %></li>
-		</ul>
-	</div>
-</nav>
-</div>
-
-<div class="view">
 <p id="notice"><%= notice %></p>
 <p id="error"><%= error %></p>
 <p id="success"><%= success %></p>
 </div>
 
-<div class="index" >
+<div>
 <table>
   <thead>
     <tr>
 <% if false %>
       <th>Name</th>
 <% end %>
+      <th>Extension</th>
       	<% if @customer.nil? %>
       <th>Customer</th>
       	<% end %>
       	<% if @site.nil? %>
       <th>Site</th>
       	<% end %>
-      <th>Extension</th>
       <th>Givenname</th>
       <th>Familyname</th>
       	<% if false %>
@@ -57,6 +45,7 @@
 	<% if false %>
         <td><%= link_to user.name, user %></td>
 	<% end %>
+        <td><%= link_to user.extension, user_path(user) %></td>
         
         	<% if @customer.nil? %>
         <td>	
@@ -77,7 +66,6 @@
         	<% end %>      	
         
         
-        <td><%= user.extension %></td>
         <td><%= user.givenname %></td>
         <td><%= user.familyname %></td>
         	<% if false %>
@@ -99,12 +87,12 @@
           <%= link_to user.status, site_provisionings_path(user.site), {:style => "color: #{statuscolor}"}%>
         </td>
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
-	<td class="actions"><%= link_to 'Edit', edit_user_path(user) %></td>
+	<td><%= link_to 'Edit', edit_user_path(user), class: "btn btn-default" %></td>
 			<% end %>
 			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-        <td class="actions"><%= link_to 'Provision', provision_user_path(user), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Provision', provision_user_path(user), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 			<% end %>
-        <td class="actions"><%= link_to 'Destroy', user, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Destroy', user, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
       </tr>
     <% end %>
   </tbody>

@@ -1,0 +1,31 @@
+<% myclass = request.original_url.gsub(/http.*\/(customers|sites|users|provisionings|targets)(\/[a-z]*){0,1}(\/[1-9][0-9]*){0,1}$/, '\1')
+    
+%>
+<% case request.original_url %>
+<%     when /#{myclass}$|#{myclass}\/$|#{myclass}\/\#$|#{myclass}\/index.html$/ %> 
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Functions
+                    </a>
+                </li>
+            <% if false %>
+                <li><%= link_to 'New Provisioning (currently not working and not needed)', new_provisioning_path %></li>
+            <% end %>
+
+                <li><%= link_to 'Clear Table', removeAll_provisionings_path, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+<%     when /#{myclass}\/[1-9][0-9]*$/ %>
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Create
+                    </a>
+                </li>
+                <li><%= link_to 'New Provisioning', new_provisioning_path %></li>
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Change/Delete
+                    </a>
+                </li>
+                <li><%= link_to 'Edit Provisioning', edit_provisioning_path(@provisioning) %></li>
+                <li><%= link_to 'Delete Provisioning', @provisioning, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+
+<% end %>     

@@ -1,29 +1,35 @@
-<div class="view">
-	<h2>
-		Targets	
-	</h2>
-</div>
+<script>
+//document.getElementById('2_fullconfig').style.display='block';
+//document.getElementById('2').style.display='none';
+    function toggleshowhide(id) {
+        if(document.getElementById(id + '_fullconfig').style.display=='none') {
+            console.log('showing full config of id=' + id + '_fullconfig');
+            document.getElementById(id + '_fullconfig').style.display='block';
+            document.getElementById(id).style.display='none';
+        } else {
+            console.log('hiding full config of id=' + id + '_fullconfig');
+            document.getElementById(id + '_fullconfig').style.display='none';
+            document.getElementById(id).style.display='block';
+        }
+        return false;
+    }
+</script>
 
+<h1>Targets</h1>
+<p>Manage Provisioning Targets</p>
+<!-- <div class="view"> -->
 <div>
-<nav>
-	<div class="actions">
-		<ul>
-			<li><%= link_to 'New Target', new_target_path %></li>
-		</ul>
-	</div>
-</nav>
-</div>
-
-<div class="view">
 <p id="notice"><%= notice %></p>
 <p id="error"><%= error %></p>
 <p id="success"><%= success %></p>
 </div>
 
-<div class="index" >
+<div >
+
 <table>
   <thead>
     <tr>
+      <th>ID</th>
       <th>Name</th>
       <th>Configuration</th>
       <th colspan="3"></th>
@@ -31,20 +37,40 @@
   </thead>
 
   <tbody>
+           <% showConfig = {} %>
     <% @targets.each do |target| %>
       <tr>
+        <td><%= link_to target.id, target %></td>
         <td><%= link_to target.name, target %></td>
-        <td><pre><%= target.configuration.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></pre></td>
-        <td class="actions"><%= link_to 'Edit', edit_target_path(target) %></td>
-<% ajax_destroy = false %>
-<% if ajax_destroy %>
-	<td class="actions"><%= link_to 'Ajax Destroy', target, remote: true,  method: :delete, data: { mytest: 'test', confirm: 'Are you sure?' } %></td>
-<% else %>
-        <td class="actions"><%= link_to 'Destroy', target, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-<% end %>
+        <td> <pre style="display=block;" id="<%= target.id %>" onclick="toggleshowhide(<%= target.id %>);"><%= target.configuration.to_s.gsub(/(assw[^=]*=[ ]*)([^\n\r]*).*$/, '\1*******').lines.first.gsub(/[\n\r]*/, '') + "..." %></pre>
+             <pre style="display=none;" id="<%= target.id %>_fullconfig" onclick="toggleshowhide(<%= target.id %>);"><%= target.configuration.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></pre>
+        </td>
+        <td><%= link_to 'Edit', edit_target_path(target), class: "btn btn-default" %></td>
+        <td><%= link_to 'Destroy', target, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
       </tr>
+<script>
+toggleshowhide("<%= target.id %>");
+</script>
     <% end %>
   </tbody>
+
 </table>
+
 </div>
 
+<script>
+//document.getElementById('2_fullconfig').style.display='block';
+//document.getElementById('2').style.display='none';
+    function toggleshowhide(id) { 
+        if(document.getElementById(id + '_fullconfig').style.display=='none') { 
+            console.log('showing full config of id=' + id + '_fullconfig');
+            document.getElementById(id + '_fullconfig').style.display='block';
+            document.getElementById(id).style.display='none';
+        } else {
+            console.log('hiding full config of id=' + id + '_fullconfig');
+            document.getElementById(id + '_fullconfig').style.display='none';
+            document.getElementById(id).style.display='block'; 
+        } 
+        return false;
+    } 
+</script>

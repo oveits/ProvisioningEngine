@@ -1,0 +1,46 @@
+@import "bootstrap-sprockets";
+@import "bootstrap";
+
+/* universal */
+
+html {
+  overflow-y: scroll;
+}
+
+body {
+  padding-top: 80px;
+}
+
+section {
+  overflow: auto;
+}
+
+textarea {
+  resize: vertical;
+}
+
+h1 {
+        color: #449922;
+
+        /* make it more readable: */
+        //letter-spacing: .6px;
+        font-weight: normal;
+        /* font-family:'Gill Sans','lucida grande', helvetica, arial, sans-serif; ,*/
+        //font-family: "Harmony Sans", arial, sans-serif;
+        //font-family: arial, sans-serif;
+        font-size: 200%;
+
+}
+
+.center {
+  text-align: center;
+}
+
+.center h1 {
+  margin-bottom: 10px;
+}
+
+.sidebar-nav {
+  background-color: #4b4b4b;
+}
+
