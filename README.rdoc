@@ -48,8 +48,8 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
   * heroku create # if not done already
   * git push heroku # or
   * git push heroku yourbranch:master #, if you are not on the master branch
-  * heroku rake db:migrate
-* heroku rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
+  * heroku run rake db:migrate
+* heroku run rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
 * heroku open # this will open a browser with the correct link
 
 * synchronize local git with remote git repository:
