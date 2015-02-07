@@ -35,17 +35,28 @@ document.getElementById("noscriptmessage").innerHTML="";
 
 
 <% if true %>
+<% theme = "inverse" %>
+<% if theme == "default" %>
+<header class="navbar navbar-fixed-top navbar-default">
+<% else %>
 <header class="navbar navbar-fixed-top navbar-inverse">
+<% end %>
       <div class="container">
-      <div style="height: 35px; margin=50px">
-<%= image_tag("ProvisioningEngine_Harmony_Sans_white_and_green_transparent_365x50.gif", :alt => "ProvisioningEngine", title: "ProvisioningEngine", id: "logo" , size: "292x40")%>
+      <div style="height: 40px; margin=50px">
+<% if theme == "default" %>
+      <%= image_tag("ProvisioningEngine_Harmony_Sans_green_and_grey_with_new_darkgrey_ico_388x50.png", :alt => "ProvisioningEngine", title: "ProvisioningEngine", id: "logo" , size: "292x40")%>
+<% else %>
+      <%= image_tag("ProvisioningEngine_Harmony_Sans_white_and_green_transparent_365x50.gif", :alt => "ProvisioningEngine", title: "ProvisioningEngine", id: "logo" , size: "292x40")%>
+<% end %>
       </div>
         <nav>
+    <%  if false # since there are no functions behind, let us hide those links for now %>
           <ul class="nav navbar-nav navbar-right">
             <li><%= link_to "Home",   '#' %></li>
             <li><%= link_to "Help",   '#' %></li>
             <li><%= link_to "Log in", '#' %></li>
           </ul>
+    <% end %>
           <ul class="nav navbar-nav navbar-left">
             <li><%= link_to "Customers",   :customers %></li>
             <li><%= link_to "Sites",   :sites %></li>
