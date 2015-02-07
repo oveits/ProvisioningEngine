@@ -1,4 +1,4 @@
-<h1>Provisioning <%= @provisioning.action.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></h1>
+<h1>Provisioning <%= @provisioning.action.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******').match(/(Add|Delete|Update) (Customer|Site|User)/).to_s %></h1>
 
 
 <%= form_for(@provisioning) do |f| %>
