@@ -1,4 +1,11 @@
 <% myclass = request.original_url.gsub(/http.*\/(customers|sites|users|provisionings|targets)(\/[a-z]*){0,1}(\/[1-9][0-9]*){0,1}$/, '\1')
+if ENV["WEBPORTAL_BASEURL"] == "false" || ENV["WEBPORTAL_BASEURL"].nil?
+  baseURL = '/'
+else
+  baseURL = ENV["WEBPORTAL_BASEURL"]
+end
+  baseURL = '' if baseURL == '/'
+%>
     
 %>
 <% case request.original_url %>
@@ -13,6 +20,7 @@
             <% end %>
 
                 <li><%= link_to 'Clear Table', removeAll_provisionings_path, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+                <li><a href="<% baseURL %>/delayed_job/overview">Delayed Jobs</a></li>
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">
                     <a href="#">
