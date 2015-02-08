@@ -27,24 +27,7 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
     </div>
   <% end %>
 
-<div>
-<nav>
-	<div class="actions">
-		<ul>
-			<li><%= f.submit 'Save', class: "action-button" %></li>
-			<li>
-				<% begin %>
-			  	<%= link_to 'Cancel', site_path(@site) %>
-			  	<% rescue %>
-			  	<%= link_to 'Cancel', sites_path %>
-			  	<% end %>
-			</li>
-		</ul>
-	</div>
-</nav>
-</div>
-
-  <div class="index">
+  <div>
   	 <table> 
   		<thead>
   			<th>Attribute</th>
@@ -95,14 +78,14 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
 			<% end # if %>
 		<% end # each %>
 			<tr>
-				<td class="actions">
-				  	<%= f.submit 'Save'%>
+				<td>
+				  	<%= f.submit 'Save', class: "btn btn-default"%>
 				</td>
-				<td class="actions">
+				<td>
 				  	<% begin %>
-				  	<%= link_to 'Cancel', site_path(@site) %>
+				  	<%= link_to 'Cancel', site_path(@site), class: "btn btn-default" %>
 				  	<% rescue %>
-				  	<%= link_to 'Cancel', sites_path %>
+				  	<%= link_to 'Cancel', sites_path, class: "btn btn-default" %>
 				  	<% end %>
 				</td>
 			</tr>
