@@ -19,6 +19,10 @@
 <% if maintenance == true %>
 <h1 style="color:red"> ************** Do not use *** MAINTENANCE ************* <h1>
 <% end %>
+<% if /\/dev\//.match(request.original_url) %>
+<h1 style="color:blue"> ************** THIS IS THE DEVELOPMENT ENVIRONMENT ************* </h1>
+<% end %>
+
 
 <span id="noscriptmessage">
 <div style="color:red">
