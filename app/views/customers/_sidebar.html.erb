@@ -7,7 +7,7 @@
                 </li>
                 <li><%= link_to 'New Customer', new_customer_path %></li>
 <% if false %>
-                <li><%= link_to 'Clear Table', removeAll_customers_path, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+                <li><%= link_to 'Clear Table', removeAll_customers_path, method: :delete, data: { confirm: 'This will remove recursively all entries from the database (withou de-provisioning from the target system). Are you sure?' } %></li>
 <% end %>
 <%     when /customers\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">
@@ -17,7 +17,6 @@
                 </li>
                 <li><%= link_to 'New Customer', new_customer_path %></li>
                 <li><%= link_to 'Add Site', new_customer_site_path(@customer) %></li>
-                <li><%= link_to 'Clear Table', removeAll_customers_path, method: :delete, data: { confirm: 'Are you sure?' } %></li>
                 <li class="sidebar-brand">
                     <a href="#">
                         Change/Delete

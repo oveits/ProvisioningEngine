@@ -2,10 +2,6 @@
 
 
 <div>
-	
-<p id="notice"><%= notice %></p>
-<p id="error"><%= error %></p>
-<p id="success"><%= success %></p>
 
 <table>
   <thead>
@@ -53,15 +49,15 @@
            </span>
         </td>
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
-        <td class="actions"><%= link_to 'Edit', edit_customer_path(@customer) %></td>
+        <td><%= link_to 'Edit', edit_customer_path(@customer), class: "btn btn-default" %></td>
 			<% end %>
 			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-        <td class="actions"><%= link_to 'Provision', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Provision', provision_customer_path(@customer), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 			<% end %>
 			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
         <td></td>
 			<% end %>
-        <td class="actions"><%= link_to 'Destroy', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <td><%= link_to 'Destroy', @customer, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
       </tr>
       <%= render @customer.sites %>
   </tbody>
