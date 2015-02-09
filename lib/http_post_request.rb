@@ -3,6 +3,12 @@ class HttpPostRequest
     #
     # renders action="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
     #
+    
+    if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
+      simulationMode = true
+    else 
+      simulationMode = false
+    end
 
     require "net/http"
     require "uri"
@@ -38,19 +44,37 @@ class HttpPostRequest
         abort "action (here: #{action}) must be of the format \"variable1=value1,variable2=value2, ...\""
       end
     end
-    
-    p "------------- HttpPostRequest POST Data to #{uriString} -----------------"
+  
+    if simulationMode
+      simulationLogString = "(simlulated) "
+    else
+      simulationLogString = ""
+    end
+
+
+    p "------------- HttpPostRequest POST Data to #{uriString} #{simulationLogString}-----------------"
     p postData.inspect
     p '----------------------------------------------------------'
-    
+
     request.set_form_data(postData)
-    
-    begin
-      response = http.request(request)
-      responseBody = response.body
-    rescue
-      responseBody = nil
+
+    # flash does not work in this environment:
+    #flash[:notice]  = "Sent HTTP POST Data to #{uriString} #{simulationLogString}"
+
+    if simulationMode
+      sleep 15.seconds
+      responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+    else    
+      begin
+        response = http.request(request)
+        responseBody = response.body
+      rescue
+        responseBody = nil
+      end
     end
+
+    #flash[:notice]  = "Received answer: #{responesBody.to_s}"
+  
     
     return responseBody
   end # def perform
