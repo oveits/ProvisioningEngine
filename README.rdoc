@@ -2,6 +2,7 @@
 This README documents whatever steps are necessary to get the Ruby based Provisioning Portal up and running.
 
 === Installation
+==== Installation on your own machine (Windows or Linux)
 * prerequisites:
   * rails v4 is installed
   * ruby v2 is installed
@@ -15,6 +16,25 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
 * edit application.yml
   * adapt PROVISIONINGENGINE_CAMEL_URL
   * WEBPORTAL_PROVISIONINGBUTTON_VISIBLE and WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE should be kept to "false" (experimental)
+  
+==== Installation on Nitrous.IO
+* on www.nitrous.io, create a box with minimum requirements
+* open IDE
+* in the console:
+  * cd workspace
+  * git clone https://github.com/oveits/ProvisioningEngine ProvisioningEngine 
+  * cd ProvisioningEngine
+  * git status
+  * git checkout -b nitrous
+  * rake db:migrate RAILS_ENV=development
+  * rails s &
+  * commit changes to git:
+    * first time use:
+      * git config --global user.email "you@example.com"
+      * git config --global user.name "Your Name"
+    * git add .
+    * git commit -am "description of the change"
+* menu -> Preview -> Port 3000
   
 
 ===  Web server
