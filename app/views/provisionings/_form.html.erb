@@ -14,14 +14,14 @@
   
 <div>
 <nav>
-	<div class="actions">
+	<div>
 		<ul>
-			<li><%= f.submit 'Save', class: "action-button" %></li>
+			<li><%= f.submit 'Save', class: "btn btn-default" %></li>
 			<li>
 				<% begin %>
-			  	<%= link_to 'Cancel', provisioning_path(@provisioning) %>
+			  	<%= link_to 'Cancel', provisioning_path(@provisioning), class: "btn btn-default" %>
 			  	<% rescue %>
-			  	<%= link_to 'Cancel', provisionings_path %>
+			  	<%= link_to 'Cancel', provisionings_path, class: "btn btn-default" %>
 			  	<% end %>
 			</li>
 		</ul>
@@ -29,13 +29,13 @@
 </nav>
 </div>
 
-<div class="index">
+<div>
   <div class="field">
     <%= f.label :action %><br>
     <%= f.text_field :action, :size => 80%>
   </div>
-  <div class="actions">
-    <%= f.submit %>
+  <div>
+    <%= f.submit, class: "btn btn-default" %>
   </div>
 </div>
 <% end %>
