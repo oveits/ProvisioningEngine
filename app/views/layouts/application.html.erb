@@ -19,10 +19,6 @@
 <% if maintenance == true %>
 <h1 style="color:red"> ************** Do not use *** MAINTENANCE ************* <h1>
 <% end %>
-<% if /\/dev\//.match(request.original_url) %>
-<h1 style="color:blue"> ************** THIS IS THE DEVELOPMENT ENVIRONMENT ************* </h1>
-<% end %>
-
 
 <span id="noscriptmessage">
 <div style="color:red">
@@ -51,16 +47,20 @@ document.getElementById("noscriptmessage").innerHTML="";
       <%= image_tag("ProvisioningEngine_Harmony_Sans_green_and_grey_with_new_darkgrey_ico_388x50.png", :alt => "ProvisioningEngine", title: "ProvisioningEngine", id: "logo" , size: "292x40")%>
 <% else %>
       <%= image_tag("ProvisioningEngine_Harmony_Sans_white_and_green_transparent_365x50.gif", :alt => "ProvisioningEngine", title: "ProvisioningEngine", id: "logo" , size: "292x40")%>
+        
 <% end %>
       </div>
         <nav>
-    <%  if false # since there are no functions behind, let us hide those links for now %>
           <ul class="nav navbar-nav navbar-right">
+            <p id="notice" style="background-color: white;"><%= notice %></p>
+            <p id="error" style="background-color: white;"><%= error %></p>
+            <p id="success" style="background-color: white;"><%= success %></p>
+    <%  if false # since there are no functions behind, let us hide those links for now %>
             <li><%= link_to "Home",   '#' %></li>
             <li><%= link_to "Help",   '#' %></li>
             <li><%= link_to "Log in", '#' %></li>
-          </ul>
     <% end %>
+          </ul>
           <ul class="nav navbar-nav navbar-left">
             <li><%= link_to "Customers",   :customers %></li>
             <li><%= link_to "Sites",   :sites %></li>
@@ -90,9 +90,14 @@ document.getElementById("noscriptmessage").innerHTML="";
                 <div class="row">
                     <div class="col-lg-12">
 <!--
-                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+                      <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 --> 
-                        <%= yield %>
+                      <%= yield %>
+                        
+                      <% unless Rails.env.production? %>
+                        <h4 style="color:blue; position:fixed; bottom:0px;"> ************** environment = <%= Rails.env %> ************* </h4>
+                      <% end %>
+
 
                     </div>
                 </div>
