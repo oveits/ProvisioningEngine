@@ -55,6 +55,9 @@ gem 'delayed_job_active_record'
 
 gem "delayed_job_web"
 
+# OV added to be able to start rake jobs:work as daemon:
+gem "daemons"
+
 # OV for making synchronous calls to provisioning.deliver non-blocking:
 # note: this requires curl to be installed. See 
 #gem 'typhoeus'
