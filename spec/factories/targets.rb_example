@@ -12,7 +12,7 @@ factory :target do
     configuration "OSVIP=1.1.1.1,XPRIP=1.1.1.1,UCIP=1.1.1.1"
   end
 
-  factory :target_CSL9DEVEL do
+  factory :target_CSL9DEV do
     name "CSL9DEV"
     configuration "OSVIP=1.1.1.1,XPRIP=1.1.1.1,UCIP=1.1.1.1"
   end
