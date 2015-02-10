@@ -25,8 +25,7 @@ doc/
 *.orig/
 
 # Ignore application configuration
-config/application.yml
-*.yml
+/config/application.yml
 
 # Ignore private data:
 *.cert
