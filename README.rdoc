@@ -40,8 +40,14 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
 ===  Web server
 * start web server on Windows on port 80:
   * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
-  * rails s -p 80
+  * rails s -p 80   --- or as daemon: rails s -d -p 80 (works also on nitrous.io)
   * rake jobs:work # for starting the background processes (based on the "delayed_job_active_record" gem)
+  * or run delayed_jobs as daemon:
+    * first time install:
+      * add gem "daemon" to Gemfile
+      * bundle install
+      * rails generate delayed_job
+    * then start/stop daemon by: bin/delayed_job start/stop (works also on nitrous.io)
 * start web server on Linux on port 80:
   * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
   * ./start # will start both, the web server and the delayed_jobs in the background and will append the logs to /var/log/WebPortal.log
