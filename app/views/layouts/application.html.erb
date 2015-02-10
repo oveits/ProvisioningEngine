@@ -93,9 +93,10 @@ document.getElementById("noscriptmessage").innerHTML="";
                       <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 --> 
                       <%= yield %>
-                        
+                      <% if false # for the moment, not active (until migrated from development to production... %> 
                       <% unless Rails.env.production? %>
                         <h4 style="color:blue; position:fixed; bottom:0px;"> ************** environment = <%= Rails.env %> ************* </h4>
+                      <% end %>
                       <% end %>
 
 
