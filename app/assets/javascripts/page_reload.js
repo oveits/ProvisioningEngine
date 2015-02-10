@@ -20,7 +20,7 @@
     myClearReload();
     //if (regex.test(window.location.pathname)) {
       //window.myRefresh = setTimeout("location.reload(true);", 10000);
-      window.myRefresh = setTimeout("myReload();", 5000);
+      window.myRefresh = setTimeout("myReload();", 10000);
       console.log("set timout for page reload");
       //alert(window.myRefresh);
     //} 
