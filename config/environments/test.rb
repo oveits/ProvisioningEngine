@@ -40,4 +40,7 @@ Rails.application.configure do
   # OV: Speed up tests by lowering bcrypt's cost function.
   # see: https://www.railstutorial.org/book/beginning#code-test_bcrypt_cost_factor
   ActiveModel::SecurePassword.min_cost = true
+  
+  # OV: see https://github.com/gevans/respond-rails
+  config.assets.precompile += %w( modernizr.js respond.js respond-proxy.html respond.proxy.js )
 end

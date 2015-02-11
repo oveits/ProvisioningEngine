@@ -34,4 +34,7 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+  
+  # OV: see https://github.com/gevans/respond-rails
+  config.assets.precompile += %w( modernizr.js respond.js respond-proxy.html respond.proxy.js )
 end
