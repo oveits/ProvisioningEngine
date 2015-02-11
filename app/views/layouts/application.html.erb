@@ -12,6 +12,13 @@
   <%= javascript_include_tag 'application' %>
 <% end %>
   <%= csrf_meta_tags %>
+  <!--[if lt IE 9]>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/r29/html5.min.js">
+  </script>
+  <![endif]-->
+  <!-- needed for browser lt IE 9: -->
+  <%= respond_include_tags %>
+  
 </head>
 
 <!-- on unload trick found on http://stackoverflow.com/questions/158319/cross-browser-onload-event-and-the-back-button, but it does not seem to work for chrome (still using the local cache upon back/forward button)  -->
@@ -98,6 +105,10 @@ document.getElementById("noscriptmessage").innerHTML="";
                         <h4 style="color:blue; position:fixed; bottom:0px;"> ************** environment = <%= Rails.env %> ************* </h4>
                       <% end %>
                       <% end %>
+                      <!--[if lt IE 9]>
+  <h4 style="color:red; position:fixed; bottom:0px;"> This page does not display correctly on Internet Explorer 8 or below! Recommended: Firefox or Chrome (best tested) </h1>
+  
+  <![endif]-->
 
 
                     </div>
@@ -230,5 +241,6 @@ main content
 <%= yield %>
 
 <% end %>
+
 </body>
 </html>

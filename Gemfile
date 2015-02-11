@@ -101,3 +101,8 @@ end
 
 gem 'figaro'
 #gem "figaro", "~> 0.7.0"
+
+# OV does not work (introduces wrong path to /javascripts/respond.js instead of /assets/respond.js and even /assets/respond.js is not installed...); see https://github.com/RouL/respond-js-rails
+#gem 'respond-js-rails'
+# may be better? See https://github.com/gevans/respond-rails:
+gem "respond-rails", "~> 1.0"
