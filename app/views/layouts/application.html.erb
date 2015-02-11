@@ -107,6 +107,9 @@ document.getElementById("noscriptmessage").innerHTML="";
                         <h4 style="color:blue; position:fixed; bottom:0px;"> ************** environment = <%= Rails.env %> ************* </h4>
                       <% end %>
                       <% end %>
+                      <% if ENV["WEBPORTAL_SIMULATION_MODE"] == "true" %>
+                        <h4 style="color:blue; position:fixed; bottom:0px;"> ************** running in simulation mode ************* </h4>
+                      <% end %>
                       <!--[if lt IE 9]>
   <h4 style="color:red; background-color:lightgrey; position:fixed; padding:20px; bottom:0px;"> This page does not display correctly on Internet Explorer 8 or below! Recommended: Firefox or Chrome (best tested) </h1>
   
