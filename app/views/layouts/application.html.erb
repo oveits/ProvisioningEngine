@@ -59,9 +59,11 @@ document.getElementById("noscriptmessage").innerHTML="";
       </div>
         <nav>
           <ul class="nav navbar-nav navbar-right">
+            <span id="flash">
             <p id="notice" style="background-color: white;"><%= notice %></p>
             <p id="error" style="background-color: white;"><%= error %></p>
             <p id="success" style="background-color: white;"><%= success %></p>
+            </span>
     <%  if false # since there are no functions behind, let us hide those links for now %>
             <li><%= link_to "Home",   '#' %></li>
             <li><%= link_to "Help",   '#' %></li>

@@ -1,13 +1,10 @@
+  var page_reload_activated = false;
+
+  if(page_reload_activated) {
   var mySetReload, pattern, regex;
 
 
   pattern = "customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
-  // same without customers/[1-9][0-9]*
-  //pattern = "/customers$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
-  // same without sites/[1-9][0-9]*
-  //pattern = "/customers$|sites$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
-  // same without users/[1-9][0-9]*
-  //pattern = "/customers$|sites$|users$|provisionings$|provisionings/[1-9][0-9]*$";
   regexInclude = RegExp(pattern);
   regexIncludeEvenIfForm = RegExp("customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$");
 
@@ -20,7 +17,8 @@
     myClearReload();
     //if (regex.test(window.location.pathname)) {
       //window.myRefresh = setTimeout("location.reload(true);", 10000);
-      window.myRefresh = setTimeout("myReload();", 10000);
+    // full page reload only every 10 minutes:
+      window.myRefresh = setTimeout("myReload();", 600000);
       console.log("set timout for page reload");
       //alert(window.myRefresh);
     //} 
@@ -57,8 +55,6 @@
     }};
 
   $(document).ready(mySetReload);
-
   $(document).on('page:load', mySetReload);
   $( window ).unload(myClearReload);
-  //$( window ).beforeunload(myClearReload);
-//$(window).unload(function(){ alert('do unload stuff here'); }); 
+}
