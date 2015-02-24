@@ -12,22 +12,6 @@
     </div>
   <% end %>
   
-<div>
-<nav>
-	<div>
-		<ul>
-			<li><%= f.submit 'Save', class: "btn btn-default" %></li>
-			<li>
-				<% begin %>
-			  	<%= link_to 'Cancel', provisioning_path(@provisioning), class: "btn btn-default" %>
-			  	<% rescue %>
-			  	<%= link_to 'Cancel', provisionings_path, class: "btn btn-default" %>
-			  	<% end %>
-			</li>
-		</ul>
-	</div>
-</nav>
-</div>
 
 <div>
   <div class="field">
@@ -35,7 +19,13 @@
     <%= f.text_field :action, :size => 80%>
   </div>
   <div>
-    <%= f.submit, class: "btn btn-default" %>
+    <%= f.submit 'Save', class: "btn btn-default" %>
+                                <% begin %>
+                                <%= link_to 'Cancel', provisioning_path(@provisioning), class: "btn btn-default" %>
+                                <% rescue %>
+                                <%= link_to 'Cancel', provisionings_path, class: "btn btn-default" %>
+                                <% end %>
+
   </div>
 </div>
 <% end %>
