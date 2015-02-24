@@ -138,9 +138,9 @@ class User < Provisioningobject #< ActiveRecord::Base
                     uniqueness: { scope: :site, message: "is already taken for this #{:site}" }
                     #length: { is: @site.extensionlength.to_i  }
   #validates :givenname,  presence: true
-  validates_format_of :givenname, :with => /\A[\p{L}0-9]+\Z/, message: "must consist of letters (unicode allowed) and numbers"
+  validates_format_of :givenname, :familyname, :with => /\A[\p{L}0-9\-]+\Z/, message: "must consist of letters (unicode allowed) and/or numbers and/or hyphens (-)"
   #validates :familyname,  presence: true
-  validates_format_of :familyname, :with => /\A[\p{L}0-9]+\Z/, message: "must consist of letters (unicode allowed) and numbers"
+  #validates_format_of :familyname, :with => /\A[\p{L}0-9\-]+\Z/, message: "must consist of letters (unicode allowed) and numbers"
   #validates :email,  presence: true
   #validates_format_of :email, :with => /\A[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})\Z/, message: "must be a valid email address, e.g. name@company.com"
   validates_format_of :email, :with => /\A[_A-Za-z0-9\-\+]+(\.[_A-Za-z0-9\-]+)*@[A-Za-z0-9\-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})\Z/, message: "must be a valid email address, e.g. name@company.com"
