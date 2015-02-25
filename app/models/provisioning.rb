@@ -197,7 +197,8 @@ p targetobject.inspect
         when /Warnings/
         # import errors
           returnvalue = 5
-          resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext[/OSV.*Success.*$/] unless resulttext[/OSV.*Success.*$/].nil?
+          #resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext[/OSV.*Success.*$/] unless resulttext[/OSV.*Success.*$/].nil?
+          resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext #unless resulttext[/OSV.*Success.*$/].nil?
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed (import errors)') unless targetobject.nil?
             break unless targetobject.nil?
