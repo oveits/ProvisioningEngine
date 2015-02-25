@@ -3,8 +3,10 @@
    placeholders = {};
    placeholders[:name] = "e.g. Unify"
 %>
+<% minWidthStyle = "min-width: #{(inputFieldSize*15.75/30 + 18.2-15.75)}em;"  %>
+<% myreadonlystyle = "#{minWidthStyle} background:#eee none; color:#222;}"  %>
 <style>
-select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
+select {<%= minWidthStyle %>}
 </style>
 
 <%= form_for(@customer) do |f| %>
@@ -35,7 +37,6 @@ select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
   		<% ro = 'readonly'; rw = 'readwrite' %>
 		<% myparams = @myparams %>
 		<% myparams['target_id']%>
-		<% myreadonlystyle = "background:#eee none; color:#222"  %>
 		<% @customer.attributes.each do |attribute| %> 
 			<tr>
 			<% if myparams[attribute[0]] == rw %>
