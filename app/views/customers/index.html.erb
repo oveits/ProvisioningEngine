@@ -1,4 +1,7 @@
 <h1>Customers</h1>
+<style>
+.btn { min-width:8.5em; background-color:white; color:#444444 ; }
+</style>
 
 <div>
 	
@@ -9,7 +12,7 @@
       <th>Name</th>
       <th>Target</th>
       <th>Status</th>
-      <th colspan="2"></th>
+      <th colspan="3"></th>
     </tr>
   </thead>
   <tbody>
@@ -45,10 +48,15 @@
        </td>
 
       <% if true %>
-                        <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
-        <td><%= link_to 'Edit', edit_customer_path(customer) %></td> 
-			<% end %>
-        <td><%= link_to 'Destroy', customer, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
+        <% if customer.provisioned? %>
+           <td><%= link_to 'Edit', '#' , class: "btn btn-default", onclick: "alert('De-Provision the item first!');"   %></td>
+           <td><%= link_to 'De-Provision', customer, method: :delete, class: "btn btn-warning", data: { confirm: 'Are you sure? This will de-provision the customers from the target system, including all related children (sites, users).' } %></td>
+           <td><%= link_to 'Destroy', '#', class: "btn btn-default", onclick: "alert('De-Provision the item first!');"  %></td>
+        <% else %>
+           <td><%= link_to 'Edit', edit_customer_path(customer), class: "btn btn-primary" %></td>
+           <td><%= link_to 'Provision', provision_customer_path(customer), method: :patch, class: "btn btn-warning", data: { confirm: 'Are you sure?' }  %></td>
+           <td><%= link_to 'Destroy', customer, method: :delete, class: "btn btn-danger", data: { confirm: "Are you sure?\nThis cannot be undone!" } %></td>
+        <% end %>
       <% else %>
         <td></td>
         <td></td>
