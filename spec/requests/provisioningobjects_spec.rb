@@ -34,9 +34,10 @@ objectList = Array["Customer", "Site", "User"]
 
 objectList2 = Array["Provisioning", "Target"]
 
-#targetsolutionList = Array["CSL8", "CSL9", "CSL9DEV", "CSL11", "CSL12"]
+#targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
 #targetsolutionList = Array["CSL8"]
-targetsolutionList = Array["CSL9"]
+targetsolutionList = Array["CSL9_V7R1"]
+#targetsolutionList = Array["CSL6_V7R1"]
 #targetsolutionList = Array["CSL9DEV"]
 #targetsolutionList = Array["CSL11"]
 #targetsolutionList = Array["CSL12"]
@@ -93,14 +94,14 @@ def new_provisioningobject_path(obj)
 end
 
 
-def createCustomer(name = "" )      
-  # add and provision customer "ExampleCustomer with target = TestTarget" 
-  obj = "Customer"
-  
-  fillFormForNewCustomer(name)
-#abort "createCustomer: abort"
-  click_button 'Save', match: :first 
-end
+#def createCustomer(name = "" )      
+#  # add and provision customer "ExampleCustomer with target = TestTarget" 
+#  obj = "Customer"
+#  
+#  fillFormForNewCustomer(name)
+##abort "createCustomer: abort"
+#  click_button 'Save', match: :first 
+#end
 
 def createSite(name = "ExampleSite" )      
   # add and provision customer "ExampleCustomer with target = TestTarget" 
@@ -118,7 +119,12 @@ def createObject(obj, name = "" )
   fillFormForNewObject(obj, name)
     
   click_button 'Save', match: :first 
-  #p page.html.gsub(/[\n\t]/, '').inspect
+  	#p page.html.gsub(/[\n\t]/, '').inspect if obj == "Site"
+  if /V7R1/.match($targetname) && page.html.gsub(/[\n\t]/, '').match("Sitecode must not be empty for V7R1 targets") 
+    fill_in "Sitecode",         with: "99821"
+    click_button 'Save', match: :first
+  end
+	#p page.html.gsub(/[\n\t]/, '').inspect if obj == "User"
 
   # return value: url or nil
   if /http.*\/#{myobjects(obj)}\/[1-9][0-9]*\Z/.match(page.current_url).nil?
@@ -297,8 +303,10 @@ def fillFormForNewUser(name = "" )
     delayed_worker_delay_jobs_before = Delayed::Worker.delay_jobs
     Delayed::Worker.delay_jobs = false
     createObject("Site", name = "ExampleSite" ) 
+#abort Site.all.inspect
     Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
+#abort Site.all.inspect
   visit new_provisioningobject_path("User") # for refreshing after creating the target
   #fill_in "Name",         with: name        # not possible, since name input field might not be displayed (depending on the application.yaml file content)
   select "ExampleSite", :from => "user[site_id]"
@@ -533,6 +541,7 @@ objectList.each do |obj|
         end
         
         it "should throw an error message" do
+#p page.html.gsub(/[\n\t]/, '')
           click_button submit, match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/prohibited this/)
         end
@@ -619,16 +628,16 @@ objectList.each do |obj|
           #createTarget
 	  Delayed::Worker.delay_jobs = false
           createObject(obj)
-	  if /V7R1/.match($customerName)
-            # correct Sitecode for V7R1 targets:
-            expect(page.html.gsub(/[\n\t]/, '')).to match(/must not be empty for V7R1 targets/)
-            fill_in "Sitecode",         with: "99821"
-            click_button submit, match: :first
-          end
+	  #if /V7R1/.match($targetname)
+          #  # correct Sitecode for V7R1 targets:
+          #  expect(page.html.gsub(/[\n\t]/, '')).to match(/must not be empty for V7R1 targets/)
+          #  fill_in "Sitecode",         with: "99821"
+          #  click_button submit, match: :first
+          #end
 #p page.html.gsub(/[\n\t]/, '')
           destroyObjectByNameRecursive(obj)
           fillFormForNewObject(obj)
-          if /V7R1/.match($customerName)
+          if /V7R1/.match($targetname) && obj == "Site"
             click_button submit, match: :first
             expect(page.html.gsub(/[\n\t]/, '')).to match(/must not be empty for V7R1 targets/)
             fill_in "Sitecode",         with: "99821"
@@ -769,6 +778,11 @@ objectList.each do |obj|
         it "should create a #{obj} with status 'provisioning success: was already provisioned'" do
           Delayed::Worker.delay_jobs = false
           click_button submit, match: :first
+          if /V7R1/.match($targetname) && page.html.gsub(/[\n\t]/, '').match("Sitecode must not be empty for V7R1 targets")
+            fill_in "Sitecode",         with: "99821"
+            click_button 'Save', match: :first
+          end
+
           expect(page.html.gsub(/[\n\t]/, '')).to match(/was already provisioned/)
         end
 
@@ -776,6 +790,10 @@ objectList.each do |obj|
           it "should update the #{obj} in the DB according to the data found in the target system" do
             Delayed::Worker.delay_jobs = false
             click_button submit, match: :first
+            if /V7R1/.match($targetname) && page.html.gsub(/[\n\t]/, '').match("Sitecode must not be empty for V7R1 targets")
+              fill_in "Sitecode",         with: "99821"
+              click_button 'Save', match: :first
+            end      
 	    # TODO: add countrycode, areacode, etc. for the obj "Site"
 	    #p page.html.gsub(/[\n\t]/, '')
             if obj == "Site"
@@ -810,7 +828,7 @@ objectList.each do |obj|
       #p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
 	  expect { click_link submit, match: :first }.to change(myProvisioningobject(obj), :count).by(-1)
-      p page.html.gsub(/[\n\t]/, '')
+      #p page.html.gsub(/[\n\t]/, '')
           expect(page.html.gsub(/[\n\t]/, '')).to match(/deleted/)  # flash
         end
       end # describe "Delete #{obj} from database" do
@@ -880,7 +898,7 @@ objectList.each do |obj|
         
 	it "should update the status of #{obj} 'waiting for deletion'" do
           Delayed::Worker.delay_jobs = true
-      #p page.html.gsub(/[\n\t]/, '')
+      		#p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
           click_link submit, match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)

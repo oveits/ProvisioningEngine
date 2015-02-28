@@ -1,0 +1,8 @@
+<% render 'shared/helpers.html.erb' %>
+
+<% if @provisioningobject.provisioned? %>
+<td><%= link_to 'Edit', '#' , class: "btn btn-default", onclick: "alert('De-Provision the item first!');"   %></td>
+<% else %>
+<%= provisioningobject_path(@provisioningobject, prefix='') %>
+<td><%= link_to 'Edit', provisioningobject_path(@provisioningobject, prefix='edit'), class: "btn btn-primary" %></td>
+<% end %>

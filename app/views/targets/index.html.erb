@@ -37,9 +37,15 @@
       <tr>
         <td><%= link_to target.id, target %></td>
         <td><%= link_to target.name, target %></td>
+<% if false %>
         <td> <pre style="display=block;" id="<%= target.id %>" onclick="toggleshowhide(<%= target.id %>);"><%= target.configuration.to_s.gsub(/(assw[^=]*=[ ]*)([^\n\r]*).*$/, '\1*******').lines.first.to_s.gsub(/[\n\r]*/, '') + "..." %></pre>
              <pre style="display=none;" id="<%= target.id %>_fullconfig" onclick="toggleshowhide(<%= target.id %>);"><%= target.configuration.to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></pre>
         </td>
+<% else %>
+	<td>
+        <pre><%= link_to target.configuration.to_s.gsub(/(assw[^=]*=[ ]*)([^\n\r]*).*$/, '\1*******').lines.first.to_s.gsub(/[\n\r]*/, '') + "...", target_path(target.id) %></pre>
+	</td>
+<% end %>
         <td><%= link_to 'Edit', edit_target_path(target), class: "btn btn-default" %></td>
         <td><%= link_to 'Destroy', target, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
       </tr>

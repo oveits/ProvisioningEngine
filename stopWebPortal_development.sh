@@ -1,4 +1,4 @@
-myWebPortalPid=`ps -ef | grep "rails s -p 3001" | grep -v grep | grep -v shims | awk '{print $2}'`
+myWebPortalPid=`ps -ef | grep "rails s" | grep "p 3001" | grep -v grep | grep -v shims | awk '{print $2}'`
 
 
 echo myWebPortalPid=$myWebPortalPid

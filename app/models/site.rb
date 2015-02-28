@@ -30,8 +30,8 @@ class Validate_Sitecode_V7R1 < ActiveModel::Validator
   def validate(record)
     # for OSV V7R1, empty sitecodes are not supported
     if record.sitecode.nil? || record.sitecode == ""
-      targetName = Customer.find(record.customer_id).target.name
-      if /V7R1/.match(targetName)
+      targetName = Customer.find(record.customer_id).target.name unless record.customer_id.nil?
+      if record.customer_id.nil? || /V7R1/.match(targetName)
         record.errors[:sitecode] << "must not be empty for V7R1 targets"
       end 
     end 

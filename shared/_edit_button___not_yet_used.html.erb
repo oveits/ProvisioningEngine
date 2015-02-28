@@ -1,5 +1,0 @@
-<% if provisioningobject.provisioned? %>
-<td><%= link_to 'Edit', '#' , class: "btn btn-default", onclick: "alert('De-Provision the item first!');"   %></td>
-<% else %>
-<td><%= link_to 'Edit', edit_customer_path(customer), class: "btn btn-primary" %></td>
-<% end %>

@@ -1,0 +1,8 @@
+Web Portal started: PID=5796
+11473
+=> Booting WEBrick
+=> Rails 4.1.4 application starting in test on http://0.0.0.0:3002
+=> Run `rails server -h` for more startup options
+=> Notice: server is listening on all interfaces (0.0.0.0). Consider using 127.0.0.1 (--binding option)
+=> Ctrl-C to shutdown server
+Exiting

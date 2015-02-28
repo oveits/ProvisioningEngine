@@ -1,0 +1,29 @@
+//(function() {
+  var mySetReload, pattern, regex, testvar;
+
+  testvar = 1;
+
+  pattern = "/customers$|customers/[1-9][0-9]*";
+
+  regex = RegExp("" + pattern);
+  var $myRefresh;
+
+  mySetReload = function() {
+    //var $myRefresh;
+    if (regex.test(window.location.pathname)) {
+      $myRefresh = setTimeout("location.reload(true);", 5000);
+      testvar += 1;
+      return alert($myRefresh);
+    } else {
+      clearTimeout($myRefresh);
+      return alert($myRefresh);
+    }
+  };
+
+  $(document).ready(mySetReload);
+
+  $(document).on('page:load', mySetReload);
+
+  $;
+
+//}).call(this);

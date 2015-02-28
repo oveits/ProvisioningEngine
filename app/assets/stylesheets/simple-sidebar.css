@@ -61,13 +61,16 @@
 
 .sidebar-nav li {
     text-indent: 20px;
-    line-height: 40px;
+    line-height: 30px;
+    /*padding-left: 2em; */
 }
 
 .sidebar-nav li a {
     display: block;
     text-decoration: none;
     color: #999999;
+    padding-left: 1em;
+    padding-top: 0px;
 }
 
 .sidebar-nav li a:hover {
@@ -82,14 +85,29 @@
 }
 
 .sidebar-nav > .sidebar-brand {
-    height: 65px;
+    height: 35px;
     font-size: 18px;
-    line-height: 60px;
+    line-height: 35px;
 }
 
 .sidebar-nav > .sidebar-brand a {
-    color: #999999;
+    color: #bbbbbb;
+    padding-top: 5px;  /* negative values are ignored!? */
+    padding-left: 0;
+    line-height: 40px;
+    height: 40px;  /* seems to be ignored here */
 }
+
+.sidebar-nav > li.sidebar-links a {
+background-color: lime;
+    color: red; /* is not ingnored */
+    padding-left: 1em;  /* all values are ignored here... */
+    padding-top: 5px;
+    /*border: 20px;       /* all values are ignored here... */
+    line-height: 30px; /* is ignored here */
+    /*height: 60px;  works, but only adds height below the text field */
+}
+
 
 .sidebar-nav > .sidebar-brand a:hover {
     color: #fff;

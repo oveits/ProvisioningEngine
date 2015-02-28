@@ -1,0 +1,17 @@
+<% 
+def myObject(obj="Customer")
+  #"Customer"
+  obj
+end
+
+def myobject(obj=myObject)
+  # customer
+  myObject(obj).downcase
+end
+
+def provisioningobject_path(thisobject, prefix='')
+  # returns e.g. customer_path
+  prefix = "#{prefix}_" unless prefix == '' 
+  path = send("#{prefix}#{myobject(thisobject.class.to_s)}_path", thisobject.id)
+end
+%>
