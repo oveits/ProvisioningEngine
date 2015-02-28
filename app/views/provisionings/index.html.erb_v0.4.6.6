@@ -30,7 +30,7 @@
       <tr>
         <td><%= provisioning.id %></td>
         <td><%= provisioning.action.to_s.gsub(/(assw[^=\n]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
-        <td style="max-width: 500px;"><pre><%= provisioning.status.to_s.gsub(/(assw[^=\n]*=[ ]*)([^\r]*).*$/, '\1*******').match(/\A[^\n]*(\n[^\n]*){0,2}/) %></pre><span style="text-decoration: underline;"><%= link_to 'more...', provisioning %></span></td>
+        <td><pre><%= provisioning.status.to_s.gsub(/(assw[^=\n]*=[ ]*)([^\r]*).*$/, '\1*******').match(/\A[^\n]*(\n[^\n]*){0,2}/) %></pre><span style="text-decoration: underline;"><%= link_to 'more...', provisioning %></span></td>
 <% if false %>
         <td><%= errortest.status.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
 <% end %>
@@ -95,9 +95,8 @@
         		<% @job = Delayed::Job.find(provisioning.delayedjob) %>
         		<%= link_to 'Stop', stop_provisioning_path(provisioning), method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' }%>
         	<% rescue %>
-        		<%= link_to 'Retry', deliver_provisioning_path(provisioning), method: :put, class: "btn btn-default", data: { confirm: 'Are you sure?'} %>
+        		<%= link_to 'Retry', deliver_provisioning_path(provisioning), method: :put, class: "btn btn-default", data: { confirm: 'Are you sure?'} %></td>
         	<% end %>
-      </td>
       </tr>
     <% end %>
   </tbody>

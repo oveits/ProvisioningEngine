@@ -26,6 +26,10 @@ module ProvisioningPortalv4
       baseURL = ENV["WEBPORTAL_BASEURL"] + '/assets'
     end
     config.assets.prefix = baseURL #'/assets'
+
+    # OV added (see http://stackoverflow.com/questions/23123586/no-route-matches-get-stylesheets-frontend-css)
+    config.assets.precompile += %w( main.css )
+    config.assets.precompile += %w( application.css )
     
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

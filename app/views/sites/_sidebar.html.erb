@@ -17,16 +17,11 @@
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">
                     <a href="#">
-                        Create
+                        Create/Delete...
                     </a>
                 </li>
                 <li><%= link_to 'New Site', new_site_path %></li>
                 <li><%= link_to 'New User', new_site_user_path(@site) %></li>
-                <li class="sidebar-brand">
-                    <a href="#">
-                        Change/Delete
-                    </a>
-                </li>
                 <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
                 <li><%= link_to 'Edit Site', edit_site_path(@site) %></li>
                 <% end %>

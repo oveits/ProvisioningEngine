@@ -13,7 +13,11 @@
 			<% @target.attributes.each do |attribute| %> 
 			<tr>
 			    <td><%= attribute[0] %></td>
-			    <td><%= attribute[1].to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless attribute[1].nil? %></td>
+			    <td>
+<% if attribute[0] == "configuration" %><pre><% end %>
+<%= attribute[1].to_s.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') unless attribute[1].nil? %>
+<% if attribute[0] == "configuration" %></pre><% end %>
+			    </td>
 			</tr>
 			<% end %>
 			
