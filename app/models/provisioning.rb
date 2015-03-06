@@ -223,7 +223,7 @@ p targetobject.inspect
       p 'returnvalue = ' + returnvalue.to_s
       p '------------------resulttext------------------'
          
-      return resulttext if returnvalue == 9
+      return resulttext if returnvalue == 9 && thisaction == 'reading'
       update_attribute(:status, resulttext) unless thisaction == 'reading'
       return returnvalue
     

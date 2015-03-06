@@ -128,6 +128,8 @@ class UsersController < ApplicationController
   # PATCH/PUT /users/1
   # PATCH/PUT /users/1.json
   def update   
+    ro = 'readonly'; rw = 'readwrite'
+    @myparams = {"id"=>ro, "name"=>rw, "site_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
     respond_to do |format|
       if @user.update(user_params)
         format.html { redirect_to @user, notice: "User #{@user.name} successfully updated in the database, but provisioning of target systems is not yet supported." }

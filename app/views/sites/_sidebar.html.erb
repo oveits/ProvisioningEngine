@@ -4,9 +4,7 @@
 <% case request.original_url %>
 <%     when /#{myclass}$|#{myclass}\/$|#{myclass}\/\#$|#{myclass}\/index.html$/ %> 
                 <li class="sidebar-brand">
-                    <a href="#">
                         Functions
-                    </a>
                 </li>
                 <% if @customer.nil? %>
                 <li><%= link_to 'New Site', new_site_path %></li>
@@ -16,9 +14,7 @@
 
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">
-                    <a href="#">
                         Create/Delete...
-                    </a>
                 </li>
                 <li><%= link_to 'New Site', new_site_path %></li>
                 <li><%= link_to 'New User', new_site_user_path(@site) %></li>
@@ -33,9 +29,7 @@
                 <% end %>
                 <li><%= link_to 'Delete Site', @site, method: :delete, data: { confirm: 'Are you sure?' } %></li>
                 <li class="sidebar-brand">
-                    <a href="#">
                         Show related...
-                    </a>
                 </li>
                 <% if false %>
                 <li><%= link_to 'All Sites', sites_path %></li>
