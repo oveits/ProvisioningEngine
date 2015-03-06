@@ -4,17 +4,13 @@
 <% case request.original_url %>
 <%     when /#{myclass}$|#{myclass}\/$|#{myclass}\/\#$|#{myclass}\/index.html$/ %> 
                 <li class="sidebar-brand">
-                    <a href="#">
                         Functions
-                    </a>
                 </li>
                 <li><%= link_to 'New User', new_user_path %></li>
 
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">
-                    <a href="#">
                         Create/Delete ...
-                    </a>
                 </li>
                 <li><%= link_to 'New User', new_user_path %></li>
 
@@ -36,9 +32,7 @@
 <% end %>
 
                 <li class="sidebar-brand">
-                    <a href="#">
                         Show related...
-                    </a>
                 </li>
                 <% if false %>
                 <li><%= link_to 'All Sites', sites_path %></li>

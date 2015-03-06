@@ -4,23 +4,17 @@
 <% case request.original_url %>
 <%     when /#{myclass}$|#{myclass}\/$|#{myclass}\/\#$|#{myclass}\/index.html$/ %> 
                 <li class="sidebar-brand">
-                    <a href="#">
                         Functions
-                    </a>
                 </li>
                 <li><%= link_to 'New Target', new_target_path %></li>
 
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">
-                    <a href="#">
                         Create
-                    </a>
                 </li>
                 <li><%= link_to 'New Target', new_target_path %></li>
                 <li class="sidebar-brand">
-                    <a href="#">
                         Change/Delete
-                    </a>
                 </li>
                 <li><%= link_to 'Edit Target', edit_target_path(@target) %></li>
                 <% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
@@ -31,9 +25,7 @@
                 <% end %>
                 <li><%= link_to 'Delete Target', @target, method: :delete, data: { confirm: 'Are you sure?' } %></li>
                 <li class="sidebar-brand">
-                    <a href="#">
                         Show related...
-                    </a>
                 </li>
                 <li><%= link_to 'Customers (not yet filtered)', customers_path %></li>
 
