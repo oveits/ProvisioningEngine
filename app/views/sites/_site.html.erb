@@ -23,16 +23,13 @@
       </span>
     </td>
   <% end %>
-			<% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
-  <td><%= link_to 'Edit', edit_site_path(site), class: "btn btn-default" %></td>
-			<% end %>
-			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-  <td><%= link_to 'Provision', provision_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' }%></td>
-			<% end %>
 			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
   <td><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' }%></td>
 			<% end %>
-  <td><%= link_to 'Destroy', site, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
+<%  @provisioningobject = site; %>
+        <td><%= render 'shared/edit_button.html.erb' %></td>
+        <td><%= render 'shared/provision_button.html.erb' %></td>
+        <td><%= render 'shared/destroy_button.html.erb' %></td>
 </tr>
 
 

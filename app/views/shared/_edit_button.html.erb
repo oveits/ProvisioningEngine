@@ -1,7 +1,8 @@
 <% render 'shared/helpers.html.erb' %>
+<% label='Edit' %>
 
 <% if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
-<td><%= link_to 'Edit', '#' , class: "btn btn-default", onclick: "alert('De-Provision the item first!');"   %></td>
+<button class= "btn btn-default" onclick="alert('De-Provision the item first!');"><%= label %></button>
 <% else %>
-<td><%= link_to 'Edit', provisioningobject_path(@provisioningobject, prefix='edit'), class: "btn btn-primary" %></td>
+<%= link_to label, provisioningobject_path(@provisioningobject, prefix='edit'), class: "btn btn-primary" %>
 <% end %>

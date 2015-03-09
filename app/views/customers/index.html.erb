@@ -1,7 +1,4 @@
 <h1>Customers</h1>
-<style>
-.btn { min-width:8.5em; background-color:white; color:#444444 ; }
-</style>
 
 <div>
 	
@@ -47,24 +44,10 @@
           <%= link_to customer.status, customer_provisionings_path(customer), {:style => "color: #{statuscolor}"}%>
        </td>
 
-      <% if true %>
-        <%= @provisioningobject = customer; 
-	    render 'shared/edit_button.html.erb' %>
-        <% if customer.provisioned? %>
-           <td><%= link_to 'De-Provision', customer, method: :delete, class: "btn btn-warning", data: { confirm: 'Are you sure? This will de-provision the customers from the target system, including all related children (sites, users).' } %></td>
-        <% else %>
-           <td><%= link_to 'Provision', provision_customer_path(customer), method: :patch, class: "btn btn-warning", data: { confirm: 'Are you sure?' }  %></td>
-        <% end %>
- <%= @provisioningobject = customer;
-            render 'shared/destroy_button.html.erb' %>
-      <% else %>
-        <td></td>
-        <td></td>
-        <td></td>
-      <% end %>
-        <% if false %>
-        <td><%= link_to "Provision to OSV", provisionings_path(customer), :confirm => 'Are you sure?', :action => :deliver, :method => :post %></td>
-        <% end %>
+        <%  @provisioningobject = customer; %>
+	<td><%= render 'shared/edit_button.html.erb' %></td>
+ 	<td><%= render 'shared/provision_button.html.erb' %></td>
+ 	<td><%= render 'shared/destroy_button.html.erb' %></td>
       </tr>
     <% end %>
     <% if true %>

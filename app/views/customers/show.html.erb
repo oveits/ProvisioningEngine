@@ -57,7 +57,11 @@
 			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
         <td></td>
 			<% end %>
-        <td><%= link_to 'Destroy', @customer, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
+<%  @provisioningobject = @customer; %>
+        <td><%= render 'shared/edit_button.html.erb' %></td>
+        <td><%= render 'shared/provision_button.html.erb' %></td>
+        <td><%= render 'shared/destroy_button.html.erb' %></td>
+
       </tr>
       <%= render @customer.sites %>
   </tbody>

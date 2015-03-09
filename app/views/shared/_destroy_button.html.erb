@@ -2,8 +2,8 @@
 <% label='Destroy' %>
 
 <% if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
-<td><%= link_to label, '#' , class: "btn btn-default", onclick: "alert('De-Provision the item first!');"   %></td>
+<button class= "btn btn-default" onclick="alert('De-Provision the item first!');"><%= label %></button>
 <% else %>
-<td><%= link_to label, provisioningobject_path(@provisioningobject), method: :delete, class: "btn btn-danger", data: { confirm: "Are you sure?\nThis cannot be undone!" } %></td>
+<%= link_to label, provisioningobject_path(@provisioningobject), method: :delete, class: "btn btn-danger", data: { confirm: "Are you sure?\nThis cannot be undone!" } %>
 
 <% end %>
