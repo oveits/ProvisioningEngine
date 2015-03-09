@@ -120,12 +120,12 @@ class SitesController < ApplicationController
   def provision
     @site = Site.find(params[:id])
     respond_to do |format|
-      if @site.provision
-        @provisionings = Provisioning.where(site: @site)
-        format.html { redirect_to @site, notice: "Site #{@site.name} is being provisioned to target system(s)" }
+      if @site.provision(:create)
+        #@provisionings = Provisioning.where(site: @site)
+        format.html { redirect_to :back, notice: "Site #{@site.name} is being provisioned to target system(s)" }
         format.json { render :show, status: :ok, location: @site }
       else
-        format.html { redirect_to @site, notice: "Site #{@site.name} could not be provisioned to target system(s)" }
+        format.html { redirect_to :back, notice: "Site #{@site.name} could not be provisioned to target system(s)" }
         format.json { render json: @site.errors, status: :unprocessable_entity }
       end # if
     end # do  

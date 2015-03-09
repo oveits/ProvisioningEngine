@@ -1,0 +1,12 @@
+<% render 'shared/helpers.html.erb' %>
+
+<% if @provisioningobject.provisioned? %>
+<%= link_to 'De-Provision', provisioningobject_path(@provisioningobject),  method: :delete, class: "btn btn-warning",  data: { confirm: 'Are you sure? This will de-provision the customers from the target system, including all related children (sites, users).' }   %>
+<% else if /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
+<%= link_to 'Waiting...', '#' , method: :patch, class: "btn btn-default", data: { confirm: "Are you sure?" } %>
+	<% else %>
+<%= link_to 'Provision', provisioningobject_path(@provisioningobject, 'provision'), method: :patch, class: "btn btn-warning", data: { confirm: "Are you sure?" } %>
+
+<% 	end 
+   end 
+%>

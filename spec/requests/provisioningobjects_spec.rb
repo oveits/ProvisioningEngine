@@ -2,7 +2,11 @@ require 'spec_helper'
 
 RSpec.configure do |c|
   # run all test cases, but not the broken ones:
-  c.filter_run_excluding broken: true #, provisioning: true #, untested: true
+  if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
+    c.filter_run_excluding broken: true, simulationbroken: true #, provisioning: true #, untested: true
+  else 
+    c.filter_run_excluding broken: true #, provisioning: true #, untested: true
+  end
 
   # TODO: this filter does not work: run only broken test cases
   #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
@@ -35,10 +39,10 @@ objectList = Array["Customer", "Site", "User"]
 objectList2 = Array["Provisioning", "Target"]
 
 #targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
-targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
+#targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
 #targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
-#targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
 
@@ -738,7 +742,7 @@ objectList.each do |obj|
         end # describe "Provisioning" do
       end # describe "with valid information" do 
 
-      describe "that exists already on target system" do
+      describe "that exists already on target system", simulationbroken: true do
         before do
 	  Delayed::Worker.delay_jobs = false
           createObject(obj)
