@@ -128,13 +128,13 @@ class Customer < Provisioningobject #< ActiveRecord::Base
 #  end # def
   
     # see http://rails-bestpractices.com/posts/708-clever-enums-in-rails
-    LANGUAGES = [LANGUAGE_ENGLISH_US = 'englishUS', LANGUAGE_ENGLISH_GB = 'englishGB', LANGUAGE_GERMAN = 'german'] # spanish, frensh, italian, portuguesePT, portugueseBR, dutch, russian, turkish
+    LANGUAGES = [LANGUAGE_ENGLISH_US = 'englishUS', LANGUAGE_ENGLISH_GB = 'englishGB', LANGUAGE_GERMAN = 'german'] # spanish, french, italian, portuguesePT, portugueseBR, dutch, russian, turkish
 
   
     has_many :sites, dependent: :destroy
     has_many :provisionings
     
-    validates :language, inclusion: {in: LANGUAGES}
+  validates :language, inclusion: {in: LANGUAGES, message: "is not included in the list #{LANGUAGES.inspect}"}
     #validates :name, unique_on_target: {:case_sensitive => false, :myclass => self.inspect.gsub(/\(.*/,'')}
     validates :name, presence: true,
                      #uniqueness: true, 
