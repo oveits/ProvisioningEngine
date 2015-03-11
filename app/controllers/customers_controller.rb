@@ -32,6 +32,8 @@ class CustomersController < ApplicationController
   # POST /customers.json
   def create 
     # TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
+    
+#abort 'create test'
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
 
@@ -175,6 +177,7 @@ class CustomersController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def customer_params
-      params.require(:customer).permit(:name, :target_id, :language)
+      #params.require(:customer).permit(:name, :target_id, :language)
+      params.permit(:name, :target_id, :language)
     end
 end
