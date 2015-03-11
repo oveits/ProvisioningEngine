@@ -28,6 +28,9 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
   * git checkout -b nitrous
   * rake db:migrate RAILS_ENV=development
   * rails s &
+  * cp config/application.yml.example config/application.yml
+    * edit the file config/application.yml according to your needs
+  * start Web Server, see below
   * commit changes to git:
     * first time use:
       * git config --global user.email "you@example.com"
@@ -40,7 +43,7 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
 ===  Web server
 * start web server on Windows on port 80:
   * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
-  * rails s -p 80   --- or as daemon: rails s -d -p 80 (works also on nitrous.io)
+  * rails s -p 80   --- or as daemon: rails s -d -p 80 (works also on nitrous.io, if you omit the -p 80, so port 3000 is used)
   * rake jobs:work # for starting the background processes (based on the "delayed_job_active_record" gem)
   * or run delayed_jobs as daemon:
     * first time install:
@@ -94,3 +97,4 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
   * change config: sudo vi /etc/nginx/sites-enabled/default
   * observe error logs: sudo tail -F /var/log/nginx/error.log
   * in other terminal: sudo service nginx start
+
