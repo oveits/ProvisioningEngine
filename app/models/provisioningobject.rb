@@ -44,10 +44,14 @@ class Provisioningobject < ActiveRecord::Base
     case method
       when :create
         methodNoun = "provisioning"
+        return false if activeJob?
+        return false if provisioned?
       when :destroy
         methodNoun = "de-provisioning"
+        return false if activeJob?
+        return false if !provisioned?
       when :read
-         methodNoun = "reading"
+        methodNoun = "reading"
       else
         abort "provision(method=#{method}, async=#{async}): Unknown method"
     end
@@ -113,7 +117,7 @@ class Provisioningobject < ActiveRecord::Base
       end
     end 
     returnvalue
-  end # def
+  end # def provision(method, async=true)
 
 def dropdownlist(type)
   if type == :countrycode
