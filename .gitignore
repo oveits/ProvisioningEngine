@@ -33,4 +33,3 @@ doc/
 *.pem
 *.key
 *private*
-show.json.jbuilder
