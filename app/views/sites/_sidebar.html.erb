@@ -27,7 +27,10 @@
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize', synchronize_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
-                <li><%= link_to 'Delete Site', @site, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+<% @provisioningobject = @site %>
+                <li><%= render 'shared/provision_link.html.erb' %></li>
+                <li><%= render 'shared/destroy_link.html.erb' %></li>
+                <li class="hidden"><%= link_to 'Delete Site', @site, method: :delete, data: { confirm: 'Are you sure?' } %></li>
                 <li class="sidebar-brand">
                         Show related...
                 </li>

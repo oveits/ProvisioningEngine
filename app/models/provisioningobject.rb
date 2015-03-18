@@ -31,7 +31,7 @@ class Provisioningobject < ActiveRecord::Base
     case status
       when /was already de-provisioned/
         false
-      when /provisioning success|failed \(import errors\)|deletion failed/
+      when /provisioning success|failed \(import errors\)|deletion failed|waiting for deletion/
         true
       else
         false

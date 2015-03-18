@@ -131,6 +131,42 @@ class SitesController < ApplicationController
     end # do  
   end # def provision
 
+  # PATCH /sites/1/deprovision
+  # PATCH /sites/1/deprovision.json
+  def deprovision
+    @object = Site.find(params[:id])
+    @className = @object.class.to_s
+    @classname = @className.downcase
+    async = true
+
+    if @object.activeJob?
+      flash[:error] = "#{@className} #{@object.name} cannot be de-provisioned: has active jobs running: see below."
+      redirectPath = customer_provisionings_path(@object, active: true )
+
+#     not tested, therefore commented out:
+#      respond_to do |format|
+#        format.html { redirect_to redirectPath }
+#        format.json { render json: flash[:error], status: :locked }
+#      end
+
+    elsif @object.provisioned?
+      flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
+      redirectPath = :back
+
+      @object.provision(:destroy)
+    else
+      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: is not provisioned."
+      redirectPath = :back
+
+    end
+
+    respond_to do |format|
+      format.html { redirect_to redirectPath }
+      format.json { head :no_content }
+    end
+
+  end
+
   # DELETE /sites/1
   # DELETE /sites/1.json  
   

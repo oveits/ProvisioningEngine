@@ -108,22 +108,29 @@ class CustomersController < ApplicationController
 
   # DELETE /customers/1
   # DELETE /customers/1.json
-  def destroy
+  def destroy(deprovision = true)
     @object = @customer
     @className = @object.class.to_s
     
     if @object.provisioned?
-      flash[:alert] = "#{@className} #{@object.name} is deleted from the database, but note that it might be is still configured on a target system."
-      #flash[:success] = "#{@className} #{@object.name} is deleted, but note that it might be is still configured on a target system."
-      redirectPath = customers_url
+      if deprovision
+        @object.provision(:destroy)
+        flash[:success] = "#{@className} #{@object.name} is being de-provisioned."
+        #redirectPath = :back
+        redirectPath = customers_url
+      else
+        flash[:alert] = "#{@className} #{@object.name} is deleted from the database, but note that it might be is still configured on a target system."
+        #flash[:success] = "#{@className} #{@object.name} is deleted, but note that it might be is still configured on a target system."
+        redirectPath = customers_url
+      end
       
     else
       flash[:success] = "#{@className} #{@object.name} deleted."
       redirectPath = customers_url
+      @object.destroy!
       
     end 
 
-    @object.destroy!
     
     respond_to do |format|
       format.html { redirect_to redirectPath }

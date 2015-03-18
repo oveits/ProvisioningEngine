@@ -26,6 +26,7 @@ scope(path: baseURL) do
     member do
      #patch :synchronize
      patch :provision
+     patch :deprovision
     end 
   end
 
@@ -52,6 +53,7 @@ scope(path: baseURL) do
     member do
      patch :synchronize
      patch :provision
+     patch :deprovision
     end 
   end
   

@@ -13,10 +13,10 @@
                 </li>
                 <li><%= link_to 'New Customer', new_customer_path %></li>
                 <li><%= link_to 'Add Site', new_customer_site_path(@customer) %></li>
-             <% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-                <li><%= link_to 'Provision Customer', provision_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></li>
-             <% end %>
-                <li><%= link_to 'Delete Customer', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></li>
+<% @provisioningobject = @customer %>
+		<li><%= render 'shared/provision_link.html.erb' %></li>
+		<li><%= render 'shared/destroy_link.html.erb' %></li>
+                <li class="hidden"><%= link_to 'Delete Customer', @customer, method: :delete, data: { confirm: 'Are you sure?' } %></li>
                 <li class="sidebar-brand">
                         Show related ...
                 </li>

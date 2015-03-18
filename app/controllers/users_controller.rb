@@ -170,6 +170,42 @@ class UsersController < ApplicationController
     end        
   end
   
+
+  # PATCH /users/1/deprovision
+  # PATCH /users/1/deprovision.json
+  def deprovision
+    @object = User.find(params[:id])
+    @className = @object.class.to_s
+    @classname = @className.downcase
+    async = true
+
+    if @object.activeJob?
+      flash[:error] = "#{@className} #{@object.name} cannot be de-provisioned: has active jobs running: see below."
+      redirectPath = customer_provisionings_path(@object, active: true )
+
+#     not tested, therefore commented out:
+#      respond_to do |format|
+#        format.html { redirect_to redirectPath }
+#        format.json { render json: flash[:error], status: :locked }
+#      end
+
+    elsif @object.provisioned?
+      flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
+      redirectPath = :back
+
+      @object.provision(:destroy)
+    else
+      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: is not provisioned."
+      redirectPath = :back
+
+    end
+
+    respond_to do |format|
+      format.html { redirect_to redirectPath }
+      format.json { head :no_content }
+    end
+
+  end
   def destroy
     @object = @user
     @method = "Delete"
