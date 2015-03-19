@@ -39,9 +39,9 @@ objectList = Array["Customer", "Site", "User"]
 objectList2 = Array["Provisioning", "Target"]
 
 #targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
+#targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-#targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
