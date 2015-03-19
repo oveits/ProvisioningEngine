@@ -77,9 +77,9 @@ class Provisioning < ActiveRecord::Base
       end
         
       # map the action of the provisioningEngine to provisioning status
-      thisaction = 'provisioning' unless action[/Add/].nil?
-      thisaction = 'deletion' unless action[/Delete/].nil?
-      thisaction = 'reading' unless action[/Show/].nil?
+      thisaction = 'provisioning' unless action[/action[ ]*=[ ]*Add /].nil?
+      thisaction = 'deletion' unless action[/action[ ]*=[ ]*Delete /].nil?
+      thisaction = 'reading' unless action[/action[ ]*=[ ]*Show /].nil?
       # if not found:
       thisaction = 'unknown action' if thisaction.nil?  
       

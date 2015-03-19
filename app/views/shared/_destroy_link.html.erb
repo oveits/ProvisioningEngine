@@ -1,0 +1,11 @@
+<% render 'shared/helpers.html.erb' %>
+<% label="Delete #{@provisioningobject.class.name}" %>
+
+<% if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
+<% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false" %>
+<button class= "btn btn-default" onclick="alert('De-Provision the item first!');"><%= label %></button>
+<% end %>
+<% else %>
+<%= link_to label, provisioningobject_path(@provisioningobject), method: :delete, data: { confirm: "Are you sure?\nThis cannot be undone!" } %>
+
+<% end %>

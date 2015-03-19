@@ -12,13 +12,8 @@ select {<%= minWidthStyle %>}
 <%= form_for(@customer) do |f| %>
   <% if @customer.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(@customer.errors.count, "error") %> prohibited this customer from being saved:</h2>
+      <h2><%= pluralize(@customer.errors.count, "error") %> prohibited this customer from being saved</h2>
 
-      <ul>
-      <% @customer.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-      </ul>
     </div>
   <% end %>
   
@@ -69,8 +64,25 @@ select {<%= minWidthStyle %>}
 				<%= f.select(:language, Customer::LANGUAGES.map {|language| [language,language]}, :prompt => "Select the customer main language") %>
 			    </td>
 		 	<% end %>
+<% if true %>
+<% if @customer.errors[attribute[0]].any? %>
+			    <td>
+    <div id="error_explanation">
+      <% @customer.errors[attribute[0]].each do |errormessage| %>
+      <li><%= "#{attribute[0].capitalize} #{errormessage}" %></li>
+      <% end %>
+    </div>
+                            </td>
+  <% end %>
+<% end %>
 			</tr>
 			<% end %>
+                        <tr>
+			    <td><%= f.label 'Provisioning Schedule' %></td>
+			    <td>
+				<%= render 'shared/form_provisioningtime.html.erb', object: @customer, f: f %>
+			    </td>
+                        </tr>
 			<tr>
 				<td>
 				  	<%= f.submit 'Save', type: "submit", class: "btn btn-default" %>

@@ -62,7 +62,7 @@ class HttpPostRequest
     #flash[:notice]  = "Sent HTTP POST Data to #{uriString} #{simulationLogString}"
 
     if simulationMode
-      sleep 5.seconds
+      sleep 100.seconds / 1000
       responseBody = "Success: 234     Errors:0     Syntax Errors:0"
     else    
       begin

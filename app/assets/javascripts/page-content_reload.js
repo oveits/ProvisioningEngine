@@ -2,7 +2,7 @@
 
 
   pattern = "customers$|customers/[1-9][0-9]*$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
-  var idArray = ["page-content-wrapper", "flash"];
+  var idArray = ["page-content-wrapper", "flash", "sidebar-wrapper"];
   // same without customers/[1-9][0-9]*
   //pattern = "/customers$|sites$|sites/[1-9][0-9]*$|users$|users/[1-9][0-9]*$|provisionings$|provisionings/[1-9][0-9]*$";
   // same without sites/[1-9][0-9]*

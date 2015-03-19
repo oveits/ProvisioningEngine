@@ -62,10 +62,13 @@ class SitesController < ApplicationController
 
     respond_to do |format|         
       if @object.save
-        #@object.update_attributes!(:status => 'waiting for provisioning')
-        @object.provision(:create, async)
-        format.html { redirect_to @object, notice: "#{@className} is being created." }
-        format.json { render :show, status: :created, location: @object } 
+        if @object.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @object.provision(:create)
+          @notice = "#{@className} is being created (provisioning running in the background)."
+        else
+          @notice = "#{@className} is created and can be provisioned ad hoc."
+        end
+        format.html { redirect_to @object, notice: @notice }
+        format.json { render :show, status: :created, location: @object }
       else
         format.html { render :new  }                   
         format.json { render json: @object.errors, status: :unprocessable_entity }
@@ -131,6 +134,42 @@ class SitesController < ApplicationController
     end # do  
   end # def provision
 
+  # PATCH /sites/1/deprovision
+  # PATCH /sites/1/deprovision.json
+  def deprovision
+    @object = Site.find(params[:id])
+    @className = @object.class.to_s
+    @classname = @className.downcase
+    async = true
+
+    if @object.activeJob?
+      flash[:error] = "#{@className} #{@object.name} cannot be de-provisioned: has active jobs running: see below."
+      redirectPath = customer_provisionings_path(@object, active: true )
+
+#     not tested, therefore commented out:
+#      respond_to do |format|
+#        format.html { redirect_to redirectPath }
+#        format.json { render json: flash[:error], status: :locked }
+#      end
+
+    elsif @object.provisioned?
+      flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
+      redirectPath = :back
+
+      @object.provision(:destroy)
+    else
+      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: is not provisioned."
+      redirectPath = :back
+
+    end
+
+    respond_to do |format|
+      format.html { redirect_to redirectPath }
+      format.json { head :no_content }
+    end
+
+  end
+
   # DELETE /sites/1
   # DELETE /sites/1.json  
   
@@ -183,7 +222,7 @@ class SitesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def site_params
-      params.require(:site).permit(:name, :customer_id, :sitecode, :gatewayIP, :countrycode, :areacode, :localofficecode, :extensionlength, :mainextension)
+      params.require(:site).permit(:name, :customer_id, :sitecode, :gatewayIP, :countrycode, :areacode, :localofficecode, :extensionlength, :mainextension, :provisioningtime)
     end
 end
 

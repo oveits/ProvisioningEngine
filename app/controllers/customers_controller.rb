@@ -30,7 +30,7 @@ class CustomersController < ApplicationController
 
   # POST /customers
   # POST /customers.json
-  def create 
+  def create
     # TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
@@ -38,11 +38,16 @@ class CustomersController < ApplicationController
     @object = Customer.new(customer_params)
     @customer = @object
     @className = @object.class.to_s
+#abort @object.provisioningtime.inspect
 
     respond_to do |format|         
       if @object.save
-        @object.provision(:create)
-        format.html { redirect_to @object, notice: "#{@className} is being created." }
+        if @object.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @object.provision(:create)
+          @notice = "#{@className} is being created (provisioning running in the background)."
+        else
+          @notice = "#{@className} is created and can be provisioned ad hoc."
+        end
+        format.html { redirect_to @object, notice: @notice }
         format.json { render :show, status: :created, location: @object } 
       else
         format.html { render :new  }                   
@@ -70,38 +75,33 @@ class CustomersController < ApplicationController
     end
   end
 
-  # DELETE /customers/1
-  # DELETE /customers/1.json
-  def destroy
-    @object = @customer
-    @method = "Delete"
+  # PATCH /customers/1/deprovision
+  # PATCH /customers/1/deprovision.json
+  def deprovision
+    @object = Customer.find(params[:id])
     @className = @object.class.to_s
     @classname = @className.downcase
     async = true
     
-#flash[:notice] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running."
-#redirect_to customers_url, :flash => { :success => "oops!" }
-#format.html { redirect_to customers_url }
-#abort flash[:error]
-
-#if false    
     if @object.activeJob?
-      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running: see below."
-      #redirectPath = customer_provisionings_path(@object, true)
+      flash[:error] = "#{@className} #{@object.name} cannot be de-provisioned: has active jobs running: see below."
       redirectPath = customer_provisionings_path(@object, active: true )
-      #does not work: redirectPath = provisioningobject_provisionings_path(@object)
+
+#     not tested, therefore commented out:
+#      respond_to do |format|
+#        format.html { redirect_to redirectPath }
+#        format.json { render json: flash[:error], status: :locked }
+#      end
+
     elsif @object.provisioned?
       flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
       redirectPath = :back
       
-      #provisionTaskExistsAlready =  @object.provisionNew(provisioningAction, async)
-      #provisionTaskExistsAlready =  @object.de_provision(async)
       @object.provision(:destroy)
     else
-      flash[:success] = "#{@className} #{@object.name} deleted."
-      redirectPath = customers_url
+      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: is not provisioned."
+      redirectPath = :back
       
-      @object.destroy!
     end 
     
     respond_to do |format|
@@ -109,7 +109,48 @@ class CustomersController < ApplicationController
       format.json { head :no_content }
     end
 
-#end   
+  end
+
+  # DELETE /customers/1
+  # DELETE /customers/1.json
+  def destroy(deprovision = true)
+    @object = @customer
+    @className = @object.class.to_s
+    
+    if @object.provisioned?
+      if deprovision
+        @object.provision(:destroy)
+        flash[:success] = "#{@className} #{@object.name} is being de-provisioned."
+        #redirectPath = :back
+        redirectPath = customers_url
+      else
+        flash[:alert] = "#{@className} #{@object.name} is deleted from the database, but note that it might be is still configured on a target system."
+        #flash[:success] = "#{@className} #{@object.name} is deleted, but note that it might be is still configured on a target system."
+        redirectPath = customers_url
+      end
+      
+    else
+      flash[:success] = "#{@className} #{@object.name} deleted."
+      redirectPath = customers_url
+      @object.destroy!
+      
+    end 
+
+    
+    respond_to do |format|
+      format.html { redirect_to redirectPath }
+      format.json { head :no_content }
+    end
+
+
+   # from http://tools.ietf.org/html/rfc7231#section-4.3:
+   #If a DELETE method is successfully applied, the origin server SHOULD
+   #send a 202 (Accepted) status code if the action will likely succeed
+   #but has not yet been enacted, a 204 (No Content) status code if the
+   #action has been enacted and no further information is to be supplied,
+   #or a 200 (OK) status code if the action has been enacted and the
+   #response message includes a representation describing the status.
+
   end
 
   # allow for a possibility to remove all provisionins using a single button press:
@@ -149,7 +190,8 @@ class CustomersController < ApplicationController
       redirect_to @object.customer, notice: "Customer #{@object.name} synchronization failed with Error: Customer not found on target system"
     end
   end
-    
+
+  # PATCH	/customers/1/provision
   def provision
     # TODO: test! It is not tested since I had removed the provision button!
     @customer = Customer.find(params[:id])
@@ -178,6 +220,6 @@ class CustomersController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def customer_params
-      params.require(:customer).permit(:name, :target_id, :language)
+      params.require(:customer).permit(:name, :target_id, :language, :provisioningtime)
     end
 end

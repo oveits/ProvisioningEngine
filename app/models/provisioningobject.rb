@@ -1,5 +1,20 @@
 class Provisioningobject < ActiveRecord::Base
   self.abstract_class = true # makes the model abstract
+
+  PROVISIONINGTIME = [PROVISIONINGTIME_IMMEDIATE = 'immediate', PROVISIONINGTIME_AD_HOC = 'ad-hoc'] # PROVISIONINGTIME_SCHEDULED = 'scheduled'
+
+  # allow transient attribute (i.e. an attribute that is not mapped to a column in the database)
+  attr_accessor :provisioningtime
+ 
+  after_initialize :init
+
+  def init
+    self.status ||= 'not provisioned'
+  end
+
+  def provisioningtime
+    @provisioningtime.nil? ? PROVISIONINGTIME_IMMEDIATE : @provisioningtime
+  end
   
   def new
   end
@@ -31,7 +46,7 @@ class Provisioningobject < ActiveRecord::Base
     case status
       when /was already de-provisioned/
         false
-      when /provisioning success|failed \(import errors\)|deletion failed/
+      when /provisioning success|failed \(import errors\)|deletion failed|waiting for deletion/
         true
       else
         false
@@ -44,10 +59,14 @@ class Provisioningobject < ActiveRecord::Base
     case method
       when :create
         methodNoun = "provisioning"
+        return false if activeJob?
+        return false if provisioned?
       when :destroy
         methodNoun = "de-provisioning"
+        return false if activeJob?
+        return false if !provisioned?
       when :read
-         methodNoun = "reading"
+        methodNoun = "reading"
       else
         abort "provision(method=#{method}, async=#{async}): Unknown method"
     end
@@ -113,7 +132,7 @@ class Provisioningobject < ActiveRecord::Base
       end
     end 
     returnvalue
-  end # def
+  end # def provision(method, async=true)
 
 def dropdownlist(type)
   if type == :countrycode
@@ -126,7 +145,9 @@ end
     COUNTRYCODES = [COUNTRYCODE_US = '1', COUNTRYCODE_GB = '44', COUNTRYCODE_DE = '49']
     LIST = {}
     LIST[:countrycode] = COUNTRYCODES
-
+    
+    # does not work yet:
+    validates :provisioningtime, inclusion: {in: PROVISIONINGTIME}
 end
 
 

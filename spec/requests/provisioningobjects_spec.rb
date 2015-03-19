@@ -736,7 +736,20 @@ objectList.each do |obj|
             Delayed::Worker.delay_jobs = true
             click_button submit, match: :first
             expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for provisioning/)
+            # flash:
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/is being created|is being provisioned/)
           end
+
+          #if obj == 'Customer'
+          it "with provisioning time set to ad hoc, should save an #{obj} with status 'not provisioned'" do
+            Delayed::Worker.delay_jobs = true
+            select Provisioningobject::PROVISIONINGTIME_AD_HOC, :from => "#{myobject(obj)}[provisioningtime]"
+p page.html.gsub(/[\n\t]/, '')
+            click_button submit, match: :first
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/not provisioned/)
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/is created and can be provisioned ad hoc/)
+          end
+          #end
 
 
         end # describe "Provisioning" do
@@ -899,11 +912,13 @@ objectList.each do |obj|
            
         let(:submit) { "Delete #{obj}" }
         let(:submit2) { "Destroy" }
+        let(:deprovision) { "De-Provision #{obj}" }
         
 	it "should update the status of #{obj} 'waiting for deletion'" do
           Delayed::Worker.delay_jobs = true
-      		#p page.html.gsub(/[\n\t]/, '')
+      		p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
+          #click_link 'De-Provision', match: :first
           click_link submit, match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
         end
@@ -915,6 +930,7 @@ objectList.each do |obj|
 	  myObjects[0].update_attributes!(:status => "provisioning failed (import errors)")
           Delayed::Worker.delay_jobs = true
       		#p page.html.gsub(/[\n\t]/, '')
+          #click_link 'De-Provision', match: :first
           click_link submit, match: :first
       		#p page.html.gsub(/[\n\t]/, '')
           expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
@@ -927,6 +943,7 @@ objectList.each do |obj|
           # synchronous operation, so we will get deterministic test results:         
           Delayed::Worker.delay_jobs = false
           
+          #click_link 'De-Provision', match: :first
           click_link submit, match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h1', text: 'Customers')
           
@@ -940,6 +957,25 @@ objectList.each do |obj|
           #p page.html.gsub(/[\n\t]/, '')
           page.html.gsub(/[\n\t]/, '').should match(/deletion success/)      
         end
+        it "using De-Provision Button in the side bar, should de-provision a #{obj} with status 'deletion success'" do
+          # synchronous operation, so we will get deterministic test results:
+          Delayed::Worker.delay_jobs = false
+
+          #click_link 'De-Provision', match: :first
+          click_link deprovision, match: :first
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h1', text: 'Customers')
+
+          # /customers/<id> should show deletion success
+          myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
+          myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
+          #p customers
+          visit provisioningobject_path(myObjects[0])
+          # for debugging:
+          #p page.html.gsub(/[\n\t]/, '')
+          page.html.gsub(/[\n\t]/, '').should match(/deletion success/)
+        end
+
       end # of describe "De-Provision Customer" do
       
       #describe "Delete Customer from database using manual database seed" do
@@ -966,7 +1002,7 @@ objectList.each do |obj|
     
             delta = myProvisioningobject(obj).count
         #p Customer.count.to_s + "<<<<<<<<<<<<<<<<<<<<< Customer.count before click"
-            click_link "Delete #{obj}"
+            click_link "Delete #{obj}", match: :first
               # replacing by following line causes error "Unable to find link :submit" (why?)
               #click_link :submit
           #p page.html.gsub(/[\n\t]/, '')
