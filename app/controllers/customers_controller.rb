@@ -30,7 +30,7 @@ class CustomersController < ApplicationController
 
   # POST /customers
   # POST /customers.json
-  def create 
+  def create
     # TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
@@ -38,11 +38,16 @@ class CustomersController < ApplicationController
     @object = Customer.new(customer_params)
     @customer = @object
     @className = @object.class.to_s
+#abort @object.provisioningtime.inspect
 
     respond_to do |format|         
       if @object.save
-        @object.provision(:create)
-        format.html { redirect_to @object, notice: "#{@className} is being created." }
+        if @object.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @object.provision(:create)
+          @notice = "#{@className} is being created (provisioning running in the background)."
+        else
+          @notice = "#{@className} is created and can be provisioned ad hoc."
+        end
+        format.html { redirect_to @object, notice: @notice }
         format.json { render :show, status: :created, location: @object } 
       else
         format.html { render :new  }                   
@@ -215,6 +220,6 @@ class CustomersController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def customer_params
-      params.require(:customer).permit(:name, :target_id, :language)
+      params.require(:customer).permit(:name, :target_id, :language, :provisioningtime)
     end
 end

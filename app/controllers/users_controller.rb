@@ -95,9 +95,14 @@ class UsersController < ApplicationController
     
     respond_to do |format|         
       if @object.save
-        @object.provision(:create)
-        format.html { redirect_to @object, notice: "#{@className} is being created." }
-        format.json { render :show, status: :created, location: @object } 
+        if @object.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @object.provision(:create)
+          @notice = "#{@className} is being created (provisioning running in the background)."
+        else
+          @notice = "#{@className} is created and can be provisioned ad hoc."
+        end
+        format.html { redirect_to @object, notice: @notice }
+        format.json { render :show, status: :created, location: @object }
+
       else
         format.html { render :new  }                   
         format.json { render json: @object.errors, status: :unprocessable_entity }
@@ -243,6 +248,6 @@ class UsersController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def user_params
-      params.require(:user).permit(:name, :site_id, :extension, :givenname, :familyname, :email)
+      params.require(:user).permit(:name, :site_id, :extension, :givenname, :familyname, :email, :provisioningtime)
     end
 end

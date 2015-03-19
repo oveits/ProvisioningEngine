@@ -736,7 +736,20 @@ objectList.each do |obj|
             Delayed::Worker.delay_jobs = true
             click_button submit, match: :first
             expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for provisioning/)
+            # flash:
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/is being created|is being provisioned/)
           end
+
+          #if obj == 'Customer'
+          it "with provisioning time set to ad hoc, should save an #{obj} with status 'not provisioned'" do
+            Delayed::Worker.delay_jobs = true
+            select Provisioningobject::PROVISIONINGTIME_AD_HOC, :from => "#{myobject(obj)}[provisioningtime]"
+p page.html.gsub(/[\n\t]/, '')
+            click_button submit, match: :first
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/not provisioned/)
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/is created and can be provisioned ad hoc/)
+          end
+          #end
 
 
         end # describe "Provisioning" do

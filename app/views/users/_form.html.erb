@@ -77,6 +77,13 @@ select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
 			    </tr>
 			<% end # if %>
 		<% end # each %>
+                        <tr>
+                            <td><%= f.label 'Provisioning Schedule' %></td>
+                            <td>
+                                <%= render 'shared/form_provisioningtime.html.erb', object: @user, f: f %>
+                            </td>
+                        </tr>
+
 			<tr>
 				<td>
 				  	<%= f.submit 'Save', class: "btn btn-default"%>

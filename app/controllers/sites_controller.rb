@@ -62,10 +62,13 @@ class SitesController < ApplicationController
 
     respond_to do |format|         
       if @object.save
-        #@object.update_attributes!(:status => 'waiting for provisioning')
-        @object.provision(:create, async)
-        format.html { redirect_to @object, notice: "#{@className} is being created." }
-        format.json { render :show, status: :created, location: @object } 
+        if @object.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @object.provision(:create)
+          @notice = "#{@className} is being created (provisioning running in the background)."
+        else
+          @notice = "#{@className} is created and can be provisioned ad hoc."
+        end
+        format.html { redirect_to @object, notice: @notice }
+        format.json { render :show, status: :created, location: @object }
       else
         format.html { render :new  }                   
         format.json { render json: @object.errors, status: :unprocessable_entity }
@@ -219,7 +222,7 @@ class SitesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def site_params
-      params.require(:site).permit(:name, :customer_id, :sitecode, :gatewayIP, :countrycode, :areacode, :localofficecode, :extensionlength, :mainextension)
+      params.require(:site).permit(:name, :customer_id, :sitecode, :gatewayIP, :countrycode, :areacode, :localofficecode, :extensionlength, :mainextension, :provisioningtime)
     end
 end
 

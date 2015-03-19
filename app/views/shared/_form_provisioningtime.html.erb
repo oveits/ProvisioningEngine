@@ -1,0 +1,8 @@
+<% 
+# call example (ruby only, encapsulation omitted:
+# local variables: f, object
+#   render 'shared/form_provisioningtime.html.erb', object: @customer, f: f
+%>
+<%= 
+f.select(:provisioningtime, Provisioningobject::PROVISIONINGTIME.map {|provisioningtime| [provisioningtime,provisioningtime]}, {:prompt => "Select a #{:provisioningtime}", :selected => object.provisioningtime } ) 
+%>

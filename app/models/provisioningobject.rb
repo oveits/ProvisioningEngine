@@ -1,5 +1,20 @@
 class Provisioningobject < ActiveRecord::Base
   self.abstract_class = true # makes the model abstract
+
+  PROVISIONINGTIME = [PROVISIONINGTIME_IMMEDIATE = 'immediate', PROVISIONINGTIME_AD_HOC = 'ad-hoc'] # PROVISIONINGTIME_SCHEDULED = 'scheduled'
+
+  # allow transient attribute (i.e. an attribute that is not mapped to a column in the database)
+  attr_accessor :provisioningtime
+ 
+  after_initialize :init
+
+  def init
+    self.status ||= 'not provisioned'
+  end
+
+  def provisioningtime
+    @provisioningtime.nil? ? PROVISIONINGTIME_IMMEDIATE : @provisioningtime
+  end
   
   def new
   end
@@ -130,7 +145,9 @@ end
     COUNTRYCODES = [COUNTRYCODE_US = '1', COUNTRYCODE_GB = '44', COUNTRYCODE_DE = '49']
     LIST = {}
     LIST[:countrycode] = COUNTRYCODES
-
+    
+    # does not work yet:
+    validates :provisioningtime, inclusion: {in: PROVISIONINGTIME}
 end
 
 
