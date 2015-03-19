@@ -126,10 +126,10 @@ class Provisioning < ActiveRecord::Base
           #provisioning.update_attributes!(:delayedjob => nil)
           # 0
           #abort targetobjects.inspect
-        when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$/
+        when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/
         # timeout
           returnvalue = 3        
-          resulttext = "last unsuccessful attempt with ERROR[#{returnvalue.to_s}]=\""  + resulttext[/ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$/] + '" at ' + Time.now.to_s
+          resulttext = "last unsuccessful attempt with ERROR[#{returnvalue.to_s}]=\""  + resulttext[/ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/] + '" at ' + Time.now.to_s
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed (timed out); trying again') unless targetobject.nil?
             break unless targetobject.nil?

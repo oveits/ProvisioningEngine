@@ -13,7 +13,7 @@
 seed*.*
 
 # Ignore all logfiles and tempfiles.
-/log/*.log
+/log/*.log*
 /tmp
 
 # Ignore other unneeded files.
@@ -27,7 +27,7 @@ doc/
 
 # Ignore application configuration
 /config/application.yml
-application.yml
+*/application.yml
 
 # Ignore private data:
 *.cert
