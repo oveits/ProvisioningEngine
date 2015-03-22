@@ -20,6 +20,12 @@ class UpdateDB
     if targetobject.is_a?(Site)
       # read site data from target system:
       responseBody = targetobject.provision(:read, false)
+      if responseBody.is_a?(Fixnum)
+        case responseBody
+          when 101
+            responseBody = "ERROR: Site does not exist"
+        end
+      end
     elsif targetobject.is_a?(Customer)
       # today, customers have no parameters, which need to be synchronized
       responseBody = "Synchronization not supported for class Customer"

@@ -12,20 +12,6 @@
 		<% end %>		
 		</h1>
 
-
-<%= form_for(@user) do |f| %>
-  <% if @user.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h2>
-
-      <ul>
-      <% @user.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
-
 <div>
   	<table>
   		<thead>
@@ -42,12 +28,12 @@
 				<% if !@customer.nil? %>
 					<% if !@customer.name.nil? %>		
 					<tr>
-						<td><%= f.label "Customer" %></td>
+						<td><%= "Customer" %></td>
 						<td><%= link_to @customer.name, @customer %></td>
 					</tr>
 					<% else %>	
 					<tr>
-						<td><%= f.label "Customer ID" %></td>
+						<td><%= "Customer ID" %></td>
 						<td><%= link_to @customer.id, @customer %></td>
 					</tr>
 					<% end %>			
@@ -55,7 +41,7 @@
 			<% end %>
 			
 			<tr>
-			    <td><%= f.label attribute[0] %></td>
+			    <td><%= attribute[0] %></td>
 			    <td>
 			    <% begin %>
 				    <% if attribute[0] == 'customer' %>
@@ -92,6 +78,3 @@
 		</tbody>
 	</table>
 	  </div>
-<% end %>
-
-

@@ -193,6 +193,19 @@ class CustomersController < ApplicationController
 
   # PATCH	/customers/1/provision
   def provision
+    @object = Customer.find(params[:id])
+    respond_to do |format|
+      if @object.provision(:create)
+        format.html { redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being provisioned to target system(s)" }
+        format.json { render :show, status: :ok, location: @object }
+      else
+        format.html { redirect_to :back, notice: "#{@object.class.name} #{@object.name} could not be provisioned to target system(s)" }
+        format.json { render json: @object.errors, status: :unprocessable_entity }
+      end # if
+    end # do
+  end # def provision
+
+  def provisionOld
     # TODO: test! It is not tested since I had removed the provision button!
     @customer = Customer.find(params[:id])
     #@customer.update_attributes!(:status => 'waiting for provisioning')

@@ -111,6 +111,19 @@ class UsersController < ApplicationController
   end
   
   def provision
+    @object = User.find(params[:id])
+    respond_to do |format|
+      if @object.provision(:create)
+        format.html { redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being provisioned to target system(s)" }
+        format.json { render :show, status: :ok, location: @object }
+      else
+        format.html { redirect_to :back, notice: "#{@object.class.name} #{@object.name} could not be provisioned to target system(s)" }
+        format.json { render json: @object.errors, status: :unprocessable_entity }
+      end # if
+    end # do
+  end # def provision
+
+  def provisionOld
     @user = User.find(params[:id])
     @site = @user.site
     @customer = @site.customer

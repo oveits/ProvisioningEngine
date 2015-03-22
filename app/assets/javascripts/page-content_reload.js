@@ -10,7 +10,7 @@
   // same without users/[1-9][0-9]*
   //pattern = "/customers$|sites$|users$|provisionings$|provisionings/[1-9][0-9]*$";
   regexInclude = RegExp(pattern);
-  regexIncludeEvenIfForm = RegExp("customers/[1-9][0-9]*$|sites/[1-9][0-9]*$|users/[1-9][0-9]*$");
+  regexIncludeEvenIfForm = RegExp("@@@@@@@@@@@@@@@@@@@@@dummy@@@@@@@@@@@@@@@@@@@@@@@");
 
 function page_ajax_id_refresh(idArray) {
   $.ajax({

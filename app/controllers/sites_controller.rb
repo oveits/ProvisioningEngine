@@ -85,6 +85,7 @@ class SitesController < ApplicationController
 
     respond_to do |format|
       if @site.update(site_params)
+        @site.update_attributes!(:status => 'edited (provisioning status unknown)')
         format.html { redirect_to @site, notice: "Site #{@site.name} successfully updated in the database, but provisioning of target systems is not yet supported. Click \"synchronize\", for re-gaining consistency." }
         #format.html { redirect_to @site.customer, notice: 'Site was successfully updated.' }
         format.json { render :show, status: :ok, location: @site }
@@ -107,8 +108,9 @@ class SitesController < ApplicationController
     
     if returnBody[/ERROR/].nil? && !returnBody[/>#{@site.name}</].nil?
       # success
-      @site.update_attributes!(:status => 'synchronized')
-      redirect_to @site.customer, notice: "Site #{@site.name} has been synchronized: target system -> database."
+      @site.update_attributes!(:status => 'provisioning successful (synchronized)')
+      #redirect_to @site.customer, notice: "Site #{@site.name} has been synchronized: target system -> database."
+      redirect_to :back, notice: "Site #{@site.name} has been synchronized: target system -> database."
     elsif !returnBody[/ERROR/].nil?
       # failure: Provisioning Error
       @site.update_attributes!(:status => "synchronization failed (#{returnBody[/ERROR.*$/]})")

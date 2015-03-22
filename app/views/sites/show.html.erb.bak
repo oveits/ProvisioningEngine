@@ -6,6 +6,20 @@
        <h1>Site <%= @site.name %> of Customer <%= link_to customername, @site.customer %></h1>
 
 
+<%= form_for(@site) do |f| %>
+  <% if @site.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@site.errors.count, "error") %> prohibited this site from being saved:</h2>
+
+      <ul>
+      <% @site.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+
 <div>
   	<table>
   		<thead>
@@ -17,7 +31,7 @@
 
 			<% @site.attributes.each do |attribute| %> 
 			<tr>
-			    <td><%= attribute[0] %></td>
+			    <td><%= f.label attribute[0] %></td>
 			    <td>
                             <% if attribute[0] == "customer_id" %>
 			      <% begin %>
@@ -54,5 +68,6 @@
 		</tbody>
 	</table>
 	  </div>
+<% end %>
 
 

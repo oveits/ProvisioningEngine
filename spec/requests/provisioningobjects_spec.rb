@@ -48,8 +48,10 @@ targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 
 def parent(obj)
   case obj
-    when /Customer/
+    when /Target/
       nil
+    when /Customer/
+      "Target"
     when /Site/
       "Customer"
     when /User/
@@ -106,6 +108,63 @@ end
 ##abort "createCustomer: abort"
 #  click_button 'Save', match: :first 
 #end
+
+def createObjDB(obj)
+  # creates an object and its parent object (recursively) in the database, if it does not exist
+  # returns the existing object, if it exists
+  case obj
+    when /Target/
+      params = {
+          name: $targetname,
+          configuration: $target
+          }
+    when /Customer/
+      my_target_id = createObjDB("Target").id
+      params = {
+          name: "ExampleCustomer",
+          language: "german",
+          target_id: my_target_id
+          }
+      parentObj = "Target"
+    when /Site/
+      params = {
+          name: "ExampleSite",
+	  customer_id: createObjDB("Customer").id,
+	  countrycode: "49",
+	  areacode: "99",
+	  localofficecode: "7007",
+	  extensionlength: "5"
+          }
+    when /User/
+      params = {
+          name: "ExampleUser",
+          site_id: createObjDB("Site").id,
+          extension: "30800",
+          givenname: "Oliver",
+          familyname: "Veits",
+          email: "oliver.veits@company.com"
+          }
+    else
+      abort "Object=#{obj} not supported for function createObjectDB_manual"
+  end
+
+  	#abort obj.constantize.where(params).count.inspect
+  if obj.constantize.where(params).count == 0 
+    createObjDB(parentObj) unless parentObj.nil?
+    myObj = obj.constantize.new(
+      params
+    )
+    myObj.save!
+  end
+
+  if obj.constantize.where(params).count == 1
+    myObj = obj.constantize.where(params).last
+  else
+    abort "More than one #{obj} found matching the parameters=#{params.inspect}"
+  end
+
+  return myObj
+end
 
 def createSite(name = "ExampleSite" )      
   # add and provision customer "ExampleCustomer with target = TestTarget" 
@@ -462,7 +521,95 @@ targetsolutionList.each do |targetsolution|
       $target = Target.last.configuration + $FPAFOmit #targetsolutionVars[targetsolution][:target]
       Target.last.destroy!
     end
+
+    describe "createObjDB('Target')" do
+      before do
+        # remove all targets:
+        Target.all.each do |target|
+          target.destroy!
+        end
+      end
+
+      it "should create a Target, if it does not exist already" do
+        # init:
+        myTarget = nil
+
+        # test: creation of new target:
+        # add a target:
+        expect{ myTarget = createObjDB("Target") }.to change(Object.const_get("Target"), :count)
+        expect( myTarget ).to be_a(Target)
+      end
+
+      it "should return the existing Target, if it exists already" do
+        # init:
+        # creation of new target if it does not exist already:
+        createObjDB("Target")
+        myTarget = nil
+
+        # test: since the target exists alreads, createObjDB should not add a target, but return the existing target:
+        expect{ myTarget = createObjDB("Target") }.not_to change(Object.const_get("Target"), :count)
+        expect( myTarget ).to be_a(Target)
+      end
+    end
 objectList.each do |obj|
+    describe "createObjDB(#{obj})" do
+      before do
+        # remove all objects:
+        Object.const_get(obj).all.each do |myobj|
+          myobj.destroy!
+        end
+        # remove the parent objects, if applicable:
+        Object.const_get(parent(obj)).all.each do |myobj|
+          myobj.destroy!
+        end unless parent(obj).nil?
+      end
+
+      it "should create a #{obj}, if it does not exist already" do
+        # init:
+        myobj = nil
+        expect( Object.const_get(parent(obj)).count ).to be(0) unless parent(obj).nil? # no parent object
+
+        # test: creation of new #{obj}:
+        # add a #{obj}:
+        expect{ myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count)
+        # this should have added the parent object:
+        expect( Object.const_get(parent(obj)).count ).to be(1) unless parent(obj).nil? # one parent object
+        # and the created opbject must be of the right type:
+        expect( myobj ).to be_a(Object.const_get(obj))
+      end
+
+      it "should return the existing #{obj}, if it exists already" do
+        # init:
+        # make sure the object exists already:
+        createObjDB(obj)
+        expect( Object.const_get(parent(obj)).count ).to be(1) unless parent(obj).nil? # one parent object
+        myobj = nil
+        
+
+        # test: since the #{obj} exists alreads, createObjDB should not add a #{obj}, but return the existing #{obj}:
+        expect{ myobj = createObjDB(obj) }.not_to change(Object.const_get(obj), :count)
+        expect( Object.const_get(parent(obj)).count ).to be(1) unless parent(obj).nil? # still one parent object
+        expect( myobj ).to be_a(Object.const_get(obj))
+      end
+    end  
+
+    describe "sync(obj)" do
+      before do
+        @myobj = createObjDB(obj)
+        @myobj.provision(:destroy)
+      end
+
+      it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+        # init
+        @myobj.update_attribute(:status, "bla blub")
+        expect( @myobj.status ).to match(/bla blub/) 
+        sync(@myobj)
+        #expect( @myobj.status ).to match(/not provisioned/) 
+        
+
+      end
+    end
+
     describe "index" do
       before(:each) { visit provisioningobjects_path(obj)  }
       # not needed:
@@ -1074,6 +1221,19 @@ describe "Customer can be de-provisioned, even if a manually added site is prese
   # should be successful, because before deleting, all sites should be synchronized back from the target systems to the PE
 end
 
+    obj="Customer"
+    describe "createObjDB" do
+      it "should create an #{obj} in the database" do
+#Customer.new(
+      obj.constantize.new(
+      name: "ExampleCustomer",
+      language: "german",
+      target_id: 1
+    ).save!
+
+        expect(createObjDB(obj)).to change(Object.const_get(obj), :count)
+      end
+    end
 
 
 end # targetsolutionList.each do |targetsolution|
