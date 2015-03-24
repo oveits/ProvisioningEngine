@@ -59,12 +59,12 @@ class Provisioningobject < ActiveRecord::Base
     case method
       when :create
         methodNoun = "provisioning"
-        return false if activeJob?
-        return false if provisioned?
+        #return false if activeJob?
+        #return false if provisioned?
       when :destroy
         methodNoun = "de-provisioning"
-        return false if activeJob?
-        return false if !provisioned?
+        #return false if activeJob?
+        #return false if !provisioned?
       when :read
         methodNoun = "reading"
       else
@@ -79,53 +79,34 @@ class Provisioningobject < ActiveRecord::Base
     inputBody = provisioningAction(method)
 
     @provisioningobject = self
-#abort @provisioningobject.inspect
     
     unless target.nil?
       actionAppend = target.configuration.gsub(/\r/, '')
       actionAppend = actionAppend.gsub(/^[\s]*\n/,'') # ignore empty lines
       actionAppend = actionAppend.gsub(/\n/, ', ')
       actionAppend = actionAppend.gsub(/,[\s]*\Z/, '')# remove trailing commas
-#abort actionAppend      
     end
     
     # recursive deletion of children (skipped in test mode):
-#abort self.id.inspect
-#abort Site.where(customer: self.id).inspect
-#abort children.inspect
-#abort "I do not know yet how to find the children..."
     if inputBody.include?("Delete") && !inputBody.include?("testMode") 
       #@sites = Site.where(customer: id)
       children.each do |child|
-#abort child.inspect
-        #child.de_provision(async)
         child.provision(:destroy, async)
-        #inputBodySite = "action=Delete Site, customerName=#{@provisioningobject.name}, SiteName=#{site.name}"
-        #inputBodySite = inputBodySite + ', ' + actionAppend unless actionAppend.nil?
-        #site.provision(inputBodySite, async)
       end unless children.nil?
     end
     
     inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
 
-#abort inputBody.inspect
     object_sym = self.class.to_s.downcase.to_sym
     
     @provisioning = Provisioning.new(action: inputBody, object_sym => @provisioningobject)
 
-    #@provisioning = Provisioning.new(action: inputBody, customer: @provisioningobject)
-    
     if @provisioning.save
-       #@provisioning.createdelayedjob
-       #@provisioning.deliver
        if async == true
          returnvalue = @provisioning.deliverasynchronously
        else
-#abort @provisioning.inspect
          returnvalue = @provisioning.deliver
        end
-       # success
-       #return 0
     else
       @provisioning.errors.full_messages.each do |message|
         abort 'provisioning error: ' + message.to_s

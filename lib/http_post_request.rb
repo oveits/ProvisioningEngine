@@ -62,8 +62,144 @@ class HttpPostRequest
     #flash[:notice]  = "Sent HTTP POST Data to #{uriString} #{simulationLogString}"
 
     if simulationMode
+          begin
+            # if not initialized, the following line will fail:
+            @@customerprovisioned.nil?
+          rescue
+            # and the variable will be initialized
+            @@customerprovisioned = nil
+          end
+          begin
+            # if not initialized, the following line will fail:
+            @@siteprovisioned.nil?
+          rescue
+            # and the variable will be initialized
+            @@siteprovisioned = nil
+          end
+          begin
+            # if not initialized, the following line will fail:
+            @@userprovisioned.nil?
+          rescue
+            # and the variable will be initialized
+            @@userprovisioned = nil
+          end
+ 
       sleep 100.seconds / 1000
-      responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+      case postData["action"]
+        when /Add Customer/
+          if @@customerprovisioned.nil?
+            responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+            @@customerprovisioned = true
+          else 
+            @@customerprovisioned = true
+            responseBody = 'ERROR: java.lang.Exception: Cannot Create customer ExampleCustomerV8: Customer exists already!'
+          end
+        when /Add Site/
+          p "Before Add Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
+          if @@siteprovisioned.nil?
+            responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+            @@siteprovisioned = true
+          else
+            @@siteprovisioned = true
+            responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" exists already in the data base (Numbering Plan = NP_Site1_00010)!'
+          end
+          p "After Add Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
+        when /Add User/
+          if @@userprovisioned.nil?
+            responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+            @@userprovisioned = true
+          else
+            @@userprovisioned = true
+            responseBody = 'ERROR: java.lang.Exception: Cannot create user with phone number +49 (99) 7007 30800: phone number is in use already!'
+          end
+        when /Delete Customer/
+          if @@customerprovisioned == true
+            responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+            @@customerprovisioned = nil
+          else
+            responseBody = 'ERROR: java.lang.Exception: Customer "ExampleCustomerV8" does not exist on the data base!'
+            @@customerprovisioned = nil
+          end
+        when /Delete Site/
+          p "Before Delete Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
+          if @@siteprovisioned == true
+            responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+            @@siteprovisioned = nil
+          else
+            responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" does not exist in the data base!'
+            @@siteprovisioned = nil
+          end
+          p "After Delete Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
+        when /Delete User/
+          if @@userprovisioned == true
+            responseBody = "Success: 234     Errors:0     Syntax Errors:0"
+            @@userprovisioned = nil
+          else
+            responseBody = 'ERROR: java.lang.Exception: Cannot delete user with phone number +49 (99) 7007 30800: phone number does not exist for this customer!'
+            @@userprovisioned = nil
+          end
+        when /Show Sites/
+p "@@siteprovisioned is #{@@siteprovisioned.inspect}"
+          p "Before Show Sites: @@siteprovisioned = #{@@siteprovisioned.inspect}"
+          if @@siteprovisioned == true
+            responseBody = '
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Result>
+    <ResultCode>0</ResultCode>
+    <ResultText>Success</ResultText>
+    <Sites>
+        <Site>
+            <CustomerName>ExampleCustomerV8</CustomerName>
+            <SiteName>ExampleCustomerV8</SiteName>
+            <NumberingPlanName>CNP_ExampleCustomerV8_00007</NumberingPlanName>
+            <GatewayIP></GatewayIP>
+            <MainNumber></MainNumber>
+        </Site>
+        <Site>
+            <CustomerName>ExampleCustomerV8</CustomerName>
+            <SiteName>ExampleSite</SiteName>
+            <NumberingPlanName>NP_ExampleSite_00008</NumberingPlanName>
+            <GatewayIP>47.68.190.57</GatewayIP>
+            <CountryCode>49</CountryCode>
+            <AreaCode>99</AreaCode>
+            <LocalOfficeCode>7007</LocalOfficeCode>
+            <ExtensionLength>5</ExtensionLength>
+            <MainNumber>4999700710000</MainNumber>
+        </Site>
+    </Sites>
+</Result>'
+            else
+              responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Result>
+    <ResultCode>0</ResultCode>
+    <ResultText>Success</ResultText>
+    <Sites>
+        <Site>
+            <SiteName>ExampleCustomerV8</SiteName>
+            <NumberingPlanName>CNP_ExampleCustomerV8_00013</NumberingPlanName>
+            <GatewayIP></GatewayIP>
+            <MainNumber></MainNumber>
+        </Site>
+    </Sites>
+</Result>'
+            end
+        when /List Users/
+          if @@userprovisioned == true
+            responseBody = '<Result><ServiceId>4999700730800</ServiceId><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
+          else
+            responseBody = '<Result><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
+          end
+        when /List Customers/
+          if @@customerprovisioned == true
+            responseBody = '<?xml version="1.0" encoding="UTF-8"?>
+<SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>Thomas1</BGName><BGName>OllisTestCustomer</BGName><BGName>ExampleCustomerV8</BGName><BGName>OllisTestCustomer2</BGName><BGName>ExampleCustomer</BGName></GetBGListData></SOAPResult>'
+          else
+            responseBody = '<?xml version="1.0" encoding="UTF-8"?>
+<SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>Thomas1</BGName><BGName>OllisTestCustomer</BGName><BGName>OllisTestCustomer2</BGName></GetBGListData></SOAPResult>'
+          end
+        else
+          responseBody = "action not supported in simulation mode: have received #{postData["action"]}"
+      end
     else    
       begin
         response = http.request(request)

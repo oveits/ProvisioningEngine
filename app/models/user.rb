@@ -62,6 +62,8 @@ class User < Provisioningobject #< ActiveRecord::Base
         return inputBody
       when :destroy
         return "action=Delete User, X=#{extension}, customerName=#{site.customer.name}, SiteName=#{site.name}"
+      when :read
+        return "action=List Users"
       else
         abort "Unsupported provisioning method: " + method.inspect
     end

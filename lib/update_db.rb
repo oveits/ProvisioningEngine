@@ -5,56 +5,57 @@ class UpdateDB
   def perform(targetobject)
     
     provisioningRequestTimeout = 10
-    p '#################  targetobject.name  #################'
-#    targetobjects.each do |targetobject|
-      p targetobject.name unless targetobject.nil?
-#    end
+    	#p '#################  targetobject.name  #################'
+  
+    responseBody = targetobject.provision(:read, false)
 
-    # perform is only supported for targetobject of type Site (as of today)
-    if !targetobject.is_a?(Site)
-      return 1
-    end
-      
-    provisioningRequest = HttpPostRequest.new
-    
-    if targetobject.is_a?(Site)
-      # read site data from target system:
-      responseBody = targetobject.provision(:read, false)
-      if responseBody.is_a?(Fixnum)
-        case responseBody
-          when 101
-            responseBody = "ERROR: Site does not exist"
-        end
+    # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
+    if responseBody.is_a?(Fixnum)
+      case responseBody
+        when 101
+          responseBody = "ERROR: #{targetobject.class.name} does not exist"
       end
-    elsif targetobject.is_a?(Customer)
-      # today, customers have no parameters, which need to be synchronized
-      responseBody = "Synchronization not supported for class Customer"
-      return 1
-    elsif targetobject.is_a?(User)
-      responseBody = "Synchronization not supported for class User"
-      # today, users are not supported, since the Apache Camel ProvisioningEngine does not support "Show Users" (only "List Users")
-      return 1
-      #responseBody = provisioningRequest.perform("action = Show Users, customerName=#{targetobject.customer.name}, SiteName=#{targetobject.name}", X=#{targetobject.extension}", "http://localhost/CloudWebPortal", 10) unless targetobject.customer.nil?
-    else
-      # unsupported class
-      return 1
     end
+
+    # abort, if it is still a Fixnum:
+    if responseBody.is_a?(Fixnum)
+      abort "ERROR: wrong responseBody type (Fixnum (#{responseBody}) instead of String)"
+    end
+    
+    # only Customer, Site, User are supported:
+    abort "lib/update_db.rb.perform(targetobject): Unsupported class" unless targetobject.is_a?(Customer) || targetobject.is_a?(Site) || targetobject.is_a?(User)
     
     if responseBody.nil?
       return "ERROR: UpdateDB: provisioningRequest timeout (#{provisioningRequestTimeout} sec) reached!"
     end
+
       
     unless responseBody[/ERROR.*$/].nil?
       return responseBody[/ERROR.*$/]
-    end
+    end if responseBody.is_a?(String)
     
     require 'rexml/document'
     xml_data = responseBody
     doc = REXML::Document.new(xml_data)
     
-    if targetobject.is_a?(Site)
+    if targetobject.is_a?(Customer)
+	#p xml_data.inspect
+	#abort doc.root.elements["GetBGListData"].elements["BGName"].inspect
+      found = false
+      doc.root.elements["GetBGListData"].elements.each do |element|
+        if element.text == targetobject.name
+          targetobject.update_attribute('status', 'provisioning successful (verified existence)')
+          found = true
+          break
+        end
+      end  
+      # not found
+      targetobject.update_attribute('status', 'not provisioned (verified)') unless found
+    elsif targetobject.is_a?(Site)
+      found = false
       doc.root.elements["Sites"].elements.each do |element|
         if element.elements["SiteName"].text == targetobject.name
+          found = true
           # Note: update_attributes does a validation, and update_attribute does not. 
 	  # We cannot update the extensionlength and mainextension at the same time, since they depend on each other
           targetobject.update_attribute('sitecode', element.elements["SiteCode"].text ) unless element.elements["SiteCode"].nil?
@@ -70,24 +71,28 @@ class UpdateDB
           elsif element.elements["MainNumber"].text.nil?
             targetobject.update_attribute('mainextension', nil)
           end
+          targetobject.update_attribute('status', 'provisioning successful (synchronized all parameters)')
           break
         end
       end
+      # not found
+      targetobject.update_attribute('status', 'not provisioned (verified)') unless found
     elsif targetobject.is_a?(User)
-      doc.root.elements["Users"].elements.each do |element|
-        if element.elements["UserName"].text == targetobject.name
-          # Note: update_attributes does a validation, and update_attribute does not. 
-	  # We cannot update the extensionlength and mainextension at the same time, since they depend on each other
-          targetobject.update_attribute('givenname', element.elements["GivenName"].text )
-          targetobject.update_attribute('familyname', element.elements["FamilyName"].text )
-          targetobject.update_attribute('email', element.elements["Email"].text )
+	#p xml_data.inspect
+	#abort doc.root.inspect
+      found = false
+      doc.root.elements.each do |element|
+        if element.text == "#{targetobject.site.countrycode}#{targetobject.site.areacode}#{targetobject.site.localofficecode}#{targetobject.extension}"
+          targetobject.update_attribute('status', 'provisioning successful (verified existence)')
+          found = true
           break
         end
       end      
+      targetobject.update_attribute('status', 'not provisioned (verified)') unless found
     end
 
-    p 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU    responseBody    UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU'
-    p responseBody unless responseBody.nil?
+    p 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU    lib/update_db.rb.perform: responseBody    UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU'
+    p responseBody.inspect
     
     return responseBody[0,400]
   end # def perform

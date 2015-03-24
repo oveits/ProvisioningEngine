@@ -97,29 +97,11 @@ class SitesController < ApplicationController
   end
 
   def synchronize
-    #p params.inspect
-    #sleep 0.1
-    @site = Site.find(params[:id])
-        
+    @object = Site.find(params[:id])
     updateDB = UpdateDB.new
-    returnBody = updateDB.perform(@site)
-    #p '---------------- synchronize ----------------'
-    #p returnBody       
-    
-    if returnBody[/ERROR/].nil? && !returnBody[/>#{@site.name}</].nil?
-      # success
-      @site.update_attributes!(:status => 'provisioning successful (synchronized)')
-      #redirect_to @site.customer, notice: "Site #{@site.name} has been synchronized: target system -> database."
-      redirect_to :back, notice: "Site #{@site.name} has been synchronized: target system -> database."
-    elsif !returnBody[/ERROR/].nil?
-      # failure: Provisioning Error
-      @site.update_attributes!(:status => "synchronization failed (#{returnBody[/ERROR.*$/]})")
-      redirect_to @site.customer, notice: "Site #{@site.name} synchronization failed with Error: #{returnBody[/ERROR.*$/]}"
-    elsif returnBody[/>#{@site.name}</].nil?
-      # failure: Site not (yet) provisionined on target system
-      @site.update_attributes!(:status => 'synchronization failed (Site not found)')
-      redirect_to @site.customer, notice: "Site #{@site.name} synchronization failed with Error: Site not found on target system"
-    end
+    @object.update_attributes!(:status => 'synchronization in progress')
+    returnBody = updateDB.delay.perform(@object)
+    redirect_to :back, notice: "Site #{@object.name} is being synchronized."
   end
   
   def provision

@@ -101,7 +101,7 @@ end
 
 
 #def createCustomer(name = "" )      
-#  # add and provision customer "ExampleCustomer with target = TestTarget" 
+#  # add and provision customer "ExampleCustomerV8 with target = TestTarget" 
 #  obj = "Customer"
 #  
 #  fillFormForNewCustomer(name)
@@ -109,48 +109,89 @@ end
 #  click_button 'Save', match: :first 
 #end
 
-def createObjDB(obj)
-  # creates an object and its parent object (recursively) in the database, if it does not exist
-  # returns the existing object, if it exists
+def defaultParams(obj, i = 0)
+  params = []
   case obj
     when /Target/
-      params = {
+      params[0] = {
           name: $targetname,
           configuration: $target
           }
     when /Customer/
-      my_target_id = createObjDB("Target").id
-      params = {
-          name: "ExampleCustomer",
+      params[0] = {
+          name: "ExampleCustomerV8",
           language: "german",
-          target_id: my_target_id
           }
-      parentObj = "Target"
     when /Site/
-      params = {
+      params[0] = {
           name: "ExampleSite",
-	  customer_id: createObjDB("Customer").id,
-	  countrycode: "49",
-	  areacode: "99",
-	  localofficecode: "7007",
-	  extensionlength: "5"
+          countrycode: "49",
+          areacode: "99",
+          localofficecode: "7007",
+          extensionlength: "5",
+          mainextension: "10000",
+	  gatewayIP: "47.68.190.57"
+          }
+      params[1] = {
+          name: "ExampleSite",
+          countrycode: "1",
+          areacode: "2",
+          localofficecode: "3",
+          extensionlength: "4",
+          mainextension: "5555"
           }
     when /User/
-      params = {
+      params[0] = {
           name: "ExampleUser",
-          site_id: createObjDB("Site").id,
           extension: "30800",
           givenname: "Oliver",
           familyname: "Veits",
           email: "oliver.veits@company.com"
           }
     else
-      abort "Object=#{obj} not supported for function createObjectDB_manual"
+      abort "obj=#{obj} not supported for function defaultParams(obj)"
+  end
+  params[i]
+end
+
+def initObj(obj, shall_exist_on_db = true, shall_exist_on_target = true, params = nil)
+  # initializes the object
+  if  params.nil?
+    params = defaultParams(obj, 0)
   end
 
-  	#abort obj.constantize.where(params).count.inspect
+  myObj = createObjDB(obj, params)
+
+  # probe whether obj exists on camel
+  # -> set exists_on_target accordingly
+
+  if shall_exist_on_target
+    # provision
+    myObj.provision(:create, false)
+  else
+    # deprovision
+    myObj.provision(:destroy, false)
+  end
+
+  if shall_exist_on_db == false
+    # destroy! 
+    myObj.destroy!
+  end
+end
+
+def createObjDB(obj, params = nil) 
+  # creates an object and its parent object (recursively) in the database, if it does not exist
+  # returns the existing object, if it exists
+
+  # set default params:
+  if  params.nil? 
+    params = defaultParams(obj, 0) 
+  end
+
   if obj.constantize.where(params).count == 0 
-    createObjDB(parentObj) unless parentObj.nil?
+    # create parent, if it does not exist and add the parent id to the params:
+    params = params.merge!("#{parent(obj).downcase}_id".to_sym => createObjDB(parent(obj)).id) unless parent(obj).nil?
+    # create the object:
     myObj = obj.constantize.new(
       params
     )
@@ -166,14 +207,20 @@ def createObjDB(obj)
   return myObj
 end
 
+def sync(syncObj)
+#abort "sync(#{syncObj.inspect})"
+  updateDB = UpdateDB.new
+  returnBody = updateDB.perform(syncObj)
+end
+
 def createSite(name = "ExampleSite" )      
-  # add and provision customer "ExampleCustomer with target = TestTarget" 
+  # add and provision customer "ExampleCustomerV8 with target = TestTarget" 
   fillFormForNewSite(name)
   click_button 'Save', match: :first 
 end
 
 def createCustomer(name = $customerName )      
-  # add and provision customer "ExampleCustomer with target = TestTarget" 
+  # add and provision customer "ExampleCustomerV8 with target = TestTarget" 
   fillFormForNewCustomer(name)
   click_button 'Save', match: :first 
 end
@@ -528,7 +575,7 @@ targetsolutionList.each do |targetsolution|
         Target.all.each do |target|
           target.destroy!
         end
-      end
+      end # before
 
       it "should create a Target, if it does not exist already" do
         # init:
@@ -538,7 +585,7 @@ targetsolutionList.each do |targetsolution|
         # add a target:
         expect{ myTarget = createObjDB("Target") }.to change(Object.const_get("Target"), :count)
         expect( myTarget ).to be_a(Target)
-      end
+      end # it "should create a Target, if it does not exist already" do
 
       it "should return the existing Target, if it exists already" do
         # init:
@@ -549,8 +596,8 @@ targetsolutionList.each do |targetsolution|
         # test: since the target exists alreads, createObjDB should not add a target, but return the existing target:
         expect{ myTarget = createObjDB("Target") }.not_to change(Object.const_get("Target"), :count)
         expect( myTarget ).to be_a(Target)
-      end
-    end
+      end #it "should return the existing Target, if it exists already" do
+    end # describe "createObjDB('Target')" do
 objectList.each do |obj|
     describe "createObjDB(#{obj})" do
       before do
@@ -562,7 +609,7 @@ objectList.each do |obj|
         Object.const_get(parent(obj)).all.each do |myobj|
           myobj.destroy!
         end unless parent(obj).nil?
-      end
+      end # before do
 
       it "should create a #{obj}, if it does not exist already" do
         # init:
@@ -576,7 +623,7 @@ objectList.each do |obj|
         expect( Object.const_get(parent(obj)).count ).to be(1) unless parent(obj).nil? # one parent object
         # and the created opbject must be of the right type:
         expect( myobj ).to be_a(Object.const_get(obj))
-      end
+      end # it "should create a #{obj}, if it does not exist already" do
 
       it "should return the existing #{obj}, if it exists already" do
         # init:
@@ -590,25 +637,82 @@ objectList.each do |obj|
         expect{ myobj = createObjDB(obj) }.not_to change(Object.const_get(obj), :count)
         expect( Object.const_get(parent(obj)).count ).to be(1) unless parent(obj).nil? # still one parent object
         expect( myobj ).to be_a(Object.const_get(obj))
-      end
-    end  
+      end # it "should return the existing #{obj}, if it exists already" do
+    end # describe "createObjDB(#{obj})" do  
 
-    describe "sync(obj)" do
+    describe "initObj(#{obj}) via model" do
+      it "initObj( #{obj}, true, false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
+  
+        # make sure the database does not contain any object of the type obj
+        obj.constantize.all.each do |myobject|
+          myobject.destroy!
+        end
+	#@@siteprovisioned = nil
+
+        # make sure the provisioningobject is created on the target (so, we can test, whether init is de-provision the provisioningobject)
+        expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
+        @myobj.provision(:destroy, false)
+        @myobj.provision(:create, false)
+        expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.name}</) unless obj == "User"
+        expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
+        @myobj.destroy!
+        
+        # test: should create an object
+        expect{ initObj( obj, true, false ) }.to change(Object.const_get(obj), :count).by(1)
+        
+        # test: should have created an object with the right attributes:
+        @myobj = Object.const_get(obj).last
+        defaultParams(obj).each do |key, value|
+          	#p "#{key} => #{value}"
+          expect( @myobj.send(key) ).to eq( value )
+        end
+
+        # test: should have de-provisioned the 
+        p @myobj.provision(:read, false).inspect 
+        expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"
+        expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
+
+
+      end # it "initObj( #{obj}, true, false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
+
+
+    end # describe "initObj(#{obj}) via model" do
+
+  #end # ???????????????????
+
+    describe "sync(#{obj}) via model" do
       before do
         @myobj = createObjDB(obj)
-        @myobj.provision(:destroy)
+        #@myobj.provision(:destroy)
       end
 
       it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
         # init
+		#@@customerprovisioned = nil
+		#@@siteprovisioned = nil
+		#@@userprovisioned = nil
+        @myobj.destroy!
+        @myobj = createObjDB(obj, defaultParams(obj, 1) ) #createObjDB(obj, params = nil, i = 1 )
+        @myobj.provision(:create, false)
         @myobj.update_attribute(:status, "bla blub")
         expect( @myobj.status ).to match(/bla blub/) 
+
+	#p "@@customerprovisioned = " + @@customerprovisioned.inspect
+	#p "@@siteprovisioned = " + @@siteprovisioned.inspect
+	#p "@@userprovisioned = " + @@userprovisioned.inspect
+        # test
         sync(@myobj)
-        #expect( @myobj.status ).to match(/not provisioned/) 
+		#p defaultParams(obj).inspect
+        defaultParams(obj).each do |key, value|
+          	#p "#{key} => #{value}"
+          	#p "key.class.name=#{key.class.name}"
+          expect( @myobj.send(key) ).to eq( value)
+        end
+        expect( @myobj.status ).to match(/provisioning successful \(synchronized\)|provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/) 
         
 
-      end
-    end
+      end # it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+    end # describe "sync(#{obj}) via model" do
 
     describe "index" do
       before(:each) { visit provisioningobjects_path(obj)  }
@@ -719,8 +823,8 @@ objectList.each do |obj|
               #p page.html.gsub(/[\n\t]/, '').inspect
               expect(page).to have_selector('li', text: "Extension is already taken for this site")
             end
-          end
-        end
+          end # it "should should throw certain error messages" do
+        end # describe "with duplicate data" do
         
         # TODO: activate the test below and then implement https://www.railstutorial.org/book/_single-page#sec-uniqueness_validation 
         #describe "with case-insensitive duplicate name" do
@@ -836,7 +940,7 @@ objectList.each do |obj|
             expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
           end
           
-          #it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomer'" do
+          #it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomerV8'" do
           it "should create a provisioning task with action='action=Add #{obj}' and 'customerName=#{$customerName} etc." do
             click_button submit, match: :first
             createdProvisioningTask = Provisioning.find(Provisioning.last)
@@ -1053,7 +1157,7 @@ p page.html.gsub(/[\n\t]/, '')
             abort "Found more than one #{obj} with name Example#{obj}" unless obj == "User" || obj == "Customer"
             abort "Found more than one #{obj} with Extension \"30800\"" unless obj == "User"
           end
-          #p page.html.gsub(/[\n\t]/, '')
+          p page.html.gsub(/[\n\t]/, '')
          
         }
            
@@ -1220,20 +1324,6 @@ describe "Customer can be de-provisioned, even if a manually added site is prese
   #   destroyCustomer
   # should be successful, because before deleting, all sites should be synchronized back from the target systems to the PE
 end
-
-    obj="Customer"
-    describe "createObjDB" do
-      it "should create an #{obj} in the database" do
-#Customer.new(
-      obj.constantize.new(
-      name: "ExampleCustomer",
-      language: "german",
-      target_id: 1
-    ).save!
-
-        expect(createObjDB(obj)).to change(Object.const_get(obj), :count)
-      end
-    end
 
 
 end # targetsolutionList.each do |targetsolution|

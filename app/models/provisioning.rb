@@ -80,6 +80,7 @@ class Provisioning < ActiveRecord::Base
       thisaction = 'provisioning' unless action[/action[ ]*=[ ]*Add /].nil?
       thisaction = 'deletion' unless action[/action[ ]*=[ ]*Delete /].nil?
       thisaction = 'reading' unless action[/action[ ]*=[ ]*Show /].nil?
+      thisaction = 'reading' unless action[/action[ ]*=[ ]*List /].nil?
       # if not found:
       thisaction = 'unknown action' if thisaction.nil?  
       
@@ -186,13 +187,6 @@ class Provisioning < ActiveRecord::Base
           resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/ERROR.*does not exist.*$/][7,400] + '" at ' + Time.now.to_s
           targetobjects.each do |targetobject|
             targetobject.update_attribute(:status, thisaction + ' failed: was already de-provisioned (press "Destroy" or "Delete" again to remove from database') unless targetobject.nil?
-            # instead of updating the status, remove from database (can be commented out)
-	    # now to be done in the controller on returnvalue 101 (implemented for customer only)
-            unless targetobject.nil?
-p targetobject.inspect
-              targetobject.destroy unless targetobject == customer
-              break
-            end 
           end  unless thisaction == 'reading'
         when /Warnings/
         # import errors
@@ -204,7 +198,7 @@ p targetobject.inspect
             break unless targetobject.nil?
           end unless thisaction == 'reading'
           #provisioning.update_attributes!(:delayedjob => nil)
-        when /xml version/
+        when /xml version|<Result>/
         # show command with XML output
 	  returnvalue = 9
           # keep resulttext, no status change
@@ -222,7 +216,7 @@ p targetobject.inspect
       p 'resulttext = ' + resulttext
       p 'returnvalue = ' + returnvalue.to_s
       p '------------------resulttext------------------'
-         
+
       return resulttext if returnvalue == 9 && thisaction == 'reading'
       update_attribute(:status, resulttext) unless thisaction == 'reading'
       return returnvalue

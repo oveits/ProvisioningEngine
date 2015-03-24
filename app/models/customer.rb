@@ -79,6 +79,8 @@ class Customer < Provisioningobject #< ActiveRecord::Base
         "action=Add Customer, customerName=#{name}, customerLanguage=#{language}"
       when :destroy
         "action=Delete Customer, customerName=#{name}"
+      when :read
+        "action=List Customers"
       else
         abort "Unsupported provisioning method"
     end
