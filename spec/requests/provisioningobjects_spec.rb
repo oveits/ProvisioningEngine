@@ -7,6 +7,8 @@ RSpec.configure do |c|
   else 
     c.filter_run_excluding broken: true #, provisioning: true #, untested: true
   end
+  # stop on first failure, if set to true:
+  c.fail_fast = false
 
   # TODO: this filter does not work: run only broken test cases
   #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
@@ -56,6 +58,19 @@ def parent(obj)
       "Customer"
     when /User/
       "Site"
+  end
+end
+
+def child(obj)
+  case obj
+    when /Target/
+      "Customer"
+    when /Customer/
+      "Site"
+    when /Site/
+      "User"
+    when /User/
+      nil
   end
 end
 
@@ -138,7 +153,8 @@ def defaultParams(obj, i = 0)
           areacode: "2",
           localofficecode: "3",
           extensionlength: "4",
-          mainextension: "5555"
+          mainextension: "5555",
+          gatewayIP: "2.56.23.45"
           }
     when /User/
       params[0] = {
@@ -162,14 +178,15 @@ def initObj(obj, shall_exist_on_db = true, shall_exist_on_target = true, params 
 
   myObj = createObjDB(obj, params)
 
-  # probe whether obj exists on camel
+  # probe whether obj exists on target
   # -> set exists_on_target accordingly
 
   if shall_exist_on_target
     # provision
     myObj.provision(:create, false)
   else
-    # deprovision
+    # deprovision recursively. For that, the children need to be created on the database, if not yet present:
+    initObj(child(obj), true, false) unless child(obj).nil?
     myObj.provision(:destroy, false)
   end
 
@@ -208,9 +225,10 @@ def createObjDB(obj, params = nil)
 end
 
 def sync(syncObj)
-#abort "sync(#{syncObj.inspect})"
+	#abort "sync(#{syncObj.inspect})"
   updateDB = UpdateDB.new
   returnBody = updateDB.perform(syncObj)
+	#abort returnBody
 end
 
 def createSite(name = "ExampleSite" )      
@@ -651,8 +669,11 @@ objectList.each do |obj|
 
         # make sure the provisioningobject is created on the target (so, we can test, whether init is de-provision the provisioningobject)
         expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
+        # create children:
+        expect{ @mychildobj = createObjDB(child(obj)) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
         @myobj.provision(:destroy, false)
         @myobj.provision(:create, false)
+        @mychildobj.provision(:create, false) unless child(obj).nil?
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.name}</) unless obj == "User"
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
         @myobj.destroy!
@@ -692,20 +713,50 @@ objectList.each do |obj|
 		#@@siteprovisioned = nil
 		#@@userprovisioned = nil
         @myobj.destroy!
-        @myobj = createObjDB(obj, defaultParams(obj, 1) ) #createObjDB(obj, params = nil, i = 1 )
+        @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, params = nil, i = 1 )
+        @myobj.provision(:destroy, false)
         @myobj.provision(:create, false)
+        # make sure the object has been created with data set i=0
+        if obj == "Site"
+          defaultParams(obj, 0).each do |key, value|
+            	#p "0-----------------------------" + key.inspect
+          	#p "#{key} => #{value}"
+          	#p "key.class.name=#{key.class.name}"
+            expect( @myobj.send(key) ).to eq( value )
+          end
+        end
         @myobj.update_attribute(:status, "bla blub")
+        @myobj.update_attributes(defaultParams(obj, 1)) if obj == "Site"
+        expect( @myobj.status ).to match(/bla blub/) 
+        if obj == "Site"
+          # make sure the object has been updated with data set i=1
+          defaultParams(obj, 1).each do |key, value|
+            	#p "1-----------------------------" + key.inspect
+          	#p "#{key} => #{value}"
+          	#p "key.class.name=#{key.class.name}"
+            expect( @myobj.send(key) ).to eq( value ) unless key == :name # name must be the same
+          end  
+          # and that it differs from the original values (apart from the name, which must be the same):
+          defaultParams(obj, 0).each do |key, value|
+                #p "2-----------------------------" + key.inspect
+          	#p "#{key} => #{value}"
+          	#p "key.class.name=#{key.class.name}"
+            expect( @myobj.send(key) ).not_to eq( value ) unless key == :name # name may be the same in the two data sets
+          end
+        end
         expect( @myobj.status ).to match(/bla blub/) 
 
 	#p "@@customerprovisioned = " + @@customerprovisioned.inspect
 	#p "@@siteprovisioned = " + @@siteprovisioned.inspect
 	#p "@@userprovisioned = " + @@userprovisioned.inspect
         # test
+
+	#Delayed::Worker.delay_jobs = false
         sync(@myobj)
 		#p defaultParams(obj).inspect
         defaultParams(obj).each do |key, value|
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
+          	p "#{key} => #{value}"
+          	p "key.class.name=#{key.class.name}"
           expect( @myobj.send(key) ).to eq( value)
         end
         expect( @myobj.status ).to match(/provisioning successful \(synchronized\)|provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/) 
@@ -912,9 +963,9 @@ objectList.each do |obj|
             # synchronous operation, so we will get deterministic test results:         
             Delayed::Worker.delay_jobs = false
             
+            	# for debugging:
+            	p page.html.gsub(/[\n\t]/, '')
             click_button submit, match: :first
-            # for debugging:
-            #p page.html.gsub(/[\n\t]/, '')
 #abort page.html.gsub(/[\n\t]/, '')
             
             # TODO: it should redirect to customer_path(created_customer_id)
@@ -932,39 +983,47 @@ objectList.each do |obj|
             page.html.gsub(/[\n\t]/, '').should match(/provisioning success/)                    
           end
           
-          it "should create a provisioning task" do
-            expect { click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
+          it "should create one or more provisioning tasks" do
+            expect { click_button submit, match: :first }.to change(Provisioning, :count).by_at_least(1)         
           end
           
-          it "should create a provisioning task (2nd 'Save' button)", broken: true do
-            expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by(1)         
+          it "should create one or more provisioning tasks (2nd 'Save' button)", broken: true do
+            expect { first('.index').click_button submit, match: :first }.to change(Provisioning, :count).by_at_least(1)         
           end
           
           #it "should create a provisioning task with action='action=Add Customer' and 'customerName=ExampleCustomerV8'" do
           it "should create a provisioning task with action='action=Add #{obj}' and 'customerName=#{$customerName} etc." do
+            mycountbefore = Provisioning.all.count
             click_button submit, match: :first
-            createdProvisioningTask = Provisioning.find(Provisioning.last)
-            createdProvisioningTask.action.should match(/action=Add #{obj}/)
+            foundAction = nil
+            createdProvisioningTasks = Provisioning.last(Provisioning.all.count - mycountbefore).each do |task|
+              if task.action.match(/action=Add #{obj}/)
+                foundAction = task.action
+                break;
+              end
+	    end
+            expect( foundAction ).not_to be( nil )
+            foundAction.should match(/action=Add #{obj}/)
             case obj
               when /Customer/
-                createdProvisioningTask.action.should match(/customerName=#{$customerName}/)
+                foundAction.should match(/customerName=#{$customerName}/)
               when /Site/
-                createdProvisioningTask.action.should match(/customerName=#{$customerName}/)
-                createdProvisioningTask.action.should match(/SiteName=ExampleSite/)
-                #createdProvisioningTask.action.should match(/SC=99821/)
-                createdProvisioningTask.action.should match(/CC=49/)
-                createdProvisioningTask.action.should match(/AC=99/)
-                createdProvisioningTask.action.should match(/LOC=7007/)
-                createdProvisioningTask.action.should match(/XLen=5/)
-                createdProvisioningTask.action.should match(/EndpointDefaultHomeDnXtension=10000/)
+                foundAction.should match(/customerName=#{$customerName}/)
+                foundAction.should match(/SiteName=ExampleSite/)
+                #foundAction.should match(/SC=99821/)
+                foundAction.should match(/CC=49/)
+                foundAction.should match(/AC=99/)
+                foundAction.should match(/LOC=7007/)
+                foundAction.should match(/XLen=5/)
+                foundAction.should match(/EndpointDefaultHomeDnXtension=10000/)
               when /User/
-                createdProvisioningTask.action.should match(/customerName=#{$customerName}/)
-                createdProvisioningTask.action.should match(/SiteName=ExampleSite/)
-                createdProvisioningTask.action.should match(/X=30800/)
-                createdProvisioningTask.action.should match(/givenName=Oliver/)
-                createdProvisioningTask.action.should match(/familyName=Veits/)
-                createdProvisioningTask.action.should match(/assignedEmail=oliver.veits@company.com/)
-                createdProvisioningTask.action.should match(/imAddress=oliver.veits@company.com/)
+                foundAction.should match(/customerName=#{$customerName}/)
+                foundAction.should match(/SiteName=ExampleSite/)
+                foundAction.should match(/X=30800/)
+                foundAction.should match(/givenName=Oliver/)
+                foundAction.should match(/familyName=Veits/)
+                foundAction.should match(/assignedEmail=oliver.veits@company.com/)
+                foundAction.should match(/imAddress=oliver.veits@company.com/)
             end
           end
           
@@ -1043,7 +1102,7 @@ p page.html.gsub(/[\n\t]/, '')
 
 	let(:submit) { "Save" }
 
-        it "should create a #{obj} with status 'provisioning success: was already provisioned'" do
+        it "should create a #{obj} with status 'provisioning successful (synchronized all parameters)' or 'provisioning successful (verified existence)'" do
           Delayed::Worker.delay_jobs = false
           click_button submit, match: :first
           if /V7R1/.match($targetname) && page.html.gsub(/[\n\t]/, '').match("Sitecode must not be empty for V7R1 targets")
@@ -1051,7 +1110,7 @@ p page.html.gsub(/[\n\t]/, '')
             click_button 'Save', match: :first
           end
 
-          expect(page.html.gsub(/[\n\t]/, '')).to match(/was already provisioned/)
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/)
         end
 
 	if obj == "Site"

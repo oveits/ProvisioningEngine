@@ -36,6 +36,10 @@ class User < Provisioningobject #< ActiveRecord::Base
     nil
   end
   
+  def parent
+    site
+  end
+
   def provisioningAction(method)
     
     if site.nil?

@@ -94,6 +94,11 @@ class Provisioningobject < ActiveRecord::Base
         child.provision(:destroy, async)
       end unless children.nil?
     end
+
+    # recursive creation of parents for Add (:create) functions
+    if inputBody.include?("Add ") && !inputBody.include?("testMode")
+       self.parent.provision(:create, async) unless self.parent.nil?
+    end
     
     inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
 

@@ -68,6 +68,11 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     end
   end
   
+  def parent
+    nil # target
+    # must be nil for now, since target does not support provision yet
+  end
+  
   def provisioningAction(method)
    
     if name.nil?
@@ -85,6 +90,25 @@ class Customer < Provisioningobject #< ActiveRecord::Base
         abort "Unsupported provisioning method"
     end
   end
+
+#  def provisioningActionURI(method) # not yet used anywhere; instead a workaround is implemented in app/models/provisioning.rb deliver (look for # workaround for the fact that List commands need to be sent to "http://192.168.113.104:80/show") ...
+#  
+#    if name.nil?
+#      abort "cannot de-provision customer without name"
+#    end
+#
+#    case method
+#      when :create
+#        ENV["PROVISIONINGENGINE_CAMEL_URL"]
+#      when :destroy
+#        ENV["PROVISIONINGENGINE_CAMEL_URL"]
+#      when :read
+#        #ENV["PROVISIONINGENGINE_CAMEL_URL"].gsub(http://192.168.113.104:80/show"
+#        ENV["PROVISIONINGENGINE_CAMEL_URL"].gsub('ProvisioningEngine', 'show')
+#      else
+#        abort "Unsupported provisioning method"
+#    end
+#  end
 
 # TODO: remove after successful test  
 # def provisionOld(inputBody, async=true)

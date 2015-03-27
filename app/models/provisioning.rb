@@ -62,6 +62,19 @@ class Provisioning < ActiveRecord::Base
   end # def createdelayedjob
   
   def deliver(uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=600, httpopentimeout=6)
+
+    # workaround for the fact that List commands need to be sent to "http://192.168.113.104:80/show", while all other commands need to be sent to "http://192.168.113.104:80/ProvisioningEngine"
+    # set uriString = "http://192.168.113.104:80/show" for List commands
+    # 1) define isListCommand?
+    def isListCommand?
+      if action[/action[ ]*=[ ]*List /].nil?
+        false
+      else
+        true
+      end
+    end
+    # 2) rewrite uriString
+    uriString = uriString.gsub('ProvisioningEngine', 'show') if isListCommand?
     
     begin
       update_attribute(:status, 'started at ' + Time.now.to_s)

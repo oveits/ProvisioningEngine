@@ -25,6 +25,11 @@ class Validate_Variable_Value_Pairs < ActiveModel::Validator
 end
 
 class Target < ActiveRecord::Base
+
+  def parent
+    nil
+  end
+
   #belongs_to :customer
   has_many :customers
   validates :name, presence: true

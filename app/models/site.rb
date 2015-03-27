@@ -93,6 +93,10 @@ class Site < Provisioningobject #< ActiveRecord::Base
     end
   end
   
+  def parent
+    customer
+  end
+  
   def provisioningAction(method)
    
     if name.nil?
