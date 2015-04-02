@@ -166,29 +166,11 @@ class CustomersController < ApplicationController
   end
 
   def synchronize
-    #p params.inspect
-    #sleep 0.1
-    @customer = Customer.find(params[:id])
-    @object = @customer
-        
+    @object = Customer.find(params[:id])
     updateDB = UpdateDB.new
-    returnBody = updateDB.perform(@object)
-    #p '---------------- synchronize ----------------'
-    #p returnBody       
-    
-    if returnBody[/ERROR/].nil? && !returnBody[/>#{@object.name}</].nil?
-      # success
-      @object.update_attributes!(:status => 'synchronized')
-      redirect_to @object.customer, notice: "Customer #{@object.name} has been synchronized: target system -> database."
-    elsif !returnBody[/ERROR/].nil?
-      # failure: Provisioning Error
-      @object.update_attributes!(:status => "synchronization failed (#{returnBody[/ERROR.*$/]})")
-      redirect_to @object.customer, notice: "Customer #{@object.name} synchronization failed with Error: #{returnBody[/ERROR.*$/]}"
-    elsif returnBody[/>#{@object.name}</].nil?
-      # failure: Customer not (yet) provisionined on target system
-      @object.update_attributes!(:status => 'synchronization failed (Customer not found)')
-      redirect_to @object.customer, notice: "Customer #{@object.name} synchronization failed with Error: Customer not found on target system"
-    end
+    @object.update_attributes!(:status => 'synchronization in progress')
+    returnBody = updateDB.delay.perform(@object)
+    redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
   end
 
   # PATCH	/customers/1/provision

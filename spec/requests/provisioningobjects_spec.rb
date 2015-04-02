@@ -9,6 +9,7 @@ RSpec.configure do |c|
   end
   # stop on first failure, if set to true:
   c.fail_fast = false
+#  c.fail_fast = true
 
   # TODO: this filter does not work: run only broken test cases
   #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
@@ -125,20 +126,20 @@ end
 #end
 
 def defaultParams(obj, i = 0)
-  params = []
+  paramsSet = []
   case obj
     when /Target/
-      params[0] = {
+      paramsSet[0] = {
           name: $targetname,
           configuration: $target
           }
     when /Customer/
-      params[0] = {
+      paramsSet[0] = {
           name: "ExampleCustomerV8",
           language: "german",
           }
     when /Site/
-      params[0] = {
+      paramsSet[0] = {
           name: "ExampleSite",
           countrycode: "49",
           areacode: "99",
@@ -147,7 +148,7 @@ def defaultParams(obj, i = 0)
           mainextension: "10000",
 	  gatewayIP: "47.68.190.57"
           }
-      params[1] = {
+      paramsSet[1] = {
           name: "ExampleSite",
           countrycode: "1",
           areacode: "2",
@@ -157,7 +158,7 @@ def defaultParams(obj, i = 0)
           gatewayIP: "2.56.23.45"
           }
     when /User/
-      params[0] = {
+      paramsSet[0] = {
           name: "ExampleUser",
           extension: "30800",
           givenname: "Oliver",
@@ -167,16 +168,40 @@ def defaultParams(obj, i = 0)
     else
       abort "obj=#{obj} not supported for function defaultParams(obj)"
   end
-  params[i]
+  paramsSet[i]
 end
 
-def initObj(obj, shall_exist_on_db = true, shall_exist_on_target = true, params = nil)
-  # initializes the object
-  if  params.nil?
-    params = defaultParams(obj, 0)
-  end
+def initObj(paramsHash)
+  # e.g.:
+  # initObj(obj: "Customer", shall_exist_on_db: true, shall_exist_on_target: true, defaultParams("Customer", 0))
 
-  myObj = createObjDB(obj, params)
+  return false unless paramsHash.is_a?(Hash)
+
+  # init
+  obj = paramsHash[:obj]
+  shall_exist_on_db = paramsHash[:shall_exist_on_db]
+  shall_exist_on_target = paramsHash[:shall_exist_on_target]
+  paramsSet = paramsHash[:paramsSet]
+
+  # validation
+  return false if obj.nil?
+  
+  # default values:
+  shall_exist_on_db = true if shall_exist_on_db.nil?
+  shall_exist_on_target = true if shall_exist_on_target.nil?
+  paramsSet = defaultParams(obj, 0) if paramsSet.nil?
+  
+#  initObj(obj, paramsHash[:shall_exist_on_db], paramsHash[:shall_exist_on_target], paramsHash[:paramsSet])
+#
+#end
+#
+#def initObj(obj, shall_exist_on_db = true, shall_exist_on_target = true, params = nil)
+#  # initializes the object
+#  if  paramsSet.nil?
+#    paramsSet = defaultParams(obj, 0)
+#  end
+
+  myObj = createObjDB(obj, paramsSet)
 
   # probe whether obj exists on target
   # -> set exists_on_target accordingly
@@ -186,7 +211,8 @@ def initObj(obj, shall_exist_on_db = true, shall_exist_on_target = true, params 
     myObj.provision(:create, false)
   else
     # deprovision recursively. For that, the children need to be created on the database, if not yet present:
-    initObj(child(obj), true, false) unless child(obj).nil?
+    #initObj(obj: child(obj), true, false) unless child(obj).nil?
+    initObj(obj: child(obj), shall_exist_on_db: true, shall_exist_on_target: false) unless child(obj).nil?
     myObj.provision(:destroy, false)
   end
 
@@ -196,29 +222,29 @@ def initObj(obj, shall_exist_on_db = true, shall_exist_on_target = true, params 
   end
 end
 
-def createObjDB(obj, params = nil) 
+def createObjDB(obj, paramsSet = nil) 
   # creates an object and its parent object (recursively) in the database, if it does not exist
   # returns the existing object, if it exists
 
-  # set default params:
-  if  params.nil? 
-    params = defaultParams(obj, 0) 
+  # set default paramsSet:
+  if  paramsSet.nil? 
+    paramsSet = defaultParams(obj, 0) 
   end
 
-  if obj.constantize.where(params).count == 0 
-    # create parent, if it does not exist and add the parent id to the params:
-    params = params.merge!("#{parent(obj).downcase}_id".to_sym => createObjDB(parent(obj)).id) unless parent(obj).nil?
+  if obj.constantize.where(paramsSet).count == 0 
+    # create parent, if it does not exist and add the parent id to the paramsSet:
+    paramsSet = paramsSet.merge!("#{parent(obj).downcase}_id".to_sym => createObjDB(parent(obj)).id) unless parent(obj).nil?
     # create the object:
     myObj = obj.constantize.new(
-      params
+      paramsSet
     )
     myObj.save!
   end
 
-  if obj.constantize.where(params).count == 1
-    myObj = obj.constantize.where(params).last
+  if obj.constantize.where(paramsSet).count == 1
+    myObj = obj.constantize.where(paramsSet).last
   else
-    abort "More than one #{obj} found matching the parameters=#{params.inspect}"
+    abort "More than one #{obj} found matching the parameters=#{paramsSet.inspect}"
   end
 
   return myObj
@@ -659,7 +685,7 @@ objectList.each do |obj|
     end # describe "createObjDB(#{obj})" do  
 
     describe "initObj(#{obj}) via model" do
-      it "initObj( #{obj}, true, false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
+      it "initObj( obj: #{obj}, shall_exist_on_db: true, shall_exist_on_target: false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
   
         # make sure the database does not contain any object of the type obj
         obj.constantize.all.each do |myobject|
@@ -679,7 +705,8 @@ objectList.each do |obj|
         @myobj.destroy!
         
         # test: should create an object
-        expect{ initObj( obj, true, false ) }.to change(Object.const_get(obj), :count).by(1)
+        #expect{ initObj( obj, true, false ) }.to change(Object.const_get(obj), :count).by(1)
+        expect{ initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: false) }.to change(Object.const_get(obj), :count).by(1)
         
         # test: should have created an object with the right attributes:
         @myobj = Object.const_get(obj).last
@@ -688,10 +715,48 @@ objectList.each do |obj|
           expect( @myobj.send(key) ).to eq( value )
         end
 
-        # test: should have de-provisioned the 
-        p @myobj.provision(:read, false).inspect 
+        # test: should have de-provisioned the object
+        	#p @myobj.provision(:read, false).inspect 
         expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"
         expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
+
+
+      end # it "initObj( #{obj}, true, false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
+
+      it "initObj( obj: #{obj}, shall_exist_on_db: true, shall_exist_on_target: true ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
+  
+        # make sure the database does not contain any object of the type obj
+        obj.constantize.all.each do |myobject|
+          myobject.destroy!
+        end
+	#@@siteprovisioned = nil
+
+        # make sure the provisioningobject is destroyed on the target (so, we can test, whether init will provision the provisioningobject)
+        expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
+        # create children:
+        expect{ @mychildobj = createObjDB(child(obj)) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
+        # recursively deprovision:
+        @myobj.provision(:destroy, false)
+        expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"
+        expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
+        # recursively delete from DB:
+        @myobj.destroy!
+        
+        # test: should create an object
+        #expect{ initObj( obj, true, false ) }.to change(Object.const_get(obj), :count).by(1)
+        expect{ initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: true) }.to change(Object.const_get(obj), :count).by(1)
+        
+        # test: should have created an object with the right attributes:
+        @myobj = Object.const_get(obj).last
+        defaultParams(obj).each do |key, value|
+          	#p "#{key} => #{value}"
+          expect( @myobj.send(key) ).to eq( value )
+        end
+
+        # test: should have provisioned the object
+        	p @myobj.provision(:read, false).inspect 
+        expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.name}</) unless obj == "User"
+        expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
 
 
       end # it "initObj( #{obj}, true, false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
@@ -713,7 +778,7 @@ objectList.each do |obj|
 		#@@siteprovisioned = nil
 		#@@userprovisioned = nil
         @myobj.destroy!
-        @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, params = nil, i = 1 )
+        @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, paramsSet = nil, i = 1 )
         @myobj.provision(:destroy, false)
         @myobj.provision(:create, false)
         # make sure the object has been created with data set i=0
@@ -1272,6 +1337,7 @@ p page.html.gsub(/[\n\t]/, '')
           Delayed::Worker.delay_jobs = false
 
           #click_link 'De-Provision', match: :first
+          	#p page.html.gsub(/[\n\t]/, '')
           click_link deprovision, match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h1', text: 'Customers')
 

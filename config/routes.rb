@@ -24,7 +24,7 @@ scope(path: baseURL) do
   resources :users do
     resources :provisionings, :member => { :deliver => :post}
     member do
-     #patch :synchronize
+     patch :synchronize
      patch :provision
      patch :deprovision
     end 

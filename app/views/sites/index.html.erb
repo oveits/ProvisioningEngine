@@ -7,6 +7,44 @@
 	<% end %>	
 	</h1>
 
+<% if false %>
+<% "this is a test of the mouse hover function. Does not work after a page-content_reload, so we need to place it somwhere, where it is not reloaded" %>
+<style>
+#popup {
+    height: 50px;
+    width: 200px;
+    text-align: center;
+    vertical-align:middle;
+    background-color: cornflowerblue;
+    color: white;
+    display: none;
+    padding-top: 8px;
+
+
+    position: absolute;
+}
+</style>
+
+<div class='user'>I am a user. Move your mouse over me</div>
+<br />
+<br />
+<br />
+<div class='user'>I am a user. Move your mouse over me</div>
+<br />
+<br />
+<br />
+<div id='popup'>Extended info about a user</div>
+<div>I a piece of useless information. No use hovering over me.</div>
+
+<script>
+$('.user').hover(function() {
+    $('#popup').show();
+}, function() {
+    $('#popup').hide();
+});
+</script>
+<% "end of: this is a test of the mouse hover function. Does not work after a page-content_reload, so we need to place it somwhere, where it is not reloaded" %>
+<% end %>
 
 <div>
 <table>
@@ -49,11 +87,11 @@
 
           <%= link_to site.status, site_provisionings_path(site), {:style => "color: #{statuscolor}"}%>
         </td>
-			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
-        <td><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
-			<% end %>
 <%  @provisioningobject = site; %>
         <td><%= render 'shared/edit_button.html.erb' %></td>
+<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+        <td><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
+<% end %>
         <td><%= render 'shared/provision_button.html.erb' %></td>
         <td><%= render 'shared/destroy_button.html.erb' %></td>
       </tr>

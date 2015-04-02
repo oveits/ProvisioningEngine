@@ -29,10 +29,9 @@
                 <li><%= render 'shared/provision_link.html.erb' %></li>
                 <li><%= render 'shared/destroy_link.html.erb' %></li>
                 <li class="hidden"><%= link_to 'Delete User', @user, method: :delete, data: { confirm: 'Are you sure?' } %></li>
-<% if false %>
-                synchronize not yet supported for class user
+                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize', synchronize_user_path(@user), method: :patch, data: { confirm: 'Are you sure?' } %></li>
-<% end %>
+		<% end %>
 
                 <li class="sidebar-brand">
                         Show related...

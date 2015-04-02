@@ -101,7 +101,7 @@ class SitesController < ApplicationController
     updateDB = UpdateDB.new
     @object.update_attributes!(:status => 'synchronization in progress')
     returnBody = updateDB.delay.perform(@object)
-    redirect_to :back, notice: "Site #{@object.name} is being synchronized."
+    redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
   end
   
   def provision

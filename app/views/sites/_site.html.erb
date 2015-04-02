@@ -23,11 +23,11 @@
       </span>
     </td>
   <% end %>
+<%  @provisioningobject = site; %>
+        <td><%= render 'shared/edit_button.html.erb' %></td>
 			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
   <td><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' }%></td>
 			<% end %>
-<%  @provisioningobject = site; %>
-        <td><%= render 'shared/edit_button.html.erb' %></td>
         <td><%= render 'shared/provision_button.html.erb' %></td>
         <td><%= render 'shared/destroy_button.html.erb' %></td>
 </tr>

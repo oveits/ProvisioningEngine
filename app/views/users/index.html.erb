@@ -86,7 +86,14 @@
 			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
         <td><%= link_to 'Provision', provision_user_path(user), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 			<% end %>
-        <td><%= link_to 'Destroy', user, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
+<%  @provisioningobject = user; %>
+        <td><%= render 'shared/edit_button.html.erb' %></td>
+<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+        <td><%= link_to 'Synchronize', synchronize_user_path(user), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
+<% end %>
+        <td><%= render 'shared/provision_button.html.erb' %></td>
+        <td><%= render 'shared/destroy_button.html.erb' %></td>
+
       </tr>
     <% end %>
   </tbody>
