@@ -8,8 +8,8 @@ RSpec.configure do |c|
     c.filter_run_excluding broken: true #, provisioning: true #, untested: true
   end
   # stop on first failure, if set to true:
-  c.fail_fast = false
-#  c.fail_fast = true
+#  c.fail_fast = false
+  c.fail_fast = true
 
   # TODO: this filter does not work: run only broken test cases
   #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
