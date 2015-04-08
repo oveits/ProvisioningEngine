@@ -1,0 +1,10 @@
+class AddParentToCustomers < ActiveRecord::Migration
+  def up
+    add_reference :customers, :parent, polymorphic: true
+    #add_reference :customers, :parent
+  end
+  def down
+    remove_reference :customers, :parent,  polymorphic: true
+    #remove_column :customers, :parent_type
+  end
+end

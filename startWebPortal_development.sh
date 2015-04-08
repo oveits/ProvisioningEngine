@@ -7,6 +7,6 @@ export WEBPORTAL_BASEURL="/dev"
 #~/.rbenv/shims/rails s -e 'production' -p 3001 >> /var/log/WebPortal.log &
 ~/.rbenv/shims/rails s -p 3001 >> /var/log/WebPortal.log &
   sleep 2
-  myWebPortalPid=`ps -ef | grep "rails s" | grep -v grep | grep -v shims | awk '{print $2}'`
+  myWebPortalPid=`ps -ef | grep "rails s" | grep "3001" | grep -v grep | grep -v shims | awk '{print $2}'`
   echo "Web Portal started: PID=$myWebPortalPid"
   echo "Web Portal started: PID=$myWebPortalPid" >> /var/log/WebPortal.log 2>&1

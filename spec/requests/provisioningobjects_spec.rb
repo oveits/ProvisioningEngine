@@ -96,9 +96,10 @@ def myobjects(obj=myObject)
   myObjects(obj).downcase
 end
 
-def provisioningobject_path(thisobject)
+def provisioningobject_path(thisobject, prefix=nil)
   # returns e.g. customer_path
-  path = send("#{myobject(thisobject.class.to_s)}_path", thisobject.id)
+  prefixPrepend = "#{prefix}_" unless prefix.nil?
+  path = send("#{prefixPrepend}#{myobject(thisobject.class.to_s)}_path", thisobject.id)
 end
 
 def myProvisioningobject(obj)
@@ -113,6 +114,11 @@ end
 def new_provisioningobject_path(obj)
   #new_customer_path
   send("new_#{myobject(obj)}_path".to_sym)
+end
+
+def synchronize_provisioningobjects_path(obj)
+  #new_customer_path
+  send("synchronize_#{myobjects(obj)}_path".to_sym)
 end
 
 
@@ -208,7 +214,7 @@ def initObj(paramsHash)
 
   if shall_exist_on_target
     # provision
-    myObj.provision(:create, false)
+    myObj.provision(:create, false) unless myObj.class.name == "Target" # since not supported yet on Target
   else
     # deprovision recursively. For that, the children need to be created on the database, if not yet present:
     #initObj(obj: child(obj), true, false) unless child(obj).nil?
@@ -252,8 +258,9 @@ end
 
 def sync(syncObj)
 	#abort "sync(#{syncObj.inspect})"
-  updateDB = UpdateDB.new
-  returnBody = updateDB.perform(syncObj)
+#  updateDB = UpdateDB.new
+#  returnBody = updateDB.perform(syncObj)
+  syncObj.synchronize(false)
 	#abort returnBody
 end
 
@@ -723,7 +730,7 @@ objectList.each do |obj|
 
       end # it "initObj( #{obj}, true, false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
 
-      it "initObj( obj: #{obj}, shall_exist_on_db: true, shall_exist_on_target: true ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
+      it "initObj( obj: #{obj}, shall_exist_on_db: true, shall_exist_on_target: true ) should create the object with the right attributes in the database and provision the object, if it was not yet provisioned" do
   
         # make sure the database does not contain any object of the type obj
         obj.constantize.all.each do |myobject|
@@ -754,10 +761,47 @@ objectList.each do |obj|
         end
 
         # test: should have provisioned the object
-        	p @myobj.provision(:read, false).inspect 
+        	#p @myobj.provision(:read, false).inspect 
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.name}</) unless obj == "User"
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
 
+
+      end # it "initObj( obj: #{obj}, shall_exist_on_db: true, shall_exist_on_target: true ) should create the object with the right attributes in the database and provision the object, if it was not yet provisioned" do
+
+      it "initObj( obj: #{obj}, shall_exist_on_db: false, shall_exist_on_target: true ) should remove the object from the database and provision the object with the right attributes on the target, if it was not yet provisioned" do
+  
+        # make sure the database does not contain any object of the type obj
+        obj.constantize.all.each do |myobject|
+          myobject.destroy!
+        end
+	#@@siteprovisioned = nil
+
+        # make sure the provisioningobject is destroyed on the target (so, we can test, whether init will provision the provisioningobject)
+        expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
+        # create children:
+        expect{ @mychildobj = createObjDB(child(obj)) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
+        # recursively deprovision:
+        @myobj.provision(:destroy, false)
+        expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"
+        expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
+        # recursively delete from DB:
+        @myobj.destroy!
+        
+        # test: should create an object
+        #expect{ initObj( obj, true, false ) }.to change(Object.const_get(obj), :count).by(1)
+        expect{ initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true) }.to change(Object.const_get(obj), :count).by(0)
+        
+#        # test: should have created an object with the right attributes:
+#        @myobj = Object.const_get(obj).last
+#        defaultParams(obj).each do |key, value|
+#          	#p "#{key} => #{value}"
+#          expect( @myobj.send(key) ).to eq( value )
+#        end
+
+        # test: should have provisioned the object
+        	#p @myobj.provision(:read, false).inspect 
+        expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.name}</) unless obj == "User"
+        expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
 
       end # it "initObj( #{obj}, true, false ) should create the object with the right attributes in the database and de-provision the object, if it was provisioned" do
 
@@ -820,14 +864,88 @@ objectList.each do |obj|
         sync(@myobj)
 		#p defaultParams(obj).inspect
         defaultParams(obj).each do |key, value|
-          	p "#{key} => #{value}"
-          	p "key.class.name=#{key.class.name}"
+          	#p "#{key} => #{value}"
+          	#p "key.class.name=#{key.class.name}"
           expect( @myobj.send(key) ).to eq( value)
         end
         expect( @myobj.status ).to match(/provisioning successful \(synchronized\)|provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/) 
         
 
       end # it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+
+     if obj == "Site" || obj == "User" || obj == "Customer"
+      it "should synchronize the index with the objects found on the target system, if called with a specially named dummy object" do
+        # if called with dummy object (id==nil), objects found on the target should be synchronized with the database
+        initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
+        # set default paramsSet:
+        paramsSet = defaultParams(obj, 0)
+        # create parent, if it does not exist and add the parent id to the paramsSet:
+        myParent = createObjDB(parent(obj)) unless parent(obj).nil?
+        paramsSet = paramsSet.merge!("#{parent(obj).downcase}_id".to_sym => myParent.id) unless parent(obj).nil?
+
+        # make sure no object existis on the datebase:
+        expect( obj.constantize.where( paramsSet ).count).to be(0)
+        expect( obj.constantize.where( extension: paramsSet[:extension], site: myParent).count ).to be(0) if obj == "User"
+        
+        #special name for Customer dummy:
+        paramsSetDummy = paramsSet.clone
+        paramsSetDummy[:name] = '_sync_dummyCustomer_________________3426' if obj == "Customer"
+		#abort paramsSet.inspect
+        # create the object but do not save it:
+        #dummyObj = obj.constantize.new(paramsSet)
+        expect{ @dummyObj = obj.constantize.new(paramsSetDummy) }.to change(Object.const_get(obj), :count).by(0) 
+ 
+        # because us async sync, the dummyObj needs to be saved (delayed_jobs cannot work on transient data):
+        expect{ @dummyObj.save!(validate: false) }.to change(Object.const_get(obj), :count).by(1) if obj == "Customer"
+        #dummyObj = Object.const_get(obj).last # 
+		#abort @dummyObj.inspect
+		#abort sync( @dummyObj ).inspect
+
+        # tests:
+        # 1) sync should create an object in the DB:
+        expect{ sync( @dummyObj ) }.to change(Object.const_get(obj), :count).by_at_least(1)
+
+		#abort obj.constantize.all.inspect
+        # 2) test whether the synced object has the expected parameters
+        # 2.1 Sites should match exactly
+        expect( obj.constantize.where( paramsSet ).count).to be(1) if obj == "Site"
+		#abort obj.constantize.where( paramsSet ).inspect
+        # 2.2 non-Sites should not match yet, since they are not fully synchronized yet:
+        expect( obj.constantize.where( paramsSet ).count).to be(0) if obj != "Site" 
+        # 2.3 but a new customer with name ExampleCustomerV8 should be created:
+        expect( obj.constantize.where( name: paramsSet[:name] ).count ).to be(1) if obj == "Customer"
+        # 2.4 and a User with the right extension should be present in the DB now:
+        expect( obj.constantize.where( extension: paramsSet[:extension], site: myParent).count ).to be(1) if obj == "User"
+		#syncedObject = Object.const_get(obj).last
+		#abort syncedObject.inspect
+
+      end # it "should synchronize the index with the objects found on the target system" do 
+     end #if obj == "Site"
+    end # describe "sync(#{obj}) via model" do
+
+    describe "synchronize #{obj} via sidebar link" do
+      begin
+        #TODO: move initialization from test to here
+
+      end
+
+      let(:submit) { "Synchronize #{obj}s" }
+
+     if obj == "Customer"
+     # only supported for Customers; and still a lot to do in the controller. See app/controllers/customers_controller.rb TODO secton in def synchronize for details 
+      it "should synchronize the index with the objects found on the target system" do
+        initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
+        expect(page.html.gsub(/[\n\t]/, '')).not_to match(/#{defaultParams(obj)[:name]}/)
+        visit provisioningobjects_path(obj)
+		#abort defaultParams(obj)[:name]
+		#abort "Synchronize #{obj}s"
+        expect(page).to have_link( "Synchronize #{obj}s" ) #, href: synchronize_provisioningobjects_path(obj) )
+        Delayed::Worker.delay_jobs = false
+        expect{ click_link "Synchronize #{obj}s" }.to change(Object.const_get(obj), :count).by_at_least(1)
+        expect(page.html.gsub(/[\n\t]/, '')).to match(/#{defaultParams(obj)[:name]}/)
+      end # it "should synchronize the index with the objects found on the target system" do
+     end
+
     end # describe "sync(#{obj}) via model" do
 
     describe "index" do
@@ -1029,7 +1147,7 @@ objectList.each do |obj|
             Delayed::Worker.delay_jobs = false
             
             	# for debugging:
-            	p page.html.gsub(/[\n\t]/, '')
+            	#p page.html.gsub(/[\n\t]/, '')
             click_button submit, match: :first
 #abort page.html.gsub(/[\n\t]/, '')
             
@@ -1281,7 +1399,7 @@ p page.html.gsub(/[\n\t]/, '')
             abort "Found more than one #{obj} with name Example#{obj}" unless obj == "User" || obj == "Customer"
             abort "Found more than one #{obj} with Extension \"30800\"" unless obj == "User"
           end
-          p page.html.gsub(/[\n\t]/, '')
+          #p page.html.gsub(/[\n\t]/, '')
          
         }
            
@@ -1291,7 +1409,7 @@ p page.html.gsub(/[\n\t]/, '')
         
 	it "should update the status of #{obj} 'waiting for deletion'" do
           Delayed::Worker.delay_jobs = true
-      		p page.html.gsub(/[\n\t]/, '')
+      		#p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
           #click_link 'De-Provision', match: :first
           click_link submit, match: :first

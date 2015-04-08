@@ -40,23 +40,12 @@ class User < Provisioningobject #< ActiveRecord::Base
     site
   end
 
+  def childClass
+    nil
+  end
+
   def provisioningAction(method)
     
-    if site.nil?
-      abort "cannot de-provision a user without site"
-    end
-    
-    if site.name.nil?
-      abort "cannot de-provision a user with a site with no name"
-    end
-    
-    if site.customer.nil?
-      abort "cannot de-provision a user of a site with no customer"
-    end
-    
-    if site.customer.name.nil?
-      abort "cannot de-provision a user of a site of a customer with no name"
-    end
     
     case method
       when :create
@@ -65,6 +54,21 @@ class User < Provisioningobject #< ActiveRecord::Base
         inputBody += ", assignedEmail=#{email}, imAddress=#{email}"
         return inputBody
       when :destroy
+        if site.nil?
+          abort "cannot de-provision a user without site"
+        end
+        
+        if site.name.nil?
+          abort "cannot de-provision a user with a site with no name"
+        end
+        
+        if site.customer.nil?
+          abort "cannot de-provision a user of a site with no customer"
+        end
+        
+        if site.customer.name.nil?
+          abort "cannot de-provision a user of a site of a customer with no name"
+        end
         return "action=Delete User, X=#{extension}, customerName=#{site.customer.name}, SiteName=#{site.name}"
       when :read
         return "action=List Users"

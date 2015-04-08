@@ -41,7 +41,9 @@ end
 class Validate_OfficeCode < ActiveModel::Validator
   def validate(record)
     
-    
+    # we do not want to validate the officecodelength if one of the following variables are not defined:
+    return true if  record.countrycode.nil? ||  record.areacode.nil? ||  record.localofficecode.nil? ||  record.extensionlength.nil?
+
     officecodelength = record.countrycode.length + record.areacode.length + record.localofficecode.length + record.extensionlength.to_i
     
     if officecodelength > 15
@@ -96,21 +98,13 @@ class Site < Provisioningobject #< ActiveRecord::Base
   def parent
     customer
   end
+
+  def childClass
+    User
+  end
   
   def provisioningAction(method)
    
-    if name.nil?
-      abort "cannot de-provision a site without name"
-    end
-    
-    if customer.nil?
-      abort "cannot de-provision a site without customer"
-    end
-    
-    if customer.name.nil?
-      abort "cannot de-provision a site with a customer with no name"
-    end
-    
     case method
       when :create
         #"action=Add Site, siteName=#{name}, #customerName=#{customer.name}"
@@ -119,9 +113,25 @@ class Site < Provisioningobject #< ActiveRecord::Base
         inputBody += ", EndpointDefaultHomeDnXtension=#{mainextension}"
         return inputBody
       when :destroy
+        if name.nil?
+          abort "cannot de-provision a site without name"
+        end
+        
+        if customer.nil?
+          abort "cannot de-provision a site without customer"
+        end
+        
+        if customer.name.nil?
+          abort "cannot de-provision a site with a customer with no name"
+        end
+
         "action=Delete Site, SiteName=#{name}, customerName=#{customer.name}"
       when :read
-	"action=Show Sites, SiteName=#{name}, customerName=#{customer.name}"
+        if name.nil?
+	  "action=Show Sites, customerName=#{customer.name}"
+        else
+	  "action=Show Sites, SiteName=#{name}, customerName=#{customer.name}"
+        end
       else
         abort "Unsupported provisioning method"
     end

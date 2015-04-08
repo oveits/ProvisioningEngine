@@ -77,7 +77,15 @@ class Provisioning < ActiveRecord::Base
     uriString = uriString.gsub('ProvisioningEngine', 'show') if isListCommand?
     
     begin
-      update_attribute(:status, 'started at ' + Time.now.to_s)
+      # map the action of the provisioningEngine to provisioning status
+      thisaction = 'provisioning' unless action[/action[ ]*=[ ]*Add /].nil?
+      thisaction = 'deletion' unless action[/action[ ]*=[ ]*Delete /].nil?
+      thisaction = 'reading' unless action[/action[ ]*=[ ]*Show /].nil?
+      thisaction = 'reading' unless action[/action[ ]*=[ ]*List /].nil?
+      # if not found:
+      thisaction = 'unknown action' if thisaction.nil?  
+
+      update_attribute(:status, 'started at ' + Time.now.to_s) unless thisaction == 'reading'
       provisioningRequest = HttpPostRequest.new
       
       #resulttext = provisioningRequest.perform("customerName=#{targetobject.customer.name}, action = Show Sites, SiteName=#{targetobject.name}", "http://localhost/CloudWebPortal", provisioningRequestTimeout)
@@ -87,15 +95,8 @@ class Provisioning < ActiveRecord::Base
         update_attribute(:attempts, 1)
       else
         update_attribute(:attempts, attempts + 1 )
-      end
+      end unless thisaction == 'reading'
         
-      # map the action of the provisioningEngine to provisioning status
-      thisaction = 'provisioning' unless action[/action[ ]*=[ ]*Add /].nil?
-      thisaction = 'deletion' unless action[/action[ ]*=[ ]*Delete /].nil?
-      thisaction = 'reading' unless action[/action[ ]*=[ ]*Show /].nil?
-      thisaction = 'reading' unless action[/action[ ]*=[ ]*List /].nil?
-      # if not found:
-      thisaction = 'unknown action' if thisaction.nil?  
       
       # update the status of the target objects
       targetobjects = [user, site, customer] # extend, if needed; highest priority first (see comment below)

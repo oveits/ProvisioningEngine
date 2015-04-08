@@ -69,20 +69,22 @@ class Customer < Provisioningobject #< ActiveRecord::Base
   end
   
   def parent
-    nil # target
-    # must be nil for now, since target does not support provision yet
+    target
+  end
+
+  def childClass
+    Site
   end
   
   def provisioningAction(method)
    
-    if name.nil?
-      abort "cannot de-provision customer without name"
-    end
-    
     case method
       when :create
         "action=Add Customer, customerName=#{name}, customerLanguage=#{language}"
       when :destroy
+        if name.nil?
+          abort "cannot de-provision customer without name"
+        end
         "action=Delete Customer, customerName=#{name}"
       when :read
         "action=List Customers"
@@ -166,7 +168,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
                      #uniqueness: true, 
                      uniqueness: {:case_sensitive => false},
                      length: { in: 3..20  }
-    validates_format_of :name, :with => /\A[A-Z,a-z,0-9,_]{0,100}+\Z/, message: "needs to consist of 3 to 20 characters: A-Z, a-z, 0-9 and/or _"
+    validates_format_of :name, :with => /\A[A-Z,a-z,0-9,_]{0,100}\Z/, message: "needs to consist of 3 to 20 characters: A-Z, a-z, 0-9 and/or _"
     validates :target_id, presence: true
     
 #    validates_with ValidateWithProvisioningEngine

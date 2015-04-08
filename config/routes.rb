@@ -58,6 +58,15 @@ scope(path: baseURL) do
   end
   
   #resources :customers
+   # not tested; trying to use synchronize instead
+  #resources :customers, except: [:patch] do
+  resources :customers do
+    collection do
+      #patch :synchronizeAll
+      patch :synchronize
+    end
+  end
+  
     
   # OV replaced by:
   resources :customers, except: [:destroy] do
@@ -65,7 +74,7 @@ scope(path: baseURL) do
      delete :removeAll
    end 
   end
-  
+
   resources :customers do
     resources :sites, :users
     get :index, :controller => :sites

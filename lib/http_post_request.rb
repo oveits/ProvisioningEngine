@@ -139,11 +139,10 @@ class HttpPostRequest
             @@userprovisioned = nil
           end
         when /Show Sites/
-p "@@siteprovisioned is #{@@siteprovisioned.inspect}"
-          p "Before Show Sites: @@siteprovisioned = #{@@siteprovisioned.inspect}"
+		#p "@@siteprovisioned is #{@@siteprovisioned.inspect}"
+		#p "Before Show Sites: @@siteprovisioned = #{@@siteprovisioned.inspect}"
           if @@siteprovisioned == true
-            responseBody = '
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+            responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Result>
     <ResultCode>0</ResultCode>
     <ResultText>Success</ResultText>
@@ -190,6 +189,7 @@ p "@@siteprovisioned is #{@@siteprovisioned.inspect}"
             responseBody = '<Result><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           end
         when /List Customers/
+		#p "Before List Customers: @@customerprovisioned = #{@@customerprovisioned.inspect}"
           if @@customerprovisioned == true
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>Thomas1</BGName><BGName>OllisTestCustomer</BGName><BGName>ExampleCustomerV8</BGName><BGName>OllisTestCustomer2</BGName><BGName>ExampleCustomer</BGName></GetBGListData></SOAPResult>'

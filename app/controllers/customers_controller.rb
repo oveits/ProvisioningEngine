@@ -4,7 +4,10 @@ class CustomersController < ApplicationController
   # GET /customers
   # GET /customers.json
   def index
-    @customers = Customer.all
+    #@customers = Customer.all
+    # hide dummy customer used for syncing:
+    #@customers = Customer.where.not(name: "_sync_dummyCustomer_________________")
+    @customers = Customer.where.not("name LIKE ?", "_sync_dummyCustomer_________________%")
   end
 
   # GET /customers/1
@@ -166,11 +169,78 @@ class CustomersController < ApplicationController
   end
 
   def synchronize
-    @object = Customer.find(params[:id])
-    updateDB = UpdateDB.new
-    @object.update_attributes!(:status => 'synchronization in progress')
-    returnBody = updateDB.delay.perform(@object)
-    redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
+
+    # Status:
+    # - for synchronization of all customers of a target, here the first POC is implemented with target = CSL9DEV
+    # - not nice: since customer.synchronize is to be issued, a dummy customer has to be created
+    # TODO:
+    # - test as rspec
+    # - remove the test deletions and cleanup
+    # - synchronize for all targets, or show a dropdown, which target(s) is (are) to be synchronized
+    # - get rid of the dummy Customer concept
+    #   - ideas: 
+    #     1) directly call UpdateDB.new(..).perform: in this case the method 'perform' needs to be extended, sp it can be called with a target instead of a customer
+    #     2) or directly call Provisioning.new(...).perform(:read,...) instead of dummyCustomer.synchronize().
+    #     see app/models/provisioningobject.rb method 'synchroniz()', what is to be done in addition
+    # - apply to Sites and Users (and Targets?)   
+
+	#abort params[:id].inspect
+    if params[:id].nil?
+      # PATCH       /customers/synchronize
+      async = true # SEVERE BUG: if async = true, the Web Portal process is totally lost and can only be killed with kill -9
+      recursive = false
+
+           # for test:
+           Customer.where(name: 'OllisTestCustomer').last.destroy unless Customer.where(name: 'OllisTestCustomer').count == 0
+           Customer.where(name: 'OllisTestCustomer2').last.destroy unless Customer.where(name: 'OllisTestCustomer2').count == 0
+           
+           # cleanup (for test only; cannot be done later, since another sync process might be in need of the dummy customer):
+           Customer.where('name LIKE ?', "_sync_dummyCustomer_________________%").each do |element|
+             element.destroy
+           end
+      
+           #      # test via targets:
+           #      targets=Target.where(name: 'CSL9DEV')
+           #      updateDB = UpdateDB.new
+           #      targets.each do |target|
+           #        responseBody = updateDB.perform(target)
+           #      end
+           
+           #     # test via dummyCustomer
+           #      # need to create a dummy customer in order to call synchronizeAll method
+
+      # for now, test CSL9DEV sync only:
+      targets = Target.where('name LIKE ?', 'CSL9DEV%')
+      target = targets.last
+      target_id = target.id
+	#abort target.inspect
+      if Customer.where(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id).count == 0
+        dummyCustomer = Customer.new(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id) 
+      elsif Customer.where(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id).count == 1
+        dummyCustomer = Customer.where(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id).last
+      else
+        abort "found more than one dummy customer with name _sync_dummyCustomer_________________#{target.id} on target #{target.name}"
+      end
+      #
+      # bacause us async synchronization, the dummyObj needs to be saved (delayed_jobs cannot work on transient data):
+      dummyCustomer.save!(validate: false)
+	#abort dummyCustomer.inspect
+      dummyCustomer.synchronize(async, recursive)
+      #dummyCustomer.destroy
+
+#      updateDB = UpdateDB.new
+#      #responseBody = updateDB.delay.perform(dummyCustomer)
+#      responseBody = updateDB.perform(dummyCustomer)
+
+      redirect_to :back, notice: "All #{dummyCustomer.class.name.pluralize} are being synchronized."
+    else
+      # PATCH       /customers/1/synchronize
+      async = true
+      recursive = true
+      @object = Customer.find(params[:id])
+      @object.synchronize(async, recursive)
+      redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
+    end
   end
 
   # PATCH	/customers/1/provision

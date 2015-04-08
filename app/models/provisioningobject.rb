@@ -19,8 +19,29 @@ class Provisioningobject < ActiveRecord::Base
   def new
   end
   
-  def path
-    return "/#{provisioningobject.class.to_s.downcase}/#{provisioningobject.id}"
+  def path(prefix)
+    abort "method path() in app/models/provisioningobject.rb is broken. Fix before use. E.g. see app/views/shared/_helpers.html.erb->provisioningobject_path() for a correctly working example"
+    prefixPrepend = "#{prefix}_" unless prefix.nil? 
+    #return send("#{prefix}#{myobject(thisobject.class.to_s)}_path", thisobject.id)
+    #abort send("#{prefix}#{self.class.name.downcase}_path").inspect if prefix == 'deprovision_'
+    #abort self.id.inspect if prefix == 'deprovision_'
+    #return send("#{prefix}#{self.class.name.downcase}_path", self.id)
+
+    # does not work, error message: 
+    #return send("#{prefixPrepend}#{self.class.name.downcase}_path", self.id)
+
+    # seems to work, but is not flexible enough (e.g. prefix 'dev/' is missing on the development web portal):
+    if ENV["WEBPORTAL_BASEURL"] == "false" || ENV["WEBPORTAL_BASEURL"].nil?
+      baseURL = '/'
+    else
+      baseURL = ENV["WEBPORTAL_BASEURL"] + '/'
+    end
+
+    if prefix == ''
+      return "#{baseURL}#{self.class.to_s.downcase.pluralize}/#{self.id}" if prefix.nil?
+    else
+      return "#{baseURL}#{self.class.to_s.downcase.pluralize}/#{self.id}/#{prefix}"
+    end
   end
   
   def activeJob?
@@ -53,7 +74,46 @@ class Provisioningobject < ActiveRecord::Base
     end
   end
   
+  def synchronize(async=true, recursive=true)
+    #return false if /waiting|progress/.match(status)
+    #updateDB = UpdateDB.new
+    if async
+
+      # the next line had lead to a severe bug with error message "SQLite3::BusyException: database is locked", if the customer validates_format_of name was wrong (:name, :with => /\A[A-Z,a-z,0-9,_]{0,100}+\Z/ instead of :name, :with => /\A[A-Z,a-z,0-9,_]{0,100}\Z/)
+      #update_attributes(:status => 'synchronization in progress')
+      # works fine in any case, since the validations are skipped:
+      update_attribute(:status, 'synchronization in progress')
+
+      #returnBody = updateDB.delay.perform(self)
+      # or:
+      returnBody = delay.synchronizeSynchronously(recursive)
+    else
+      #returnBody = updateDB.perform(self)
+      # or:
+      returnBody = synchronizeSynchronously(recursive)
+    end
+  end
+
+  def synchronizeSynchronously(recursive=true)
+    # if id is nil, we assume self is a dummy instance that only has been created to perform the method synchronizeAll
+    #return synchronizeAll if id.nil?
+
+    updateDB = UpdateDB.new
+    responseBody = updateDB.perform(self)
+#abort "model: synchronize" + self.inspect
+    if recursive && responseBody.is_a?(String) && responseBody[/ERROR.*$/].nil? && !childClass.nil?
+      # TODO: read children from target, create children in DB, if not present yet, and perform a child.synchronizeSynchronously(recursive)
+      #dummyChild = childClass.new(customer: self) #self.class.name.downcase.to_sym => self) # needed in order to access the provision method of the child class
+      dummyChild = childClass.new(self.class.name.downcase.to_sym => self) # needed in order to access the synchronizeAll method of the child class
+      #dummyChild.synchronizeAll
+      dummyChild.synchronizeSynchronously(recursive)
+      dummyChild.destroy
+    end
+  end
+
   def provision(method, async=true)
+
+    @provisioningobject = self
 
     # update the status of the object; throws an exception, if the object cannot be saved.
     case method
@@ -70,15 +130,10 @@ class Provisioningobject < ActiveRecord::Base
       else
         abort "provision(method=#{method}, async=#{async}): Unknown method"
     end
-    # this will fail for old objects that do not yet obey to the validations:
-    #update_attributes!(status: "waiting for #{methodNoun}")
-    # it is better to update the status, even if the other validations might fail:
-    update_attribute(:status, "waiting for #{methodNoun}") unless method == :read
 
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     inputBody = provisioningAction(method)
-
-    @provisioningobject = self
+    return false if inputBody.nil?  # no provisioningAction defined for this type
     
     unless target.nil?
       actionAppend = target.configuration.gsub(/\r/, '')
@@ -86,9 +141,14 @@ class Provisioningobject < ActiveRecord::Base
       actionAppend = actionAppend.gsub(/\n/, ', ')
       actionAppend = actionAppend.gsub(/,[\s]*\Z/, '')# remove trailing commas
     end
+
+    # this will fail for old objects that do not yet obey to the validations:
+    #update_attributes!(status: "waiting for #{methodNoun}")
+    # it is better to update the status, even if the other validations might fail:
+    update_attribute(:status, "waiting for #{methodNoun}") unless method == :read
     
     # recursive deletion of children (skipped in test mode):
-    if inputBody.include?("Delete") && !inputBody.include?("testMode") 
+    if inputBody.include?("Delete ") && !inputBody.include?("testMode") 
       #@sites = Site.where(customer: id)
       children.each do |child|
         child.provision(:destroy, async)
@@ -106,7 +166,7 @@ class Provisioningobject < ActiveRecord::Base
     
     @provisioning = Provisioning.new(action: inputBody, object_sym => @provisioningobject)
 
-    if @provisioning.save
+    if method == :read || @provisioning.save
        if async == true
          returnvalue = @provisioning.deliverasynchronously
        else
@@ -132,7 +192,7 @@ end
     LIST = {}
     LIST[:countrycode] = COUNTRYCODES
     
-    # does not work yet:
+    # does not work yet?
     validates :provisioningtime, inclusion: {in: PROVISIONINGTIME}
 end
 
