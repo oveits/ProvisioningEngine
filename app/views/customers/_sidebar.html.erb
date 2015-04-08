@@ -4,7 +4,9 @@
                         Customer Functions
                 </li>
                 <li><%= link_to 'New Customer', new_customer_path %></li>
+                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize Customers', synchronize_customers_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
+                <% end %>
 
 <% if false %>
                 <li><%= link_to 'Clear Table', removeAll_customers_path, method: :delete, data: { confirm: 'This will remove recursively all entries from the database (withou de-provisioning from the target system). Are you sure?' } %></li>
