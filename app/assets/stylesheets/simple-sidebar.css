@@ -85,11 +85,11 @@
 }
 
 .sidebar-nav > .sidebar-brand {
-    padding-top: 5px;
-    color: #bbbbbb;
     height: 35px;
     font-size: 18px;
     line-height: 40px;
+    padding-top: 5px;
+    color: #bbbbbb;
 }
 
 
