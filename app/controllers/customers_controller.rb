@@ -4,10 +4,7 @@ class CustomersController < ApplicationController
   # GET /customers
   # GET /customers.json
   def index
-    #@customers = Customer.all
-    # hide dummy customer used for syncing:
-    #@customers = Customer.where.not(name: "_sync_dummyCustomer_________________")
-    @customers = Customer.where.not("name LIKE ?", "_sync_dummyCustomer_________________%")
+    @customers = Customer.all
   end
 
   # GET /customers/1
@@ -193,18 +190,22 @@ class CustomersController < ApplicationController
 	#abort params[:id].inspect
     if params[:id].nil?
       # PATCH       /customers/synchronize
-      async = true # SEVERE BUG: if async = true, the Web Portal process is totally lost and can only be killed with kill -9
-      recursive = false
-
-           # for test:
-           Customer.where(name: 'OllisTestCustomer').last.destroy unless Customer.where(name: 'OllisTestCustomer').count == 0
-           Customer.where(name: 'OllisTestCustomer2').last.destroy unless Customer.where(name: 'OllisTestCustomer2').count == 0
-           
-           # cleanup (for test only; cannot be done later, since another sync process might be in need of the dummy customer):
-           Customer.where('name LIKE ?', "_sync_dummyCustomer_________________%").each do |element|
-             element.destroy
-           end
+      recursive = false # recursive not yet supported
+ 
+#           # for test:
+#           Customer.where(name: 'OllisTestCustomer').last.destroy unless Customer.where(name: 'OllisTestCustomer').count == 0
+#           Customer.where(name: 'OllisTestCustomer2').last.destroy unless Customer.where(name: 'OllisTestCustomer2').count == 0
+#           
+#           # cleanup (for test only; cannot be done later, since another sync process might be in need of the dummy customer):
+#           Customer.where('name LIKE ?', "_sync_dummyCustomer_________________%").each do |element|
+#             element.destroy
+#           end
       
+      Customer.synchronizeAll
+      redirect_to :back, notice: "All Customers are being synchronized."
+
+if false
+
            #      # test via targets:
            #      targets=Target.where(name: 'CSL9DEV')
            #      updateDB = UpdateDB.new
@@ -239,6 +240,7 @@ class CustomersController < ApplicationController
 #      responseBody = updateDB.perform(dummyCustomer)
 
       redirect_to :back, notice: "All #{dummyCustomer.class.name.pluralize} are being synchronized."
+end
     else
       # PATCH       /customers/1/synchronize
       async = true
@@ -251,9 +253,10 @@ class CustomersController < ApplicationController
 
   # PATCH	/customers/1/provision
   def provision
+    async = true
     @object = Customer.find(params[:id])
     respond_to do |format|
-      if @object.provision(:create)
+      if @object.provision(:create, async)
         format.html { redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being provisioned to target system(s)" }
         format.json { render :show, status: :ok, location: @object }
       else

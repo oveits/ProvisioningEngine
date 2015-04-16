@@ -231,6 +231,11 @@ class Provisioning < ActiveRecord::Base
       p 'returnvalue = ' + returnvalue.to_s
       p '------------------resulttext------------------'
 
+#	  targetobjects.each do |targetobject|
+#            p "#{targetobject.inspect} <---------------------------------"  unless targetobject.nil?
+#            #break unless targetobject.nil?
+#          end unless thisaction == 'reading'
+
       return resulttext if returnvalue == 9 && thisaction == 'reading'
       update_attribute(:status, resulttext) unless thisaction == 'reading'
       return returnvalue

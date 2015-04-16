@@ -76,6 +76,10 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     Site
   end
   
+  def self.provisioningAction(method)
+     "action=List Customers"
+  end
+  
   def provisioningAction(method)
    
     case method
@@ -87,11 +91,75 @@ class Customer < Provisioningobject #< ActiveRecord::Base
         end
         "action=Delete Customer, customerName=#{name}"
       when :read
-        "action=List Customers"
+	#"action=List Customers"
+        "action=List Customers, customerName=#{name}"
       else
         abort "Unsupported provisioning method"
     end
   end
+
+  def self.synchronizeAll(targets = nil, async=true, recursive=false)
+
+recursive = false
+#targets = Target.where('name LIKE ?', 'CSL9DEV%')
+    targets ||= Target.all
+    if async || recursive
+      returnBody = delay.synchronizeAllSynchronously(targets, recursive)
+      #abort "synchronizeAll with async=true and recursive=true is work in progress"
+    else
+        returnBody = synchronizeAllSynchronously(targets, recursive)
+    end
+  end
+
+  def self.synchronizeAllSynchronously(targets, recursive=false)
+    targets.each do |mytarget|
+		#abort mytarget.inspect
+      #responseBody = Customer::provision(:read, false, Customer, mytarget)
+      responseBody = Customer.read(mytarget)
+
+		#abort responseBody
+      # error handling:
+      abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
+
+      # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
+      responseBody = "synchronizeAllSynchronously: ERROR: #{self.class.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
+
+      # abort, if it is still a Fixnum:
+      abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
+      # business logic error:
+      abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
+    
+      require 'rexml/document'
+      xml_data = responseBody
+      doc = REXML::Document.new(xml_data)
+      
+		#abort doc.root.elements["GetBGListData"].elements.inspect
+      doc.root.elements["GetBGListData"].elements.each do |element|
+		#abort element.text.inspect
+        # skip special customer (BG) named BG_DC
+        next if /\ABG_DC\Z/.match( element.text )
+        # skip if the customer exists already in the database:
+		#abort xml_data.inspect
+		#abort element.text.inspect
+        #next if Customer.where(name: element.text).count > 0
+        next if Customer.where(name: element.text, target_id: mytarget.id).count > 0
+		#abort element.text
+  
+        # found an object that is not in the DB:
+        newCustomer = Customer.new(name: element.text, target_id: mytarget.id, status: 'provisioning successful (verified existence)')
+  
+        # today, it is not possible to read the language etc from Camel PE, so we cannot save with validations.
+        # save it with no validations. 
+        newCustomer.save!(validate: false)
+      
+		#abort newCustomer.inspect
+  
+	p 'SSSSSSSSSSSSSSSSSSSSSSSSS    Customer.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS'
+        p responseBody.inspect
+      end # doc.root.elements["GetBGListData"].elements.each do |element|
+    end # targets.each do |target|
+  end
+
 
 #  def provisioningActionURI(method) # not yet used anywhere; instead a workaround is implemented in app/models/provisioning.rb deliver (look for # workaround for the fact that List commands need to be sent to "http://192.168.113.104:80/show") ...
 #  
@@ -112,48 +180,6 @@ class Customer < Provisioningobject #< ActiveRecord::Base
 #    end
 #  end
 
-# TODO: remove after successful test  
-# def provisionOld(inputBody, async=true)
-#
-#    @customer = Customer.find(id)
-#    # e.g. inputBody = "action = Add Customer, customerName=#{name}" 
-#    
-#    unless @customer.target_id.nil?
-#      @target = Target.find(@customer.target_id)
-#      actionAppend = @target.configuration.gsub(/\n/, ', ')
-#      actionAppend = actionAppend.gsub(/\r/, '')
-#    end
-#    
-#    # recursive deletion of sites (skipped in test mode):
-#    if inputBody.include?("Delete") && !inputBody.include?("testMode")
-#      @sites = Site.where(customer: id)
-#      @sites.each do |site|
-#        inputBodySite = "action=Delete Site, customerName=#{@customer.name}, SiteName=#{site.name}"
-#        inputBodySite = inputBodySite + ', ' + actionAppend unless actionAppend.nil?
-#        site.provision(inputBodySite, async)
-#      end 
-#    end
-#    
-#    inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
-#
-#    @provisioning = Provisioning.new(action: inputBody, customer: @customer)
-#    
-#    if @provisioning.save
-#       #@provisioning.createdelayedjob
-#       #@provisioning.deliver
-#       if async == true
-#         @provisioning.deliverasynchronously
-#       else
-#         @provisioning.deliver
-#       end
-#       # success
-#       #return 0
-#    else
-#      @provisioning.errors.full_messages.each do |message|
-#        abort 'provisioning error: ' + message.to_s
-#      end
-#    end 
-#  end # def
   
     # see http://rails-bestpractices.com/posts/708-clever-enums-in-rails
     LANGUAGES = [LANGUAGE_ENGLISH_US = 'englishUS', LANGUAGE_ENGLISH_GB = 'englishGB', LANGUAGE_GERMAN = 'german'] # spanish, frensh, italian, portuguesePT, portugueseBR, dutch, russian, turkish

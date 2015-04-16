@@ -106,3 +106,8 @@ gem 'figaro'
 #gem 'respond-js-rails'
 # may be better? See https://github.com/gevans/respond-rails:
 gem "respond-rails", "~> 1.0"
+
+# OV for automatic creation of UML-like class diagrams (see http://rails-erd.rubyforge.org/)
+group :development do
+  gem "rails-erd"
+end

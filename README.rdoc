@@ -71,6 +71,9 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
 * cd /d F:\veits\RubyOnRails\ProvisioningPortalvx.x.x
 * git add .
 * git status
+* bundle exec rake assets:precompile # needed if assets like css have changed. If this is not done, e.g. heroku will still have the old css files
+  * might be needed only, since I had set 'config.assets.compile = false' in config/environments/production.rb. 
+  * Next time you can try to set it to true and to omit the 'rake assets:precompile' command. You will need to change something in the css file to see the effect...
 * git commit -a -m "minor change: / is now redirected to /customers"
 * git push
 * heroku

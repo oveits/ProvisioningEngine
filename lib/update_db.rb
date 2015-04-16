@@ -25,7 +25,8 @@ class UpdateDB
     end
     
     # only Customer, Site, User are supported:
-    abort "lib/update_db.rb.perform(targetobject): Unsupported class" unless targetobject.is_a?(Customer) || targetobject.is_a?(Site) || targetobject.is_a?(User)
+    abort "lib/update_db.rb.perform(targetobject): Unsupported class" unless targetobject.is_a?(Customer) || targetobject.is_a?(Site) || targetobject.is_a?(User) || targetobject == Customer || targetobject == Site || targetobject == User
+#abort (targetobject == Customer).inspect
     
     if responseBody.nil?
       return "ERROR: UpdateDB: provisioningRequest timeout (#{provisioningRequestTimeout} sec) reached!"
@@ -43,15 +44,16 @@ class UpdateDB
 
     if targetobject.is_a?(Target)
       abort "synchronization of Targets is not supported (yet)"      
-    elsif targetobject.is_a?(Customer)
+    elsif targetobject.is_a?(Customer) || targetobject == Customer
 	#p xml_data.inspect
 	#abort doc.root.elements["GetBGListData"].elements["BGName"].inspect
 		#abort targetobject.inspect
-      if targetobject.name.match(/_sync_dummyCustomer_________________/) #targetobject.id.nil?
+      if targetobject.name.match(/_sync_dummyCustomer_________________/) || targetobject == Customer #targetobject.id.nil? 
         # assume that this is a dummy targetobject that has been created to synchronize all instances from the target system to the DB
         # TODO: create customers that are on the target system and not in the DB
 		#abort doc.root.elements["GetBGListData"].elements.inspect
         doc.root.elements["GetBGListData"].elements.each do |element|
+		#abort element.text.inspect
           # skip special customer (BG) named BG_DC
           next if /\ABG_DC\Z/.match( element.text )
           # skip if the customer exists already in the database:

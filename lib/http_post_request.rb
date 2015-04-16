@@ -1,7 +1,7 @@
 class HttpPostRequest
-  def perform(action, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
+  def perform(headerInput, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     #
-    # renders action="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
+    # renders headerInput="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
     #
     
     if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
@@ -15,7 +15,7 @@ class HttpPostRequest
     
     uri = URI.parse(uriString)
     
-    #response = Net::HTTP.post_form(uri, {"testMode" => "testMode", "offlineMode" => "offlineMode", "action" => "Add Customer", "customerName" => @customer.name})
+    #response = Net::HTTP.post_form(uri, {"testMode" => "testMode", "offlineMode" => "offlineMode", "headerInput" => "Add Customer", "customerName" => @customer.name})
     #OV replaced by (since I want to control the timers):
     http = Net::HTTP.new(uri.host, uri.port)
     http.open_timeout = httpopentimeout
@@ -23,28 +23,40 @@ class HttpPostRequest
     request = Net::HTTP::Post.new(uri.request_uri)
     #requestviatyphoeus = Typhoeus::Request.new("http://localhost/CloudWebPortal")
 
-    array = action.split(/,/) #.map(&:strip) #seems to lead sporadically to action=Show Sites to be converted to 'Show Sites' => '' instead of 'action' => 'Show Sites' during Site synchronization
-#    p '+++++++++++++++++++++++++  action.split(/,/) ++++++++++++++++++++++++++++++++'
+    array = headerInput.split(/,/) #.map(&:strip) #seems to lead sporadically to headerInput=Show Sites to be converted to 'Show Sites' => '' instead of 'action' => 'Show Sites' during Site synchronization
+#    p '+++++++++++++++++++++++++  headerInput.split(/,/) ++++++++++++++++++++++++++++++++'
 #    p array.inspect
 #    p array.map(&:strip).inspect
     
     #array = array.map(&:strip)
     
-    postData = {}
+    headerHash = {}
 
-    while array[0]
-      variableValuePairArray = array.shift.split(/=/).map(&:strip)
-#      p '+++++++++++++++++++++++++  variableValuePairArray ++++++++++++++++++++++++++++++++'
-#      p variableValuePairArray.inspect
-      if variableValuePairArray.length.to_s[/^2$/]
-        postData[variableValuePairArray[0]] = variableValuePairArray[1]
-      elsif variableValuePairArray.length.to_s[/^1$/]
-        postData[variableValuePairArray[0]] = ""
-      else
-        abort "action (here: #{action}) must be of the format \"variable1=value1,variable2=value2, ...\""
-      end
-    end
+#abort headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/).inspect
+#abort headerInput.is_a?(String).inspect
+#abort (!!headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/)).inspect
+    
+    if headerInput.is_a?(Hash)
+      headerHash = headerInput
+    #elsif headerInput.is_a?(String) && headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/)
+    elsif headerInput.is_a?(String) && headerInput.match(/\A([^=\n]+=[^=,\n]*)([,\n]*[^=,\n]+=[^=,\n]*)*\Z/)
   
+      while array[0]
+        variableValuePairArray = array.shift.split(/=/).map(&:strip)
+  #      p '+++++++++++++++++++++++++  variableValuePairArray ++++++++++++++++++++++++++++++++'
+  #      p variableValuePairArray.inspect
+        if variableValuePairArray.length.to_s[/^2$/]
+          headerHash[variableValuePairArray[0]] = variableValuePairArray[1]
+        elsif variableValuePairArray.length.to_s[/^1$/]
+          headerHash[variableValuePairArray[0]] = ""
+        else
+          abort "headerInput (here: #{headerInput}) must be of the format \"variable1=value1,variable2=value2, ...\""
+        end
+      end
+    else
+      abort "HttpPostRequest: wrong headerInput (#{headerInput.inspect}) type or format"
+    end # if headerInput.is_a?(Hash)
+
     if simulationMode
       simulationLogString = "(simlulated) "
     else
@@ -53,10 +65,10 @@ class HttpPostRequest
 
 
     p "------------- HttpPostRequest POST Data to #{uriString} #{simulationLogString}-----------------"
-    p postData.inspect
+    p headerHash.inspect
     p '----------------------------------------------------------'
 
-    request.set_form_data(postData)
+    request.set_form_data(headerHash)
 
     # flash does not work in this environment:
     #flash[:notice]  = "Sent HTTP POST Data to #{uriString} #{simulationLogString}"
@@ -85,7 +97,7 @@ class HttpPostRequest
           end
  
       sleep 100.seconds / 1000
-      case postData["action"]
+      case headerHash["action"]
         when /Add Customer/
           if @@customerprovisioned.nil?
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
@@ -198,7 +210,7 @@ class HttpPostRequest
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>Thomas1</BGName><BGName>OllisTestCustomer</BGName><BGName>OllisTestCustomer2</BGName></GetBGListData></SOAPResult>'
           end
         else
-          responseBody = "action not supported in simulation mode: have received #{postData["action"]}"
+          responseBody = "action not supported in simulation mode: have received #{headerHash["action"]}"
       end
     else    
       begin
