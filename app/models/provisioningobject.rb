@@ -111,10 +111,6 @@ class Provisioningobject < ActiveRecord::Base
     end
   end
   
-  def self.readOld(mytarget)
-    self.provision(:read, false, self, mytarget)
-  end
-
   def self.read(mytarget)
     methodNoun = "reading"
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}"
@@ -137,113 +133,9 @@ class Provisioningobject < ActiveRecord::Base
     returnvalue = provisioning.deliver
   end
 
-  def self.provision(method, async=true, provisioningobject=self, mytarget=nil)
-    # if called as Provisioningobject.provision, then provisioningob
-
-
-#abort mytarget.inspect unless mytarget.nil?
-#abort provisioningobject.inspect if provisioningobject == self
-
-    #@provisioningobject = provisioningobject unless provisioningobject == self
-    #@provisioningobject = nil if provisioningobject == self
-
-    #abort "class method provision() not supported (yet) for class = #{provisioningobject.class.name}" if provisioningobject == self
-    #provisioningobject = nil if provisioningobject == self
-
-    # update the status of the object; throws an exception, if the object cannot be saved.
-		#p "#{provisioningobject.inspect} ************************************************"
-		#p "#{self.inspect} ************************************************"
-    case method
-      when :create
-        abort "unsupported method=#{method} for provisioningobject=#{provisioningobject.inspect}" if provisioningobject == self
-        methodNoun = "provisioning"
-        #return false if activeJob?
-        #return false if provisioned?
-      when :destroy
-        abort "unsupported method=#{method} for provisioningobject=#{provisioningobject}" if provisioningobject == self
-        methodNoun = "de-provisioning"
-        #return false if activeJob?
-        #return false if !provisioned?
-      when :read
-        methodNoun = "reading"
-      else
-        abort "provision(method=#{method}, async=#{async}): Unknown method"
-    end
-
-    # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}" 
-    inputBody = provisioningobject.provisioningAction(method)
-#abort inputBody.inspect
-    return false if inputBody.nil?  # no provisioningAction defined for this type
-    
-#abort provisioningobject.inspect
-    if provisioningobject == self
-      abort "mytarget must not be nil if provisioningobject = is class Provisioningobject" if mytarget.nil?
-      #mytargets = Target.where('name LIKE ?', 'CSL9DEV%')
-      #mytarget = mytargets.last
-    else
-      mytarget = provisioningobject.target
-    end
-
-    unless mytarget.nil?
-      actionAppend = mytarget.configuration.gsub(/\r/, '')
-      actionAppend = actionAppend.gsub(/^[\s]*\n/,'') # ignore empty lines
-      actionAppend = actionAppend.gsub(/\n/, ', ')
-      actionAppend = actionAppend.gsub(/,[\s]*\Z/, '')# remove trailing commas
-    end
-
-    # this will fail for old objects that do not yet obey to the validations:
-    #update_attributes!(status: "waiting for #{methodNoun}")
-    # it is better to update the status, even if the other validations might fail:
-    provisioningobject.update_attribute(:status, "waiting for #{methodNoun}") unless method == :read
-    
-    # recursive deletion of children (skipped in test mode):
-    if inputBody.include?("Delete ") && !inputBody.include?("testMode") 
-      #@sites = Site.where(customer: id)
-      provisioningobject.children.each do |child|
-        child.provision(:destroy, async)
-      end unless provisioningobject.children.nil?
-    end
-
-    # recursive creation of parents for Add (:create) functions
-    if inputBody.include?("Add ") && !inputBody.include?("testMode")
-       provisioningobject.parent.provision(:create, async) unless provisioningobject.parent.nil?
-    end
-    
-    inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
-
-
-    if provisioningobject == self
-      provisioning = Provisioning.new(action: inputBody)
-    else
-      object_sym = provisioningobject.class.to_s.downcase.to_sym
-#p "#{provisioningobject.inspect} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-      provisioning = Provisioning.new(action: inputBody, object_sym => provisioningobject) unless provisioningobject == self
-#abort provisioning.inspect
-#p "#{provisioning.inspect} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-    end
-
-    if method == :read || provisioning.save
-       if async == true
-         returnvalue = provisioning.deliverasynchronously
-       else
-         returnvalue = provisioning.deliver
-       end
-    else
-      provisioning.errors.full_messages.each do |message|
-        abort 'provisioning error: ' + message.to_s
-      end
-    end 
-    returnvalue
-  end # def provision(method, async=true)
-
-
-  def provisionWorkingButTooComplex(method, async=true) 
-      return Provisioningobject.provision(method, async, self)
-  end
-
   def provision(method, async=true)
 
-    @provisioningobject = self
+    provisioningobject = self
 
     # update the status of the object; throws an exception, if the object cannot be saved.
     case method
@@ -294,7 +186,7 @@ class Provisioningobject < ActiveRecord::Base
 
     object_sym = self.class.to_s.downcase.to_sym
     
-    @provisioning = Provisioning.new(action: inputBody, object_sym => @provisioningobject)
+    @provisioning = Provisioning.new(action: inputBody, object_sym => provisioningobject)
 #abort @provisioning.inspect
 p "#{@provisioning.inspect} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 

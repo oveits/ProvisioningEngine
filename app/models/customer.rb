@@ -100,6 +100,9 @@ class Customer < Provisioningobject #< ActiveRecord::Base
 
   def self.synchronizeAll(targets = nil, async=true, recursive=false)
 
+    # TODO: create rspec tests for recursive synchronizeAll, if not already present
+    # TODO: test with recursive = true
+    # TODO: replace dummyChild method by native childClass.synchronizeAll in app/models/provisioningobject.rb def synchronizeSynchronously(recursive=true)
 recursive = false
 #targets = Target.where('name LIKE ?', 'CSL9DEV%')
     targets ||= Target.all
@@ -107,7 +110,7 @@ recursive = false
       returnBody = delay.synchronizeAllSynchronously(targets, recursive)
       #abort "synchronizeAll with async=true and recursive=true is work in progress"
     else
-        returnBody = synchronizeAllSynchronously(targets, recursive)
+      returnBody = synchronizeAllSynchronously(targets, recursive)
     end
   end
 
