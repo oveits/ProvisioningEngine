@@ -71,7 +71,19 @@ class Customer < Provisioningobject #< ActiveRecord::Base
   def parent
     target
   end
-
+  
+  def parentSym
+    :target
+  end
+  
+  def self.parentSym
+    :target
+  end
+  
+  def self.childClass
+    Site
+  end
+  
   def childClass
     Site
   end
@@ -97,29 +109,48 @@ class Customer < Provisioningobject #< ActiveRecord::Base
         abort "Unsupported provisioning method"
     end
   end
+  
+  def self.xmlElements(xml_data)
+    doc = REXML::Document.new(xml_data)
+    myelements = doc.root.elements["GetBGListData"]
+    
+    myelements.each do |element|
+      # skip special customer (BG) named BG_DC
+          #abort myelements.class.inspect
+      myelements.delete_element(element) if /\ABG_DC\Z/.match(element.text)
+    end
+    
+    myelements.elements
+  end
+  
+  def self.find_from_REXML_element(element, mytarget)
+    self.where(name: element.text, target_id: mytarget.id)
+  end
+  
+  def self.create_from_REXML_element(element, mytarget)
+    self.new(name: element.text, target_id: mytarget.id)
+  end
 
   def self.synchronizeAll(targets = nil, async=true, recursive=false)
-
     # TODO: create rspec tests for recursive synchronizeAll, if not already present
     # TODO: test with recursive = true
-    # TODO: replace dummyChild method by native childClass.synchronizeAll in app/models/provisioningobject.rb def synchronizeSynchronously(recursive=true)
-recursive = false
-#targets = Target.where('name LIKE ?', 'CSL9DEV%')
+
     targets ||= Target.all
-    if async || recursive
+    if async
       returnBody = delay.synchronizeAllSynchronously(targets, recursive)
-      #abort "synchronizeAll with async=true and recursive=true is work in progress"
     else
       returnBody = synchronizeAllSynchronously(targets, recursive)
     end
   end
 
-  def self.synchronizeAllSynchronously(targets, recursive=false)
+# TODO: remove after successful test on physical systems
+if false
+  def self.synchronizeAllSynchronouslyOld(targets, recursive=false)
     targets.each do |mytarget|
 		#abort mytarget.inspect
       #responseBody = Customer::provision(:read, false, Customer, mytarget)
-      responseBody = Customer.read(mytarget)
-
+      #responseBody = Customer.read(mytarget)
+      responseBody = self.read(mytarget)
 		#abort responseBody
       # error handling:
       abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
@@ -136,24 +167,25 @@ recursive = false
       xml_data = responseBody
       doc = REXML::Document.new(xml_data)
       
-		#abort doc.root.elements["GetBGListData"].elements.inspect
+            #abort doc.root.elements["GetBGListData"].elements.inspect
       doc.root.elements["GetBGListData"].elements.each do |element|
-		#abort element.text.inspect
+		        #abort element.text.inspect
         # skip special customer (BG) named BG_DC
         next if /\ABG_DC\Z/.match( element.text )
         # skip if the customer exists already in the database:
-		#abort xml_data.inspect
-		#abort element.text.inspect
+		        #abort xml_data.inspect
+		        #abort element.text.inspect
         #next if Customer.where(name: element.text).count > 0
-        next if Customer.where(name: element.text, target_id: mytarget.id).count > 0
-		#abort element.text
+        #next if Customer.where(name: element.text, target_id: mytarget.id).count > 0
+        next if self.where(name: element.text, target_id: mytarget.id).count > 0
+		        #abort element.text
   
         # found an object that is not in the DB:
-        newCustomer = Customer.new(name: element.text, target_id: mytarget.id, status: 'provisioning successful (verified existence)')
+        newProvisioningobject = self.new(name: element.text, target_id: mytarget.id, status: 'provisioning successful (verified existence)')
   
         # today, it is not possible to read the language etc from Camel PE, so we cannot save with validations.
         # save it with no validations. 
-        newCustomer.save!(validate: false)
+        newProvisioningobject.save!(validate: false)
       
 		#abort newCustomer.inspect
   
@@ -162,32 +194,14 @@ recursive = false
       end # doc.root.elements["GetBGListData"].elements.each do |element|
     end # targets.each do |target|
   end
-
-
-#  def provisioningActionURI(method) # not yet used anywhere; instead a workaround is implemented in app/models/provisioning.rb deliver (look for # workaround for the fact that List commands need to be sent to "http://192.168.113.104:80/show") ...
-#  
-#    if name.nil?
-#      abort "cannot de-provision customer without name"
-#    end
-#
-#    case method
-#      when :create
-#        ENV["PROVISIONINGENGINE_CAMEL_URL"]
-#      when :destroy
-#        ENV["PROVISIONINGENGINE_CAMEL_URL"]
-#      when :read
-#        #ENV["PROVISIONINGENGINE_CAMEL_URL"].gsub(http://192.168.113.104:80/show"
-#        ENV["PROVISIONINGENGINE_CAMEL_URL"].gsub('ProvisioningEngine', 'show')
-#      else
-#        abort "Unsupported provisioning method"
-#    end
-#  end
-
   
+end
+
+ 
     # see http://rails-bestpractices.com/posts/708-clever-enums-in-rails
     LANGUAGES = [LANGUAGE_ENGLISH_US = 'englishUS', LANGUAGE_ENGLISH_GB = 'englishGB', LANGUAGE_GERMAN = 'german'] # spanish, frensh, italian, portuguesePT, portugueseBR, dutch, russian, turkish
 
-  
+    belongs_to :target
     has_many :sites, dependent: :destroy
     has_many :provisionings
     

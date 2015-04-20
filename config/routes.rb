@@ -15,6 +15,16 @@ end
 scope(path: baseURL) do
   
   root 'application#root'
+  
+    #resources :customers
+   # not tested; trying to use synchronize instead
+  #resources :customers, except: [:patch] do
+  resources :customers, :sites, :users do
+    collection do
+      #patch :synchronizeAll
+      patch :synchronize
+    end
+  end
  
   resources :targets do
     resources :customers
@@ -57,15 +67,7 @@ scope(path: baseURL) do
     end 
   end
   
-  #resources :customers
-   # not tested; trying to use synchronize instead
-  #resources :customers, except: [:patch] do
-  resources :customers do
-    collection do
-      #patch :synchronizeAll
-      patch :synchronize
-    end
-  end
+
   
     
   # OV replaced by:

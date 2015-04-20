@@ -11,6 +11,9 @@
                 <% else %>
                 <li><%= link_to 'New Site', new_customer_site_path(@customer) %></li>
                 <% end %>
+                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+                <li><%= link_to 'Synchronize Sites', synchronize_sites_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
+                <% end %>
 
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">

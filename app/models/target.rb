@@ -30,8 +30,24 @@ class Target < Provisioningobject #ActiveRecord::Base
     nil
   end
   
+  def parentSym
+    nil
+  end
+  
+  def self.parentSym
+    nil
+  end
+  
   def provisioningAction(method)
     nil
+  end
+  
+  def self.childClass
+    Customer
+  end
+  
+  def childClass
+    Customer
   end
 
   def provision(method, async=true)
@@ -61,6 +77,10 @@ class Target < Provisioningobject #ActiveRecord::Base
 #      else
 #        abort "provision(method=#{method}, async=#{async}): Unknown method"
 #    end
+  end
+  
+  def recursiveConfiguration
+    configuration
   end
 
   #belongs_to :customer

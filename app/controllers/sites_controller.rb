@@ -97,11 +97,28 @@ class SitesController < ApplicationController
   end
 
   def synchronize
-    @object = Site.find(params[:id])
-    updateDB = UpdateDB.new
-    @object.update_attributes!(:status => 'synchronization in progress')
-    returnBody = updateDB.delay.perform(@object)
-    redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
+
+    # TODO:
+    # - show a dropdown, which target(s) is (are) to be synchronized (CR, low prio)
+    # - get rid of the dummy Customer concept
+    # - apply to Users (and Targets?)   
+
+    if params[:id].nil?
+      # PATCH       /customers/synchronize
+      targets = nil
+      async = true
+      recursive = false # recursive not yet supported
+      
+      Site.synchronizeAll(targets, async, recursive)
+      redirect_to :back, notice: "All Sites are being synchronized."
+
+    else
+      @object = Site.find(params[:id])
+      updateDB = UpdateDB.new
+      @object.update_attributes!(:status => 'synchronization in progress')
+      returnBody = updateDB.delay.perform(@object)
+      redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
+    end
   end
   
   def provision

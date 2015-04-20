@@ -111,6 +111,85 @@ class Provisioningobject < ActiveRecord::Base
     end
   end
   
+  def self.synchronizeAllSynchronously(targets, recursive=false)
+    verbose = true
+    targets.each do |mytarget|
+      responseBody = self.read(mytarget)
+              #abort responseBody
+      # error handling:
+      abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
+
+      # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
+      responseBody = "synchronizeAllSynchronously: ERROR: #{self.class.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
+
+      p "SSSSSSSSSSSSSSSSSSSSSSSSS    #{self.name}.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS" if verbose
+      p responseBody.inspect if verbose
+        
+      # abort, if it is still a Fixnum:
+      abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
+      # business logic error:
+      abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
+    
+      require 'rexml/document'
+      xml_data = responseBody
+      doc = REXML::Document.new(xml_data)
+      
+      # we also want to update the status of elements that are in the DB but not on the target. 
+      # For that, we need 1) collect all objects of the target, 2) remove all found objects, and 3) update the status of the remaining objects.
+      # 1) collect all objects of the target
+      if parentSym.nil?
+        idsNotYetFound = self.all.map {|i| i.id }
+      else
+        idsNotYetFound = self.where(parentSym => mytarget).map {|i| i.id }
+      end
+            # convert to array: .map {|i| i.id }
+            #abort idsNotYetFound.inspect
+            #abort self.find(idsNotYetFound[0]).inspect
+      
+      mytarget.childClass.xmlElements(xml_data).each do |element|        
+                #abort mytarget.inspect
+
+          # find corresponding site in the DB:
+          thisObjects = self.find_from_REXML_element(element, mytarget)
+         
+          case thisObjects.count
+            when 0
+              # did not find object in the DB, so we create it:
+              thisObject = self.create_from_REXML_element(element, mytarget)
+            when 1
+              # found object in the DB:
+              thisObject = thisObjects[0]
+              
+              # 2) remove all found objects from list
+              idsNotYetFound.delete(thisObject.id)             
+            else
+              # found more than one match in the DB
+              abort "too many matches"           
+          end
+          
+          # TODO: the update_attribute and synchronizeSynchronously must be removed, when the create_from_REXML_element is enhanced to also update all parameters, including the status:        
+              # note: update_attribute will save the object, even if the validations fail:
+              thisObject.update_attribute(:status, 'found on target but not yet synchronized')
+          
+              # update the parameters of the specific object:
+              thisObject.synchronizeSynchronously(recursive)
+            
+          thisObject.save!(validate: false)
+  
+      end # doc.root.elements["GetBGListData"].elements.each do |element|
+      
+      #3) update the status of the objects that are in the DB, but not configured on the target 
+      idsNotFound = idsNotYetFound
+      unless idsNotFound.empty?
+        idsNotFound.each do |i|
+          objectNotFound = self.find(i)
+          objectNotFound.update_attribute(:status, 'not provisioned (seems to have been removed manually from target)') unless objectNotFound.status.match(/not provisioned/)
+        end # idsNotFound.each do |i|
+      end # unless idsNotFound.empty?
+    end # targets.each do |target|
+                #abort self.all.inspect
+  end
+  
   def self.read(mytarget)
     methodNoun = "reading"
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}"
@@ -120,7 +199,7 @@ class Provisioningobject < ActiveRecord::Base
 
 		#abort provisioningobject.inspect
     unless mytarget.nil?
-      headerAppend = mytarget.configuration.gsub(/\r/, '')
+      headerAppend = mytarget.recursiveConfiguration.gsub(/\r/, '')
       headerAppend = headerAppend.gsub(/^[\s]*\n/,'') # ignore empty lines
       headerAppend = headerAppend.gsub(/\n/, ', ')
       headerAppend = headerAppend.gsub(/,[\s]*\Z/, '')# remove trailing commas
@@ -131,6 +210,14 @@ class Provisioningobject < ActiveRecord::Base
     object_sym = self.class.to_s.downcase.to_sym
 
     returnvalue = provisioning.deliver
+  end
+  
+  def recursiveConfiguration
+    if parent.nil?
+      abort "could not read configuration for #{self.inspect}"
+    else 
+      parent.recursiveConfiguration
+    end
   end
 
   def provision(method, async=true)
@@ -187,9 +274,7 @@ class Provisioningobject < ActiveRecord::Base
     object_sym = self.class.to_s.downcase.to_sym
     
     @provisioning = Provisioning.new(action: inputBody, object_sym => provisioningobject)
-#abort @provisioning.inspect
-p "#{@provisioning.inspect} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-
+              #abort @provisioning.inspect
     if method == :read || @provisioning.save
        if async == true
          returnvalue = @provisioning.deliverasynchronously

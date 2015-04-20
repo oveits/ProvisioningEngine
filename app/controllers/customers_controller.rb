@@ -167,43 +167,17 @@ class CustomersController < ApplicationController
 
   def synchronize
 
-    # none of them work: CustomersHelper seems to be known, but ttt is not known, although defined in app/helpers/customers_helper.rb
-    #abort CustomersHelper::ttt
-    #abort CustomersHelper:ttt
-    #abort CustomersHelper.ttt
-
-    # Status:
-    # - for synchronization of all customers of a target, here the first POC is implemented with target = CSL9DEV
-    # - not nice: since customer.synchronize is to be issued, a dummy customer has to be created
-    # TODO:
-    # - test as rspec: DONE
-    # - remove the test deletions and cleanup
-    # - synchronize for all targets, or show a dropdown, which target(s) is (are) to be synchronized
-    # - get rid of the dummy Customer concept
-    #   - ideas: 
-    #     1) directly call UpdateDB.new(..).perform: in this case the method 'perform' needs to be extended, sp it can be called with a target instead of a customer
-    #     2) or directly call Provisioning.new(...).perform(:read,...) instead of dummyCustomer.synchronize().
-    #     see app/models/provisioningobject.rb method 'synchroniz()', what is to be done in addition
-    #     3) create class specific modules that run the read and create commands without the need of a dummy object...
-    # - apply to Sites and Users (and Targets?)   
+    # TODO: see sites_controller 
 
 	#abort params[:id].inspect
     if params[:id].nil?
       # PATCH       /customers/synchronize
       recursive = false # recursive not yet supported
- 
-#           # for test:
-#           Customer.where(name: 'OllisTestCustomer').last.destroy unless Customer.where(name: 'OllisTestCustomer').count == 0
-#           Customer.where(name: 'OllisTestCustomer2').last.destroy unless Customer.where(name: 'OllisTestCustomer2').count == 0
-#           
-#           # cleanup (for test only; cannot be done later, since another sync process might be in need of the dummy customer):
-#           Customer.where('name LIKE ?', "_sync_dummyCustomer_________________%").each do |element|
-#             element.destroy
-#           end
       
       Customer.synchronizeAll
       redirect_to :back, notice: "All Customers are being synchronized."
 
+# TODO: remove, after test on the real systems
 if false
 
            #      # test via targets:

@@ -72,15 +72,6 @@ end
 
 
 class Site < Provisioningobject #< ActiveRecord::Base
-  #
-  # INIT
-  #
-#  class Regexp
-#    # concatenation of two regex
-#    def +(r)
-#      Regexp.new(source + r.source)
-#    end
-#  end
 
   def target
     Target.find(customer.target_id) unless customer.nil? || customer.target_id.nil?
@@ -98,9 +89,79 @@ class Site < Provisioningobject #< ActiveRecord::Base
   def parent
     customer
   end
+  
+  def parentClass
+    Customer
+  end
+  
+  def parentSym
+    :customer
+  end
+  
+  def self.parentSym
+    :customer
+  end
+  
+  def self.parentClass
+    Customer
+  end
 
+  def self.childClass
+    User
+  end
+  
   def childClass
     User
+  end
+  
+  def self.provisioningAction(method)
+     "action=Show Sites"
+  end
+  
+  def self.xmlElements(xml_data)
+    trace = true
+    
+    doc = REXML::Document.new(xml_data)
+    
+    myelement = doc.root.elements["Sites"]
+    
+            if trace
+              p "xmlElements(xml_data): Before removing CNP"
+              myelement.elements.each do |element|
+                p element.name
+                p element.text
+                element.elements.each do |innerelement|
+                  p innerelement.name
+                  p innerelement.text
+                end
+              end      
+            end
+    
+    myelement.elements.each do |element|
+      myelement.delete_element(element) if /\ACNP_/.match(element.elements["NumberingPlanName"].text)
+    end  
+
+            if trace
+              p "xmlElements(xml_data): After removing CNP"
+              myelement.elements.each do |element|
+                p element.name
+                p element.text
+                element.elements.each do |innerelement|
+                  p innerelement.name
+                  p innerelement.text
+                end
+              end      
+            end   
+    
+    myelement.elements
+  end
+  
+  def self.find_from_REXML_element(element, mytarget)
+    self.where(name: element.elements["SiteName"].text, customer: mytarget)
+  end
+  
+  def self.create_from_REXML_element(element, mytarget)
+    self.new(name: element.elements["SiteName"].text, customer: mytarget)
   end
   
   def provisioningAction(method)
@@ -137,79 +198,105 @@ class Site < Provisioningobject #< ActiveRecord::Base
     end
   end
 
-# TODO: remove after successful test
-#  def de_provision(async=true)
-#    @object = self
-#    @method = "Delete"
-#    @className = @object.class.to_s
-#    @classname = @className.downcase
-#    @parentClassName = "Customer"
-#    @parentclassname = @parentClassName.downcase
-#    
-##abort self.inspect
-##abort @parentclassname
-#    
-#    unless @object.customer.nil?
-#      provisioningAction = "action=#{@method} #{@className}, #{@classname}Name=#{@object.name}, #{@parentclassname}Name=#{@object.customer.name}" 
-##abort provisioningAction
-#      provisionNew(provisioningAction, async)
-#    else
-#      abort "cannot de-provision a site without specified customer"
-#    end
-#  end
+  def self.synchronizeAll(targets = nil, async=true, recursive=false)
 
-# TODO: remove after successful test  
-#  def provisionOld(inputBody, async=true)
-#
-#    @site = Site.find(id)
-#    @customer = @site.customer
-#    # e.g. inputBody = "action = Add Customer, customerName=#{name}" 
-#    
-#    unless @customer.nil? || @customer.target_id.nil?
-#      @target = Target.find(@customer.target_id)
-#      actionAppend = @target.configuration.gsub(/\n/, ', ')
-#      actionAppend = actionAppend.gsub(/\r/, '')
-#    end
-#    
-#    # recursive deletion of users:
-#    @users = User.where(site: id)
-#    @users.each do |user|
-#      inputBodyUser = "action=Delete User, X=#{user.extension}, customerName=#{@customer.name}, SiteName=#{@site.name}"
-#      inputBodyUser = inputBodyUser + ', ' + actionAppend unless actionAppend.nil?
-#      user.provision(inputBodyUser, async)
-#    end
-#    
-#    # deletion of site:
-#    inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
-#
-#    @provisioning = Provisioning.new(action: inputBody, site: @site, customer: @customer)
-#    
-#    if @provisioning.save
-#       #@provisioning.createdelayedjob
-#       #@provisioning.deliver
-#       if async == true
-##p "=============== models/sites.rb:provision: performing @provisioning.deliverasynchronously ============"
-#         @provisioning.deliverasynchronously
-#       else
-##p "=============== models/sites.rb:provision: performing @provisioning.deliver ============"
-#         @provisioning.deliver
-#       end
-#       # success
-#       return 0
-#    else
-#      @provisioning.errors.full_messages.each do |message|
-#        abort 'provisioning error: ' + message.to_s
-#      end
-#    end 
-#  end # def
+    # TODO: create rspec tests for recursive synchronizeAll, if not already present
+    # TODO: test with recursive = true
+    # TODO: replace dummyChild method by native childClass.synchronizeAll in app/models/provisioningobject.rb def synchronizeSynchronously(recursive=true)
+recursive = false
+    targets ||= parentClass.all
+    if async || recursive
+      returnBody = delay.synchronizeAllSynchronously(targets, recursive)
+                    #abort self.all.inspect
+    else
+      returnBody = synchronizeAllSynchronously(targets, recursive)
+                    #abort self.all.inspect
+    end
+  end
+  
+#TODO: remove after successful test
+if false  
+  def self.synchronizeAllSynchronouslyOld(targets, recursive=false)
+    verbose = true
+    targets.each do |mytarget|
+      responseBody = self.read(mytarget)
+              #abort responseBody
+      # error handling:
+      abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
+
+      # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
+      responseBody = "synchronizeAllSynchronously: ERROR: #{self.class.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
+
+      p "SSSSSSSSSSSSSSSSSSSSSSSSS    #{self.name}.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS" if verbose
+      p responseBody.inspect if verbose
+        
+      # abort, if it is still a Fixnum:
+      abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
+      # business logic error:
+      abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
+    
+      require 'rexml/document'
+      xml_data = responseBody
+      doc = REXML::Document.new(xml_data)
+      
+      # we also want to update the status of elements that are in the DB but not on the target. 
+      # For that, we need 1) collect all objects of the target, 2) remove all found objects, and 3) update the status of the remaining objects.
+      # 1) collect all objects of the target     
+      idsNotYetFound = self.where(customer: mytarget).map {|i| i.id }
+            # convert to array: .map {|i| i.id }
+            #abort idsNotYetFound.inspect
+            #abort self.find(idsNotYetFound[0]).inspect
+      
+      doc.root.elements["Sites"].elements.each do |element|
+          # skip the common numbering plan (does not correspond to a real site)
+          next if /\ACNP_/.match( element.elements["NumberingPlanName"].text )         
+                #abort mytarget.inspect
+
+          # find corresponding site in the DB:
+          thisObjects = self.where(name: element.elements["SiteName"].text, customer: mytarget)
+          
+          case thisObjects.count
+            when 0
+              # did not find object in the DB, so we create it:
+              thisObject = self.new(name: element.elements["SiteName"].text, customer: mytarget)
+            when 1
+              # found object in the DB:
+              thisObject = thisObjects[0]
+              
+              # 2) remove all found objects from list
+              idsNotYetFound.delete(thisObject.id)
+                    #abort idsNotYetFound.inspect              
+            else
+              # found more than one match in the DB
+              abort "too many matches"           
+          end
+          
+          # note: update_attribute will save the object, even if the validations fail:
+          thisObject.update_attribute(:status, 'found on target but not yet synchronized')
+          #UpdateDB.new.perform(thisObject)
+          thisObject.synchronizeSynchronously(recursive)
+            
+          thisObject.save!(validate: false)
+  
+      end # doc.root.elements["GetBGListData"].elements.each do |element|
+      
+      #3) update the status of the objects that are in the DB, but not configured on the target 
+      idsNotFound = idsNotYetFound
+      unless idsNotFound.empty?
+        idsNotFound.each do |i|
+          objectNotFound = self.find(i)
+                #abort objectNotFound.inspect         
+          objectNotFound.update_attribute(:status, 'not provisioned (seems to have been removed manually from target)') unless objectNotFound.status.match(/not provisioned/)
+        end
+      end
+    end # targets.each do |target|
+                #abort self.all.inspect
+  end
+end # if false
+
   
   validIPAddressRegex = /\A(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\Z/
   validRFC952HostnameRegex = /\A(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])\Z/
-
-#  p 'RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR'
-#  p validIPAddressRegex.source
-#  p Regexp.new(validIPAddressRegex.source) # + validRFC952HostnameRegex.source)
-#  p 'RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR'
   
   belongs_to :customer
   validates :customer, presence: true 

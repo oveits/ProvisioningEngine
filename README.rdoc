@@ -63,7 +63,7 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
 * start single test (--drb needed for spork speedup), e.g.: 
   * bundle exec rspec --drb spec/requests/customers_spec.rb -e "with valid information should create a provisioning task with action"
 * start all tests:
-  * bundle exec rspec --drb spec/requests/customers_spec.rb
+  * bundle exec rspec --drb spec/requests/provisioningobjects_spec.rb
 
 === Commit & Production
 * if behind proxy (in this case: 172.28.12.5:8080):

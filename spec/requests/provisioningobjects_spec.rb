@@ -132,39 +132,64 @@ end
 #end
 
 def defaultParams(obj, i = 0)
-  paramsSet = []
+  #paramsSet = []
   case obj
     when /Target/
-      paramsSet[0] = {
-          name: $targetname,
-          configuration: $target
-          }
+      case i
+        when 0
+          paramsSet = {
+              name: $targetname,
+              configuration: $target
+              }
+      end     
     when /Customer/
-      paramsSet[0] = {
-          name: "ExampleCustomerV8",
-          language: "german",
-          }
+      case i
+        when 0
+          paramsSet = {
+              name: "ExampleCustomerV8",
+              language: "german",
+              }
+        when 2
+          paramsSet = {
+              name: "Customer2",
+              language: "german",
+              }
+      end
     when /Site/
-      paramsSet[0] = {
-          name: "ExampleSite",
-          countrycode: "49",
-          areacode: "99",
-          localofficecode: "7007",
-          extensionlength: "5",
-          mainextension: "10000",
-	  gatewayIP: "47.68.190.57"
-          }
-      paramsSet[1] = {
-          name: "ExampleSite",
-          countrycode: "1",
-          areacode: "2",
-          localofficecode: "3",
-          extensionlength: "4",
-          mainextension: "5555",
-          gatewayIP: "2.56.23.45"
-          }
+      case i
+        when 0
+          paramsSet = {
+              name: "ExampleSite",
+              countrycode: "49",
+              areacode: "99",
+              localofficecode: "7007",
+              extensionlength: "5",
+              mainextension: "10000",
+    	        gatewayIP: "47.68.190.57"
+              }
+        when 1
+          paramsSet = {
+              name: "ExampleSite",
+              countrycode: "1",
+              areacode: "2",
+              localofficecode: "3",
+              extensionlength: "4",
+              mainextension: "5555",
+              gatewayIP: "2.56.23.45"
+              }
+        when 2
+          paramsSet = {
+              name: "Site2",
+              countrycode: "1",
+              areacode: "22",
+              localofficecode: "333",
+              extensionlength: "4",
+              mainextension: "5555",
+              gatewayIP: "85.2.56.2"
+              }
+      end
     when /User/
-      paramsSet[0] = {
+      paramsSet= {
           name: "ExampleUser",
           extension: "30800",
           givenname: "Oliver",
@@ -174,7 +199,8 @@ def defaultParams(obj, i = 0)
     else
       abort "obj=#{obj} not supported for function defaultParams(obj)"
   end
-  paramsSet[i]
+  abort "Could not find defaultParams for i=#{i}" if paramsSet.nil?
+  paramsSet
 end
 
 def initObj(paramsHash)
@@ -931,10 +957,18 @@ objectList.each do |obj|
 
       let(:submit) { "Synchronize #{obj}s" }
 
-     if obj == "Customer"
+     if obj == "Customer" || obj == "Site"
      # only supported for Customers; and still a lot to do in the controller. See app/controllers/customers_controller.rb TODO secton in def synchronize for details 
       it "should synchronize the index with the objects found on the target system" do
-        initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
+        # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
+        provisionedObject = initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
+        
+        # create an object that is on the db, marked as provisioned, but not found on the target (should be marked as not provisioned at the end)
+        notProvisionedObject = createObjDB(obj, defaultParams(obj, 2))
+        notProvisionedObject.update_attribute(:status, 'provisioned successfully')
+                #abort notProvisionedObject.inspect
+        
+        #initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: false)
         expect(page.html.gsub(/[\n\t]/, '')).not_to match(/#{defaultParams(obj)[:name]}/)
         visit provisioningobjects_path(obj)
 		#abort defaultParams(obj)[:name]
@@ -943,6 +977,15 @@ objectList.each do |obj|
         Delayed::Worker.delay_jobs = false
         expect{ click_link "Synchronize #{obj}s" }.to change(Object.const_get(obj), :count).by_at_least(1)
         expect(page.html.gsub(/[\n\t]/, '')).to match(/#{defaultParams(obj)[:name]}/)
+        
+        # the ruby object notProvisionedObject is not updated from DB automatically:
+        # i.e. notProvisionedObject.read_attribute(:status) of notProvisionedObject.status still yields 'provisioned successfully'
+        # If we reload the object from DB again, we see the real value:
+        notProvisionedObject.reload
+        # notProvisionedObject.status now displays the real value       
+              #abort notProvisionedObject.read_attribute(:status)
+        
+        expect(notProvisionedObject.status).to match(/not provisioned/)
       end # it "should synchronize the index with the objects found on the target system" do
      end
 
