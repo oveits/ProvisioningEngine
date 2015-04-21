@@ -96,15 +96,14 @@ class SitesController < ApplicationController
     end
   end
 
-  def synchronize
-
-    # TODO:
-    # - show a dropdown, which target(s) is (are) to be synchronized (CR, low prio)
-    # - get rid of the dummy Customer concept
-    # - apply to Users (and Targets?)   
+  # PATCH /sites/1/synchronize
+  # -> find single site on target and synchronize the data to the local database
+  # PATCH /sites/synchronize
+  # -> find all sites of all known customers (i.e. customers found in the local database), and synchronize them to the local database
+  def synchronize 
 
     if params[:id].nil?
-      # PATCH       /customers/synchronize
+      # PATCH /sites/synchronize
       targets = nil
       async = true
       recursive = false # recursive not yet supported
@@ -113,6 +112,7 @@ class SitesController < ApplicationController
       redirect_to :back, notice: "All Sites are being synchronized."
 
     else
+      # PATCH /sites/1/synchronize
       @object = Site.find(params[:id])
       updateDB = UpdateDB.new
       @object.update_attributes!(:status => 'synchronization in progress')

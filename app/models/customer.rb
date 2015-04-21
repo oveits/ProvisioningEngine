@@ -72,6 +72,14 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     target
   end
   
+  def parentClass
+    Target
+  end
+  
+  def self.parentClass
+    Target
+  end
+  
   def parentSym
     :target
   end
@@ -131,9 +139,9 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     self.new(name: element.text, target_id: mytarget.id)
   end
 
-  def self.synchronizeAll(targets = nil, async=true, recursive=false)
-    # TODO: create rspec tests for recursive synchronizeAll, if not already present
-    # TODO: test with recursive = true
+  if false
+  def self.synchronizeAllOld(targets = nil, async=true, recursive=false)
+    # now replaced by Provisioningobject.synchronizeAll
 
     targets ||= Target.all
     if async
@@ -141,6 +149,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     else
       returnBody = synchronizeAllSynchronously(targets, recursive)
     end
+  end
   end
 
 # TODO: remove after successful test on physical systems

@@ -40,13 +40,91 @@ class User < Provisioningobject #< ActiveRecord::Base
     site
   end
 
+  def parentClass
+    Site
+  end
+  
+  def self.parentClass
+    Site
+  end
+  
+  def parentSym
+    :site
+  end
+  
+  def self.parentSym
+    :site
+  end
+
+  def self.childClass
+    nil
+  end
+  
   def childClass
     nil
   end
+  
+  def self.provisioningAction(method)
+    case method
+    when :read
+      "action=List Users"
+    else
+      abort "unknown method for User.provisioningAction(method)"
+    end
+  end
+  
+  def self.xmlElements(xml_data)
+    trace = true
+    
+    doc = REXML::Document.new(xml_data)
+    
+    myelement = doc.root
+    
+            if trace
+              p "xmlElements(xml_data): Before removing test users with numbers 999999999[0-9]"
+              myelement.elements.each do |element|
+                p element.name
+                p element.text
+#                element.elements.each do |innerelement|
+#                  p innerelement.name
+#                  p innerelement.text
+#                end
+              end      
+            end
+    
+    myelement.elements.each do |element|
+      myelement.delete_element(element) if /\A999999999[0-9]/.match( element.text )
+    end  
+
+            if trace
+              p "xmlElements(xml_data): After removing test users with numbers 999999999[0-9]"
+              myelement.elements.each do |element|
+                p element.name
+                p element.text
+#                element.elements.each do |innerelement|
+#                  p innerelement.name
+#                  p innerelement.text
+#                end
+              end      
+            end   
+    
+    myelement.elements
+  end
+  
+  def self.find_from_REXML_element(element, mytarget)
+    #self.where(name: element.elements["SiteName"].text, customer: mytarget)
+    #self.where(name: element.text, target_id: mytarget.id)
+    self.where(extension: element.text, site: mytarget)
+    #User.where(extension: this_extension, site: targetobject.site)
+  end
+  
+  def self.create_from_REXML_element(element, mytarget)
+    #self.new(name: element.elements["SiteName"].text, customer: mytarget)
+    self.new(name: element.text, extension: element.text, site: mytarget)
+  end
 
   def provisioningAction(method)
-    
-    
+      
     case method
       when :create
         inputBody ="action=Add User, OSVIP=, XPRIP=, UCIP=, customerName=#{site.customer.name}, SiteName=#{site.name} "
@@ -71,7 +149,8 @@ class User < Provisioningobject #< ActiveRecord::Base
         end
         return "action=Delete User, X=#{extension}, customerName=#{site.customer.name}, SiteName=#{site.name}"
       when :read
-        return "action=List Users"
+        # read exactly the subscriber number:
+        return "action=List Users, X=#{extension}, CC=#{site.countrycode}, AC=#{site.areacode}, LOC=#{site.localofficecode}"
       else
         abort "Unsupported provisioning method: " + method.inspect
     end

@@ -93,14 +93,35 @@ class Provisioningobject < ActiveRecord::Base
       returnBody = synchronizeSynchronously(recursive)
     end
   end
+  
+  def self.synchronizeAll(targets = nil, async=true, recursive=false)
+    # 
+    # synchronizes all objects of the specific class to the local database
+    # with recursive == true, also the child classes are synchronized
+    # 
+    # TODO: create rspec tests for recursive synchronizeAll, if not already present and test with recursive = true (also see controller)
+    
+    abort "recursive mode of synchronizeAll is not yet supported" if recursive
+
+    targets ||= parentClass.all
+    if async
+      returnBody = delay.synchronizeAllSynchronously(targets, recursive)
+                    #abort self.all.inspect
+    else
+      returnBody = synchronizeAllSynchronously(targets, recursive)
+                    #abort self.all.inspect
+    end
+  end
 
   def synchronizeSynchronously(recursive=true)
-    # if id is nil, we assume self is a dummy instance that only has been created to perform the method synchronizeAll
-    #return synchronizeAll if id.nil?
+    #
+    # synchronize a single object in the local database with the information found on the target
+    #
+    # TODO: replace dummyChild by synchronizeAll
 
     updateDB = UpdateDB.new
     responseBody = updateDB.perform(self)
-#abort "model: synchronize" + self.inspect
+            #abort "model: synchronize" + self.inspect
     if recursive && responseBody.is_a?(String) && responseBody[/ERROR.*$/].nil? && !childClass.nil?
       # TODO: read children from target, create children in DB, if not present yet, and perform a child.synchronizeSynchronously(recursive)
       #dummyChild = childClass.new(customer: self) #self.class.name.downcase.to_sym => self) # needed in order to access the provision method of the child class
@@ -151,11 +172,13 @@ class Provisioningobject < ActiveRecord::Base
 
           # find corresponding site in the DB:
           thisObjects = self.find_from_REXML_element(element, mytarget)
+                    #abort thisObjects.inspect
          
           case thisObjects.count
             when 0
               # did not find object in the DB, so we create it:
               thisObject = self.create_from_REXML_element(element, mytarget)
+                    #abort thisObject.inspect
             when 1
               # found object in the DB:
               thisObject = thisObjects[0]

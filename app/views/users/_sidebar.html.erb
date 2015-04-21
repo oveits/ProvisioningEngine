@@ -7,6 +7,9 @@
                         Functions
                 </li>
                 <li><%= link_to 'New User', new_user_path %></li>
+                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+                <li><%= link_to 'Synchronize Users', synchronize_users_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
+                <% end %>
 
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">

@@ -110,12 +110,29 @@ class UsersController < ApplicationController
     end
   end
   
+  # PATCH /users/1/synchronize
+  # -> find single user on target and synchronize the data to the local database
+  # PATCH /users/synchronize
+  # -> find all users of all known sites (i.e. sites found in the local database), and synchronize them to the local database
   def synchronize
-    @object = User.find(params[:id])
-    updateDB = UpdateDB.new
-    @object.update_attributes!(:status => 'synchronization in progress')
-    returnBody = updateDB.delay.perform(@object)
-    redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
+
+    if params[:id].nil?
+      # PATCH /users/synchronize
+      targets = nil
+      async = true
+      recursive = false # recursive not yet supported
+      
+      User.synchronizeAll(targets, async, recursive)
+      redirect_to :back, notice: "All Users are being synchronized."
+
+    else
+      # PATCH /users/1/synchronize
+      @object = User.find(params[:id])
+      updateDB = UpdateDB.new
+      @object.update_attributes!(:status => 'synchronization in progress')
+      returnBody = updateDB.delay.perform(@object)
+      redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
+    end
   end
 
   def provision

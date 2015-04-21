@@ -165,58 +165,20 @@ class CustomersController < ApplicationController
     redirect_to customers_url
   end
 
+  # PATCH /customers/1/synchronize
+  # -> find single customer on target and synchronize the data to the local database
+  # PATCH /customers/synchronize
+  # -> find all customers of all known target (i.e. targets found in the local database), and synchronize them to the local database
   def synchronize
 
-    # TODO: see sites_controller 
-
-	#abort params[:id].inspect
     if params[:id].nil?
-      # PATCH       /customers/synchronize
+      # PATCH /customers/synchronize
       recursive = false # recursive not yet supported
       
       Customer.synchronizeAll
       redirect_to :back, notice: "All Customers are being synchronized."
-
-# TODO: remove, after test on the real systems
-if false
-
-           #      # test via targets:
-           #      targets=Target.where(name: 'CSL9DEV')
-           #      updateDB = UpdateDB.new
-           #      targets.each do |target|
-           #        responseBody = updateDB.perform(target)
-           #      end
-           
-           #     # test via dummyCustomer
-           #      # need to create a dummy customer in order to call synchronizeAll method
-
-      # for now, test CSL9DEV sync only:
-      targets = Target.where('name LIKE ?', 'CSL9DEV%')
-      target = targets.last
-      target_id = target.id
-	#abort target.inspect
-      if Customer.where(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id).count == 0
-        dummyCustomer = Customer.new(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id) 
-      elsif Customer.where(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id).count == 1
-        dummyCustomer = Customer.where(name: "_sync_dummyCustomer_________________#{target.id}", target_id: target.id).last
-      else
-        abort "found more than one dummy customer with name _sync_dummyCustomer_________________#{target.id} on target #{target.name}"
-      end
-      #
-      # bacause us async synchronization, the dummyObj needs to be saved (delayed_jobs cannot work on transient data):
-      dummyCustomer.save!(validate: false)
-	#abort dummyCustomer.inspect
-      dummyCustomer.synchronize(async, recursive)
-      #dummyCustomer.destroy
-
-#      updateDB = UpdateDB.new
-#      #responseBody = updateDB.delay.perform(dummyCustomer)
-#      responseBody = updateDB.perform(dummyCustomer)
-
-      redirect_to :back, notice: "All #{dummyCustomer.class.name.pluralize} are being synchronized."
-end
     else
-      # PATCH       /customers/1/synchronize
+      # PATCH /customers/1/synchronize
       async = true
       recursive = true
       @object = Customer.find(params[:id])

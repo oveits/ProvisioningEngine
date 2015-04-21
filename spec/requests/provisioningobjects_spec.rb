@@ -177,6 +177,9 @@ def defaultParams(obj, i = 0)
               mainextension: "5555",
               gatewayIP: "2.56.23.45"
               }
+          if /V7R1/.match($targetname)
+            paramsSet[:sitecode] = "99821"
+          end
         when 2
           paramsSet = {
               name: "Site2",
@@ -187,7 +190,11 @@ def defaultParams(obj, i = 0)
               mainextension: "5555",
               gatewayIP: "85.2.56.2"
               }
+          if /V7R1/.match($targetname)
+            paramsSet[:sitecode] = "112233"
+          end
       end
+      
     when /User/
       paramsSet= {
           name: "ExampleUser",
@@ -957,7 +964,7 @@ objectList.each do |obj|
 
       let(:submit) { "Synchronize #{obj}s" }
 
-     if obj == "Customer" || obj == "Site"
+     if obj == "Customer" || obj == "Site" || obj == "User"
      # only supported for Customers; and still a lot to do in the controller. See app/controllers/customers_controller.rb TODO secton in def synchronize for details 
       it "should synchronize the index with the objects found on the target system" do
         # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
@@ -976,7 +983,9 @@ objectList.each do |obj|
         expect(page).to have_link( "Synchronize #{obj}s" ) #, href: synchronize_provisioningobjects_path(obj) )
         Delayed::Worker.delay_jobs = false
         expect{ click_link "Synchronize #{obj}s" }.to change(Object.const_get(obj), :count).by_at_least(1)
-        expect(page.html.gsub(/[\n\t]/, '')).to match(/#{defaultParams(obj)[:name]}/)
+        expect(page.html.gsub(/[\n\t]/, '')).to match(/#{defaultParams(obj)[:extension]}/) if obj == "User"
+        expect(page.html.gsub(/[\n\t]/, '')).to match(/#{defaultParams(obj)[:name]}/) unless obj == "User"
+        
         
         # the ruby object notProvisionedObject is not updated from DB automatically:
         # i.e. notProvisionedObject.read_attribute(:status) of notProvisionedObject.status still yields 'provisioned successfully'
