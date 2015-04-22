@@ -41,13 +41,24 @@ objectList = Array["Customer", "Site", "User"]
 
 objectList2 = Array["Provisioning", "Target"]
 
-#targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
-#targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
-#targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
-#targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
-#targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
-#targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
+if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
+  
+  targetsolutionList = Array["Environment1_V8", "Environment2_V7R1"]
+#  targetsolutionList = Array["Environment1"]
+#  targetsolutionList = Array["Environment2_V7R1"]
+  
+else
+   
+  #targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
+  #targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
+  #targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
+  #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
+  targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+  #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
+  #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
+ 
+end # if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
+
 
 def parent(obj)
   case obj
@@ -167,6 +178,9 @@ def defaultParams(obj, i = 0)
               mainextension: "10000",
     	        gatewayIP: "47.68.190.57"
               }
+          if /V7R1/.match($targetname)
+            paramsSet[:sitecode] = "99821"
+          end
         when 1
           paramsSet = {
               name: "ExampleSite",
@@ -178,7 +192,7 @@ def defaultParams(obj, i = 0)
               gatewayIP: "2.56.23.45"
               }
           if /V7R1/.match($targetname)
-            paramsSet[:sitecode] = "99821"
+            paramsSet[:sitecode] = "442211"
           end
         when 2
           paramsSet = {
@@ -645,6 +659,7 @@ end
 targetsolutionList.each do |targetsolution|
   describe "On target solution '#{targetsolution}'" do  
     before do
+            #abort targetsolutionList.inspect
       FactoryGirl.create("target_#{targetsolution}".to_sym)
       myTarget = Target.last
       $customerName = "ExampleCustomerV8" #targetsolutionVars[targetsolution][:customerName]
@@ -941,6 +956,8 @@ objectList.each do |obj|
 		#abort obj.constantize.all.inspect
         # 2) test whether the synced object has the expected parameters
         # 2.1 Sites should match exactly
+                p ">>>>>>>>>>>>>>>>>>>>>>" + paramsSet.inspect + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                p ">>>>>>>>>>>>>>>>>>>>>>" +  obj.constantize.all.inspect  + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
         expect( obj.constantize.where( paramsSet ).count).to be(1) if obj == "Site"
 		#abort obj.constantize.where( paramsSet ).inspect
         # 2.2 non-Sites should not match yet, since they are not fully synchronized yet:
@@ -985,16 +1002,20 @@ objectList.each do |obj|
             # TODO: add the corresponding code
             myClass = Object.const_get(myObject(obj))
 
-            # before 'clicking' "Synchronize", the object should not be present on the index page:              
-            expect( myClass.where(extension: defaultParams(obj)[:extension]).count ).to be(0) if obj == "User"
-            expect( myClass.where(name: defaultParams(obj)[:name]).count ).to be(0) if obj != "User"           
+            # before 'clicking' "Synchronize", the object should not be present on the index page:
+            delta = myClass.where(extension: defaultParams(obj)[:extension]).count if obj == "User"
+            delta = myClass.where(name: defaultParams(obj)[:name]).count if obj != "User"             
+            #expect( myClass.where(extension: defaultParams(obj)[:extension]).count ).to be(0) if obj == "User"
+            #expect( myClass.where(name: defaultParams(obj)[:name]).count ).to be(0) if obj != "User"           
             
             # 'clicking' the "Synchronize" link should increase the number of objects by 1 or more:
             expect{ myClass.synchronizeAll(nil, true, false) }.to change(Object.const_get(obj), :count).by_at_least(1)
             
             # after 'clicking' "Synchronize", the object should  be present on the index page:  
-            expect( myClass.where(extension: defaultParams(obj)[:extension]).count ).to be(1) if obj == "User"
-            expect( myClass.where(name: defaultParams(obj)[:name]).count ).to be(1) if obj != "User" 
+            delta = myClass.where(extension: defaultParams(obj)[:extension]).count - delta if obj == "User"
+            delta = myClass.where(name: defaultParams(obj)[:name]).count - delta if obj != "User"
+            expect( delta ).to be > 0
+            #expect( myClass.where(name: defaultParams(obj)[:name]).count ).to be(1) if obj != "User" 
                        
           elsif testTarget == 'view'
             # visit the index page:

@@ -31,8 +31,29 @@ module ProvisioningPortalv4
     config.assets.precompile += %w( main.css )
     config.assets.precompile += %w( application.css )
     
+    #config.Object.const_get("WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE") = true
+    config.WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE = true if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] 
+    #config.default.WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE = true
     
     
+    defaultconfig = {}
+    defaultconfig["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] = "true"
+    defaultconfig["PROVISIONINGENGINE_CAMEL_URL"] = "http://1.1.1.1/ProvisioningEngine"
+    defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] = "true"
+    defaultconfig["WEBPORTAL_BASEURL"] = "/"
+    defaultconfig["WEBPORTAL_SIMULATION_MODE"] = "true"
+    
+    # obsolete?
+    defaultconfig["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] = "true"
+    defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] = "false"
+    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] = "false"
+    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] = "false"
+    
+    # set default values for environment variables that are not yet set:
+    defaultconfig.each do |key, value| 
+      ENV[key.to_s] = value if ENV[key.to_s].nil?   
+    end 
+      
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

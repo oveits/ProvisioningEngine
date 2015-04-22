@@ -171,6 +171,7 @@ class HttpPostRequest
             <SiteName>ExampleSite</SiteName>
             <NumberingPlanName>NP_ExampleSite_00008</NumberingPlanName>
             <GatewayIP>47.68.190.57</GatewayIP>
+            <SiteCode>99821</SiteCode>
             <CountryCode>49</CountryCode>
             <AreaCode>99</AreaCode>
             <LocalOfficeCode>7007</LocalOfficeCode>

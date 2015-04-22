@@ -166,7 +166,8 @@ class Site < Provisioningobject #< ActiveRecord::Base
   end
   
   def self.create_from_REXML_element(element, mytarget)
-    self.new(name: element.elements["SiteName"].text, customer: mytarget)
+    newSite = self.new(name: element.elements["SiteName"].text, customer: mytarget)
+            #abort newSite.inspect
             #abort self.new(name: element.elements["SiteName"].text, customer: mytarget).inspect
   end
   
