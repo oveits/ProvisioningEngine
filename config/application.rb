@@ -31,11 +31,6 @@ module ProvisioningPortalv4
     config.assets.precompile += %w( main.css )
     config.assets.precompile += %w( application.css )
     
-    #config.Object.const_get("WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE") = true
-    config.WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE = true if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] 
-    #config.default.WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE = true
-    
-    
     defaultconfig = {}
     defaultconfig["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] = "true"
     defaultconfig["PROVISIONINGENGINE_CAMEL_URL"] = "http://1.1.1.1/ProvisioningEngine"
