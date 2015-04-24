@@ -75,6 +75,7 @@ class Provisioningobject < ActiveRecord::Base
   end
   
   def synchronize(async=true, recursive=true)
+#abort async.inspect
     #return false if /waiting|progress/.match(status)
     #updateDB = UpdateDB.new
     if async
@@ -104,12 +105,38 @@ class Provisioningobject < ActiveRecord::Base
     abort "recursive mode of synchronizeAll is not yet supported" if recursive
 
     targets ||= parentClass.all
+		#abort targets.inspect
+		#abort async.inspect
     if async
-      returnBody = delay.synchronizeAllSynchronously(targets, recursive)
+		#abort Customer.all.inspect
+      # there is a problem with delayed jobs, so we need to set delay_jobs to false:
+      delay_jobs_before = Delayed::Worker.delay_jobs
+      #Delayed::Worker.delay_jobs = true
+
+      targets.each do |target_i|
+        # cast target to Targets with count=1, since synchronizeAllSynchronously expects an argument of this type:
+        targetsWithSingleTarget = parentClass.where(name: target_i.name) 
+		#abort targetsWithSingleTarget.inspect
+        #synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
+        delay.synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
+      end
+      # going back to normal:
+      Delayed::Worker.delay_jobs = delay_jobs_before
+      #returnBody = delay.synchronizeAllSynchronously(targets, recursive)
                     #abort self.all.inspect
     else
-      returnBody = synchronizeAllSynchronously(targets, recursive)
-                    #abort self.all.inspect
+      # there is a problem, if one of the targets is not reachable (abort). However, we want to go on with the other targets in this case
+      targets.each do |target_i|
+        begin
+          # cast target to Targets with count=1, since synchronizeAllSynchronously expects an argument of this type:
+          targetsWithSingleTarget = parentClass.where(name: target_i.name)
+		#abort targetsWithSingleTarget.inspect
+          returnBody = synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
+        rescue Exception
+          returnBody = "there were errors"
+        end
+      end 
+              #abort self.all.inspect
     end
   end
 
@@ -125,17 +152,25 @@ class Provisioningobject < ActiveRecord::Base
     if recursive && responseBody.is_a?(String) && responseBody[/ERROR.*$/].nil? && !childClass.nil?
       # TODO: read children from target, create children in DB, if not present yet, and perform a child.synchronizeSynchronously(recursive)
       #dummyChild = childClass.new(customer: self) #self.class.name.downcase.to_sym => self) # needed in order to access the provision method of the child class
+
       dummyChild = childClass.new(self.class.name.downcase.to_sym => self) # needed in order to access the synchronizeAll method of the child class
       #dummyChild.synchronizeAll
       dummyChild.synchronizeSynchronously(recursive)
       dummyChild.destroy
+
+#      childClass.synchronizeAll unless childClass.nil?
+
     end
   end
   
   def self.synchronizeAllSynchronously(targets, recursive=false)
+#abort "kdlhgoisöehgoiesrhöghsoi"
     verbose = true
+#abort targets.inspect
     targets.each do |mytarget|
+#abort Site.all.inspect
       responseBody = self.read(mytarget)
+		#p responseBody
               #abort responseBody
       # error handling:
       abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?

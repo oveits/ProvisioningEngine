@@ -149,6 +149,7 @@ class Provisioning < ActiveRecord::Base
             targetobject.update_attribute(:status, thisaction + ' failed (timed out); trying again') unless targetobject.nil?
             break unless targetobject.nil?
           end unless thisaction == 'reading'
+          	#abort resulttext
           abort 'provisioning.deliver: connection timout of one or more target systems'
         when /TEST MODE.*$/
         # test mode

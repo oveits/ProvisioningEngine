@@ -1,5 +1,4 @@
-class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
+class UsersController < ProvisioningobjectsController #ApplicationController
 
   # GET /users
   # GET /users.json
@@ -115,6 +114,24 @@ class UsersController < ApplicationController
   # PATCH /users/synchronize
   # -> find all users of all known sites (i.e. sites found in the local database), and synchronize them to the local database
   def synchronize
+    # @partentTargets = nil means all parent targets for the synchronizeAll function
+    @partentTargets = nil;
+    @myClass = User
+    @async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
+    @async_individual = false
+    @recursive_all = false
+    @recursive_individual = true
+    @id = params[:id]
+                #@partentTargets = Target.where(name: "CSL9DEV (OSV V8R0 Development Machine)")
+                                #abort @partentTargets.inspect
+                # for testing:
+                #nonexistentcustomer = Customer.where(name: "ExampleCustomerV8") #, target_id: targets.last.id)
+                #nonexistentcustomer.last.destroy! unless nonexistentcustomer.count == 0
+                #abort "dehgosdöhgliöodsf"
+    super
+  end
+
+  def synchronizeOld
 
     if params[:id].nil?
       # PATCH /users/synchronize
@@ -283,6 +300,18 @@ class UsersController < ApplicationController
     def set_user
       @user = User.find(params[:id])
     end
+
+    # Use callbacks to share common setup or constraints between actions.
+    def set_provisioningobject
+      @user = User.find(params[:id])
+      @provisioningobject = @user
+    end
+    def set_provisioningobjects
+      @users = User.all
+      @provisioningobjects = @users
+    end
+
+
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def user_params

@@ -114,13 +114,15 @@ class User < Provisioningobject #< ActiveRecord::Base
   def self.find_from_REXML_element(element, mytarget)
     #self.where(name: element.elements["SiteName"].text, customer: mytarget)
     #self.where(name: element.text, target_id: mytarget.id)
-    self.where(extension: element.text, site: mytarget)
+    this_extension = element.text.gsub(/\A#{mytarget.countrycode}#{mytarget.areacode}#{mytarget.localofficecode}(.*\Z)/,'\1')
+    self.where(extension: this_extension, site: mytarget)
     #User.where(extension: this_extension, site: targetobject.site)
   end
   
   def self.create_from_REXML_element(element, mytarget)
     #self.new(name: element.elements["SiteName"].text, customer: mytarget)
-    self.new(name: element.text, extension: element.text, site: mytarget)
+    this_extension = element.text.gsub(/\A#{mytarget.countrycode}#{mytarget.areacode}#{mytarget.localofficecode}(.*\Z)/,'\1')
+    self.new(name: element.text, extension: this_extension, site: mytarget)
   end
 
   def provisioningAction(method)

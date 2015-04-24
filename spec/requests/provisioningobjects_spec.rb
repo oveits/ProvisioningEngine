@@ -8,8 +8,8 @@ RSpec.configure do |c|
     c.filter_run_excluding broken: true #, provisioning: true #, untested: true
   end
   # stop on first failure, if set to true:
-#  c.fail_fast = false
-  c.fail_fast = true
+  c.fail_fast = false
+#  c.fail_fast = true
 
   # TODO: this filter does not work: run only broken test cases
   #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
@@ -210,13 +210,24 @@ def defaultParams(obj, i = 0)
       end
       
     when /User/
-      paramsSet= {
-          name: "ExampleUser",
-          extension: "30800",
-          givenname: "Oliver",
-          familyname: "Veits",
-          email: "oliver.veits@company.com"
-          }
+      case i
+        when 0
+          paramsSet= {
+              name: "ExampleUser",
+              extension: "30800",
+              givenname: "Oliver",
+              familyname: "Veits",
+              email: "oliver.veits@company.com"
+              }
+        when 2
+          paramsSet= {
+              name: "ExampleUser2",
+              extension: "47111",
+              givenname: "User2",
+              familyname: "TestUser2",
+              email: "user2.testuser2@company.com"
+              }
+      end
     else
       abort "obj=#{obj} not supported for function defaultParams(obj)"
   end
@@ -977,19 +988,25 @@ objectList.each do |obj|
       # skip the view test, if the synchronizebutton is not present:
       next if testTarget == 'view' && ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "false"
       
-      describe "synchronize all #{obj} for testTarget == #{testTarget}" do
-       if obj == "Customer" #|| obj == "Site" || obj == "User"
+      describe "synchronize individual #{obj} for testTarget == #{testTarget}" do
+        # TODO: add the individual test, similar to the syn(obj) tests here
+
+      end # describe "synchronize individual #{obj} for testTarget == #{testTarget}" do
+
+      describe "synchronize all #{obj.pluralize} for testTarget == #{testTarget}" do
+       if obj == "Customer" || obj == "Site" || obj == "User"
         it "should synchronize the index with the objects found on the target system" do
           # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
           provisionedObject = initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
           
           # check that initObj was working correctly and the object is not in the database:
           #expect( Customer.where(defaultParams(obj)).count ).to be(0)
-          expect( Object.const_get(myObject(obj)).where(defaultParams(obj)).count ).to be(0) if 
+          expect( Object.const_get(myObject(obj)).where(defaultParams(obj)).count ).to be(0) 
           expect(page.html.gsub(/[\n\t]/, '')).not_to match(/#{defaultParams(obj)[:name]}/) if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true"
           
           # create an object that is on the db, marked as provisioned, but not found on the target (should be marked as not provisioned at the end)
           notProvisionedObject = createObjDB(obj, defaultParams(obj, 2))
+			#abort Object.const_get(myObject(obj)).all.inspect
           notProvisionedObject.update_attribute(:status, 'provisioned successfully')
 
                   
@@ -1009,7 +1026,9 @@ objectList.each do |obj|
             #expect( myClass.where(name: defaultParams(obj)[:name]).count ).to be(0) if obj != "User"           
             
             # 'clicking' the "Synchronize" link should increase the number of objects by 1 or more:
-            expect{ myClass.synchronizeAll(nil, true, false) }.to change(Object.const_get(obj), :count).by_at_least(1)
+			#abort myClass.all.inspect
+            expect{ myClass.synchronizeAll(nil, false, false) }.to change(Object.const_get(obj), :count).by_at_least(1)
+			#abort myClass.all.inspect
             
             # after 'clicking' "Synchronize", the object should  be present on the index page:  
             delta = myClass.where(extension: defaultParams(obj)[:extension]).count - delta if obj == "User"

@@ -1,5 +1,4 @@
-class SitesController < ApplicationController
-  before_action :set_site, only: [:show, :edit, :update, :destroy]
+class SitesController < ProvisioningobjectsController #ApplicationController
 
   # GET /sites
   # GET /sites.json
@@ -100,25 +99,23 @@ class SitesController < ApplicationController
   # -> find single site on target and synchronize the data to the local database
   # PATCH /sites/synchronize
   # -> find all sites of all known customers (i.e. customers found in the local database), and synchronize them to the local database
-  def synchronize 
 
-    if params[:id].nil?
-      # PATCH /sites/synchronize
-      targets = nil
-      async = true
-      recursive = false # recursive not yet supported
-      
-      Site.synchronizeAll(targets, async, recursive)
-      redirect_to :back, notice: "All Sites are being synchronized."
-
-    else
-      # PATCH /sites/1/synchronize
-      @object = Site.find(params[:id])
-      updateDB = UpdateDB.new
-      @object.update_attributes!(:status => 'synchronization in progress')
-      returnBody = updateDB.delay.perform(@object)
-      redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
-    end
+  def synchronize
+    # @partentTargets = nil means all parent targets for the synchronizeAll function
+    @partentTargets = nil;
+    @myClass = Site
+    @async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
+    @async_individual = false
+    @recursive_all = false
+    @recursive_individual = true
+    @id = params[:id]
+                #@partentTargets = Target.where(name: "CSL9DEV (OSV V8R0 Development Machine)")
+                                #abort @partentTargets.inspect
+                # for testing:
+                #nonexistentcustomer = Customer.where(name: "ExampleCustomerV8") #, target_id: targets.last.id)
+                #nonexistentcustomer.last.destroy! unless nonexistentcustomer.count == 0
+                #abort "dehgosdöhgliöodsf"
+    super
   end
   
   def provision
@@ -219,6 +216,16 @@ class SitesController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_site
       @site = Site.find(params[:id])
+    end
+
+    # Use callbacks to share common setup or constraints between actions.
+    def set_provisioningobject
+      @site = Site.find(params[:id])
+      @provisioningobject = @site
+    end
+    def set_provisioningobjects
+      @sites = Site.all
+      @provisioningobjects = @sites
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
