@@ -1572,12 +1572,13 @@ p page.html.gsub(/[\n\t]/, '')
         let(:submit2) { "Destroy" }
         let(:deprovision) { "De-Provision #{obj}" }
         
-	it "should update the status of #{obj} 'waiting for deletion'" do
+	it "should update the status of #{obj} to 'waiting for deletion'" do
           Delayed::Worker.delay_jobs = true
-      		#p page.html.gsub(/[\n\t]/, '')
+      		p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
           #click_link 'De-Provision', match: :first
-          click_link submit, match: :first
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/De-Provision #{obj}/)
+          click_link "De-Provision #{obj}", match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
         end
 
@@ -1589,7 +1590,7 @@ p page.html.gsub(/[\n\t]/, '')
           Delayed::Worker.delay_jobs = true
       		#p page.html.gsub(/[\n\t]/, '')
           #click_link 'De-Provision', match: :first
-          click_link submit, match: :first
+          click_link "De-Provision #{obj}", match: :first
       		#p page.html.gsub(/[\n\t]/, '')
           expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
         end
@@ -1602,7 +1603,7 @@ p page.html.gsub(/[\n\t]/, '')
           Delayed::Worker.delay_jobs = false
           
           #click_link 'De-Provision', match: :first
-          click_link submit, match: :first
+          click_link deprovision, match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/deletion success/) #have_selector('h1', text: 'Customers')
           
           # /customers/<id> should show deletion success

@@ -11,6 +11,19 @@ class ProvisioningobjectsController < ApplicationController
     'readwrite'
   end
 
+# from http://blog.laaz.org/tech/2012/12/27/rails-redirect_back_or_default/
+def store_location
+  session[:return_to] = if request.get?
+    request.request_uri
+  else
+    request.referer
+  end
+end
+
+def redirect_back_or_default(default = root_url, options)
+  redirect_to(session.delete(:return_to) || request.referer || default, options)
+end
+
   # POST /customers
   # POST /customers.json
   def create
@@ -89,7 +102,7 @@ class ProvisioningobjectsController < ApplicationController
 
   # DELETE /customers/1
   # DELETE /customers/1.json
-  def destroy(deprovision = true)
+  def destroy(deprovision)
     # individual settings are done e.g. in customers_controller.rb#deprovision
     
     if @provisioningobject.provisioned?
@@ -98,8 +111,8 @@ class ProvisioningobjectsController < ApplicationController
         flash[:success] = "#{@provisioningobject.class.name} #{@provisioningobject.name} is being de-provisioned."
         #redirectPath = :back
       else
-        flash[:alert] = "#{@provisioningobject.class.name} #{@provisioningobject.name} is deleted from the database, but note that it might be is still configured on a target system."
-        #flash[:success] = "#{@provisioningobject.class.name} #{@provisioningobject.name} is deleted, but note that it might be is still configured on a target system."
+        flash[:alert] = "#{@provisioningobject.class.name} #{@provisioningobject.name} is deleted from the database, but not from the target system."
+        @provisioningobject.destroy!
       end
       
     else
@@ -144,9 +157,9 @@ class ProvisioningobjectsController < ApplicationController
     # individual settings are done e.g. in customers_controller.rb#deprovision
     @partentTargets = nil if @partentTargets.nil? 
 
-    @async_all = false if @async_all.nil?
-    @async_individual = false if @async_individual.nil?
-#abort @async_all.inspect
+    @async_all = true if @async_all.nil?
+    @async_individual = true if @async_individual.nil?
+		#abort @async_all.inspect
 
     @recursive_all = false if @recursive_all.nil?
     @recursive_individual = true if @recursive_individual.nil?
@@ -189,7 +202,7 @@ class ProvisioningobjectsController < ApplicationController
     @async = true if @async.nil?
 
     respond_to do |format|
-      if @provisioningobject.provision(:create, async)
+      if @provisioningobject.provision(:create, @async)
         format.html { redirect_to :back, notice: "#{@provisioningobject.class.name} #{@provisioningobject.name} is being provisioned to target system(s)" }
         format.json { render :show, status: :ok, location: @provisioningobject }
       else

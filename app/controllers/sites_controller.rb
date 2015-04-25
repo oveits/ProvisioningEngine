@@ -104,8 +104,8 @@ class SitesController < ProvisioningobjectsController #ApplicationController
     # @partentTargets = nil means all parent targets for the synchronizeAll function
     @partentTargets = nil;
     @myClass = Site
-    @async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
-    @async_individual = false
+    #@async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
+    #@async_individual = true
     @recursive_all = false
     @recursive_individual = true
     @id = params[:id]
@@ -170,8 +170,23 @@ class SitesController < ProvisioningobjectsController #ApplicationController
 
   # DELETE /sites/1
   # DELETE /sites/1.json  
+  def destroy(deprovision = false)
+    @provisioningobject = @site
+    @className = @provisioningobject.class.to_s
+
+#abort request.referer.inspect
+    if /sites\/[1-9][0-9]*\Z/.match(request.referer)
+      @redirectPath = sites_url 
+    else
+      @redirectPath = :back
+    end
+
+
+    super
+  end
+
   
-  def destroy
+  def destroyOld
     @object = @site
     @method = "Delete"
     @className = @object.class.to_s

@@ -52,7 +52,7 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
 
   # DELETE /customers/1
   # DELETE /customers/1.json
-  def destroy(deprovision = true)
+  def destroy(deprovision = false)
     @provisioningobject = @customer
     @className = @provisioningobject.class.to_s
     @redirectPath = customers_url
@@ -77,8 +77,8 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
     # @partentTargets = nil means all parent targets for the synchronizeAll function
     @partentTargets = nil;
     @myClass = Customer
-    @async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
-    @async_individual = false
+    #@async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
+    #@async_individual = false
     @recursive_all = false
     @recursive_individual = true
     @id = params[:id]

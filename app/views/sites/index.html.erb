@@ -51,6 +51,7 @@ $('.user').hover(function() {
   <thead>
     <tr>
       <th>Name</th>
+      <th>Target</th>
       <% if @customer.nil? %>
       <th>Customer</th>
       <% end %>
@@ -63,6 +64,7 @@ $('.user').hover(function() {
     <% @sites.each do |site| %>
       <tr>
         <td><%= link_to site.name, site %></td>
+        <td><%= link_to site.target.name, site.target unless site.target.nil? || site.target.name.nil? %></td>
         <% if @customer.nil? %>
         <td>
         	<% if site.customer.nil? %>

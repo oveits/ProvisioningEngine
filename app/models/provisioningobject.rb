@@ -111,12 +111,12 @@ class Provisioningobject < ActiveRecord::Base
 		#abort Customer.all.inspect
       # there is a problem with delayed jobs, so we need to set delay_jobs to false:
       delay_jobs_before = Delayed::Worker.delay_jobs
-      #Delayed::Worker.delay_jobs = true
+      Delayed::Worker.delay_jobs = false
 
       targets.each do |target_i|
         # cast target to Targets with count=1, since synchronizeAllSynchronously expects an argument of this type:
-        targetsWithSingleTarget = parentClass.where(name: target_i.name) 
-		#abort targetsWithSingleTarget.inspect
+        targetsWithSingleTarget = parentClass.where(id: target_i.id) 
+        		#abort "targetsWithSingleTarget must have exactly one target included but has #{targetsWithSingleTarget.count} targets: #{targetsWithSingleTarget.inspect}" if targetsWithSingleTarget.count != 1
         #synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
         delay.synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
       end
@@ -126,14 +126,15 @@ class Provisioningobject < ActiveRecord::Base
                     #abort self.all.inspect
     else
       # there is a problem, if one of the targets is not reachable (abort). However, we want to go on with the other targets in this case
+		#abort targets.inspect
       targets.each do |target_i|
         begin
           # cast target to Targets with count=1, since synchronizeAllSynchronously expects an argument of this type:
           targetsWithSingleTarget = parentClass.where(name: target_i.name)
 		#abort targetsWithSingleTarget.inspect
           returnBody = synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
-        rescue Exception
-          returnBody = "there were errors"
+#        rescue Exception
+#          returnBody = "there were errors"
         end
       end 
               #abort self.all.inspect

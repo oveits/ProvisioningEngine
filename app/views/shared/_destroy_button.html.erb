@@ -2,6 +2,9 @@
 <% label='Destroy' %>
 
 <% if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
+<% if false %>
+<%= link_to label, provisioningobject_path(@provisioningobject), method: :delete, class: "btn btn-danger", data: { confirm: "Are you sure?\nThis cannot be undone!" } %>
+<% end %>
 <%   if ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false" %>
 <button class= "btn btn-default" onclick="alert('De-Provision the item first!');"><%= label %></button>
 <%   end %>
