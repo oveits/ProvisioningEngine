@@ -95,7 +95,7 @@ class Provisioningobject < ActiveRecord::Base
     end
   end
   
-  def self.synchronizeAll(targets = nil, async=true, recursive=false)
+  def self.synchronizeAll(parents = nil, async=true, recursive=false)
     # 
     # synchronizes all objects of the specific class to the local database
     # with recursive == true, also the child classes are synchronized
@@ -104,42 +104,38 @@ class Provisioningobject < ActiveRecord::Base
     
     abort "recursive mode of synchronizeAll is not yet supported" if recursive
 
-    targets ||= parentClass.all
-		#abort targets.inspect
-		#abort async.inspect
-    if async
-		#abort Customer.all.inspect
-      # there is a problem with delayed jobs, so we need to set delay_jobs to false:
-      delay_jobs_before = Delayed::Worker.delay_jobs
-      Delayed::Worker.delay_jobs = false
+    parents ||= parentClass.all
 
-      targets.each do |target_i|
-        # cast target to Targets with count=1, since synchronizeAllSynchronously expects an argument of this type:
-        targetsWithSingleTarget = parentClass.where(id: target_i.id) 
-        		#abort "targetsWithSingleTarget must have exactly one target included but has #{targetsWithSingleTarget.count} targets: #{targetsWithSingleTarget.inspect}" if targetsWithSingleTarget.count != 1
-        #synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
-        delay.synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
+    # find target systems involved:
+    targetsArray = parents.map {|i| i.target}.uniq
+		#abort targetsArray.inspect
+		#abort async.inspect
+
+    # for each target involved, perform a synchronization task (in the background for async==true):
+    targetsArray.each do |target_i|
+
+      # For each target, find all parents, which are in the parents list and are on this target
+      if parents.last.class == Target
+        parents_of_this_target = targetsArray 
+      else
+        parents_of_this_target = parents.select{ |i| i.target.id == target_i.id}
       end
-      # going back to normal:
-      Delayed::Worker.delay_jobs = delay_jobs_before
-      #returnBody = delay.synchronizeAllSynchronously(targets, recursive)
-                    #abort self.all.inspect
-    else
-      # there is a problem, if one of the targets is not reachable (abort). However, we want to go on with the other targets in this case
-		#abort targets.inspect
-      targets.each do |target_i|
+		#abort parents_of_this_target.inspect
+
+      # perform synchronizeAllSynchronously(parents_of_this_target, recursive)
+      if async
+        delay.synchronizeAllSynchronously(parents_of_this_target, recursive)
+      else # if async
+        # there is a problem, if one of the parents is not reachable (abort). In order to synchronize other targets in this case, a rescue is needed.
         begin
-          # cast target to Targets with count=1, since synchronizeAllSynchronously expects an argument of this type:
-          targetsWithSingleTarget = parentClass.where(name: target_i.name)
-		#abort targetsWithSingleTarget.inspect
-          returnBody = synchronizeAllSynchronously(targetsWithSingleTarget, recursive)
-#        rescue Exception
-#          returnBody = "there were errors"
+          synchronizeAllSynchronously(parents_of_this_target, recursive)
+        rescue Exception
+          returnBody = "There were errors with synchronizeAllSynchronously"
         end
-      end 
-              #abort self.all.inspect
-    end
-  end
+      end # if async
+
+    end # targetsArray.each do |target_i|
+  end # def self.synchronizeAll(parents = nil, async=true, recursive=false)
 
   def synchronizeSynchronously(recursive=true)
     #
@@ -164,15 +160,15 @@ class Provisioningobject < ActiveRecord::Base
     end
   end
   
-  def self.synchronizeAllSynchronously(targets, recursive=false)
-#abort "kdlhgoisöehgoiesrhöghsoi"
+  def self.synchronizeAllSynchronously(parents, recursive=false)
     verbose = true
-#abort targets.inspect
-    targets.each do |mytarget|
-#abort Site.all.inspect
-      responseBody = self.read(mytarget)
+		#abort parents.inspect
+
+    # For each parent, perform the synchronization of all childs of the corresponding parent:
+    parents.each do |myparent|
+      responseBody = self.read(myparent)
 		#p responseBody
-              #abort responseBody
+		#abort responseBody
       # error handling:
       abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
 
@@ -197,23 +193,23 @@ class Provisioningobject < ActiveRecord::Base
       if parentSym.nil?
         idsNotYetFound = self.all.map {|i| i.id }
       else
-        idsNotYetFound = self.where(parentSym => mytarget).map {|i| i.id }
+        idsNotYetFound = self.where(parentSym => myparent).map {|i| i.id }
       end
             # convert to array: .map {|i| i.id }
             #abort idsNotYetFound.inspect
             #abort self.find(idsNotYetFound[0]).inspect
       
-      mytarget.childClass.xmlElements(xml_data).each do |element|        
-                #abort mytarget.inspect
+      myparent.childClass.xmlElements(xml_data).each do |element|        
+                #abort myparent.inspect
 
           # find corresponding site in the DB:
-          thisObjects = self.find_from_REXML_element(element, mytarget)
+          thisObjects = self.find_from_REXML_element(element, myparent)
                     #abort thisObjects.inspect
          
           case thisObjects.count
             when 0
               # did not find object in the DB, so we create it:
-              thisObject = self.create_from_REXML_element(element, mytarget)
+              thisObject = self.create_from_REXML_element(element, myparent)
                     #abort thisObject.inspect
             when 1
               # found object in the DB:
@@ -245,11 +241,11 @@ class Provisioningobject < ActiveRecord::Base
           objectNotFound.update_attribute(:status, 'not provisioned (seems to have been removed manually from target)') unless objectNotFound.status.match(/not provisioned/)
         end # idsNotFound.each do |i|
       end # unless idsNotFound.empty?
-    end # targets.each do |target|
+    end # parents.each do |target|
                 #abort self.all.inspect
   end
   
-  def self.read(mytarget)
+  def self.read(myparent)
     methodNoun = "reading"
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}"
     header = self.provisioningAction(:read)
@@ -257,8 +253,8 @@ class Provisioningobject < ActiveRecord::Base
     return false if header.nil?  # no provisioningAction defined for this type
 
 		#abort provisioningobject.inspect
-    unless mytarget.nil?
-      headerAppend = mytarget.recursiveConfiguration.gsub(/\r/, '')
+    unless myparent.nil?
+      headerAppend = myparent.recursiveConfiguration.gsub(/\r/, '')
       headerAppend = headerAppend.gsub(/^[\s]*\n/,'') # ignore empty lines
       headerAppend = headerAppend.gsub(/\n/, ', ')
       headerAppend = headerAppend.gsub(/,[\s]*\Z/, '')# remove trailing commas

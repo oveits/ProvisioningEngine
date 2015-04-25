@@ -26,6 +26,10 @@ end
 
 class Target < Provisioningobject #ActiveRecord::Base
 
+  def target
+    self
+  end
+
   def parent
     nil
   end
