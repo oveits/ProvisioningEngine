@@ -96,7 +96,8 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     Site
   end
   
-  def self.provisioningAction(method)
+  def self.provisioningAction(method, myparent=nil)
+     # note: myparent is not needed for customers, but the varible is needed for Sites, so for unification, a second argument is needed
      "action=List Customers"
   end
   

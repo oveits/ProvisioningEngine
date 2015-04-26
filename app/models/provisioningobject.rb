@@ -248,7 +248,7 @@ class Provisioningobject < ActiveRecord::Base
   def self.read(myparent)
     methodNoun = "reading"
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}"
-    header = self.provisioningAction(:read)
+    header = self.provisioningAction(:read, myparent)
 		#abort inputBody.inspect
     return false if header.nil?  # no provisioningAction defined for this type
 

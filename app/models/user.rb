@@ -64,9 +64,21 @@ class User < Provisioningobject #< ActiveRecord::Base
     nil
   end
   
-  def self.provisioningAction(method)
+  def self.provisioningAction(method, myparent=nil)
+    # note: myparent is not needed for users, but the varible is needed for Sites, so for unification, a second argument is needed
+
     case method
     when :read
+
+      # TODO: test!
+#      case myparent
+#      when nil? || name.nil?
+#        "action=List Users"
+#      when is_a?(Site) && ! name.nil?
+#        "action=List Users, SiteName=#{myparent.name}"
+#      else
+#        abort "whatever"
+#      end
       "action=List Users"
     else
       abort "unknown method for User.provisioningAction(method)"

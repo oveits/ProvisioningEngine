@@ -103,6 +103,8 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   def synchronize
     # @partentTargets = nil means all parent targets for the synchronizeAll function
     @partentTargets = nil;
+		#@partentTargets = Customer.where(name: "ExampleCustomerV8")
+		#Delayed::Worker.delay_jobs = false
     @myClass = Site
     #@async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
     #@async_individual = true

@@ -114,10 +114,13 @@ class Site < Provisioningobject #< ActiveRecord::Base
     User
   end
   
-  def self.provisioningAction(method)     
+  def self.provisioningAction(method, myparent)     
+
+    abort "Site.provisioningAction(method, myparent) called with invalid myparent" unless myparent.is_a?(Customer) && !myparent.name.nil?
+
     case method
       when :read
-        "action=Show Sites"
+        "action=Show Sites, customerName=#{myparent.name}"
       else
         abort "unknown method for Site.provisioningAction(method)"
     end
@@ -162,13 +165,13 @@ class Site < Provisioningobject #< ActiveRecord::Base
   end
   
   def self.find_from_REXML_element(element, mytarget)
+		#abort element.elements["SiteName"].text
     self.where(name: element.elements["SiteName"].text, customer: mytarget)
   end
   
   def self.create_from_REXML_element(element, mytarget)
 		#abort element.elements["SiteName"].text
-    newSite = self.new(name: element.elements["SiteName"].text, customer: mytarget)
-            #abort newSite.inspect
+    self.new(name: element.elements["SiteName"].text, customer: mytarget)
             #abort self.new(name: element.elements["SiteName"].text, customer: mytarget).inspect
   end
   
