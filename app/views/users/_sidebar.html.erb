@@ -10,6 +10,7 @@
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize Users', synchronize_users_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
+                <li><%= link_to 'Clear Users Table', removeAll_users_path, method: :delete, data: { confirm: 'Are you sure? This will remove all Users from the database but it will keep the targets untouched. Data not provisioned to a target will be lost.' } %></li>
 
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">

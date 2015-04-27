@@ -117,8 +117,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     # @partentTargets = nil means all parent targets for the synchronizeAll function
     @partentTargets = nil;
     @myClass = User
-    @async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
-    @async_individual = false
     @recursive_all = false
     @recursive_individual = true
     @id = params[:id]
@@ -266,6 +264,7 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     end
 
   end
+
   def destroy
     @object = @user
     @method = "Delete"
@@ -292,8 +291,7 @@ class UsersController < ProvisioningobjectsController #ApplicationController
       format.html { redirect_to redirectPath }
       format.json { head :no_content }
     end  
-  end
-
+  end # def destroy
 
   private
     # Use callbacks to share common setup or constraints between actions.
@@ -306,12 +304,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
       @user = User.find(params[:id])
       @provisioningobject = @user
     end
-    def set_provisioningobjects
-      @users = User.all
-      @provisioningobjects = @users
-    end
-
-
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def user_params

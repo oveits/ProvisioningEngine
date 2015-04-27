@@ -115,11 +115,7 @@ class Provisioningobject < ActiveRecord::Base
     targetsArray.each do |target_i|
 
       # For each target, find all parents, which are in the parents list and are on this target
-      if parents.last.class == Target
-        parents_of_this_target = targetsArray 
-      else
-        parents_of_this_target = parents.select{ |i| i.target.id == target_i.id}
-      end
+      parents_of_this_target = parents.select{ |i| i.target.id == target_i.id} #targetsArray 
 		#abort parents_of_this_target.inspect
 
       # perform synchronizeAllSynchronously(parents_of_this_target, recursive)

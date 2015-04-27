@@ -53,7 +53,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin]
 # OV added:
 gem 'delayed_job_active_record'
 
-gem "delayed_job_web"
+gem "delayed_job_web", '1.2.5'
 
 # OV added to be able to start rake jobs:work as daemon:
 gem "daemons"

@@ -1,6 +1,6 @@
 class ProvisioningobjectsController < ApplicationController
   before_action :set_provisioningobject, only: [:show, :edit, :update, :destroy, :deprovision, :provision]
-  before_action :set_provisioningobjects, only: [:index]
+  before_action :set_provisioningobjects, only: [:index] #, :removeAll]
 
 
   def ro
@@ -137,16 +137,26 @@ end
 
   end
 
-  # allow for a possibility to remove all provisionins using a single button press:
-  # see http://stackoverflow.com/questions/21489528/unable-to-delete-all-records-in-rails-4-through-link-to
+  if ENV["WEBPORTAL_REMOVEALL_LINK_VISIBLE"] == "true"
+  #  removeAll_customers DELETE   /customers/removeAll
   def removeAll
+    # removes all entities in the database
     # individual settings are done e.g. in customers_controller.rb#removeAll
-    
-    @provisioningobjects.each do |provisioningobject| 
-      provisioningobject.destroy
+
+    		#abort provisioningobjects.inspect
+    @redirectPath = :back if @redirectPath.nil?
+    if provisioningobjects.count > 0
+      provisioningobjects.each do |provisioningobject| 
+		#abort provisioningobject.inspect
+        provisioningobject.destroy!
+      end
+      flash[:notice] = "All #{myClass.name.pluralize} have been deleted."
+    else 
+      flash[:notice] = "No #{myClass.name} found; nothing to do."
     end
-    flash[:notice] = "All #{@provisioningobject.class.name} have been deleted."
     redirect_to @redirectPath
+
+  end
   end
 
   # PATCH /customers/1/synchronize
@@ -211,5 +221,21 @@ end
       end # if
     end # do
   end # def provision
+
+private
+  def myClass
+    # returns "User" or "Site" or "Customer" (String)
+		#abort controller_name.classify
+    controller_name.classify.constantize
+  end
+
+  def provisioningobjects
+    # returns e.g. User.all
+    myClass.all
+  end
+
+  def set_provisioningobjects
+    @provisioningobjects = provisioningobjects
+  end
 
 end

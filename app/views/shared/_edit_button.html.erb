@@ -1,10 +1,33 @@
-<% render 'shared/helpers.html.erb' %>
-<% label='Edit' %>
+<%
+  # if we happen to reach here, although the file is included already, we return right away...
+  return if defined? edit_button_included
 
-<% if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
-<% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false" %>
-<button class= "btn btn-default" onclick="alert('De-Provision the item first!');"><%= label %></button>
-<% end %>
-<% else %>
-<%= link_to label, provisioningobject_path(@provisioningobject, prefix='edit'), class: "btn btn-primary" %>
-<% end %>
+  def edit_button_included
+    true
+  end
+
+  render 'shared/helpers.html.erb' unless defined? helpers_included
+
+  def edit_button
+
+    # define the link
+    def myLink(linkLabel = 'Edit')
+      case linkLabel
+        when 'Edit'
+          link_to linkLabel, provisioningobject_path(@provisioningobject, 'edit'), class: "btn btn-primary"
+        when 'Waiting'
+          '<button class= "btn btn-default" onclick="alert(\'De-Provision the item first!\');">Edit</button>'
+        else
+          abort "myLink called with wrong linkLabel=#{linkLabel}"
+      end
+    end
+
+    # return the link
+    if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status)
+      return myLink('Waiting') if ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false"
+    else
+      return myLink('Edit')
+    end
+
+  end # def edit_button
+%>

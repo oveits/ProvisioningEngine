@@ -1,3 +1,29 @@
+<%
+  @allCustomers = Customer.all
+  @allTargets = Target.all
+
+  def customer(site)
+    # return site.customer in a SQL optimized fashion: only one SQL request needed
+
+    customersOfSite = @allCustomers.select {|customer| site.customer_id == customer.id}
+    if customersOfSite.count == 1
+      customersOfSite[0]
+    else
+      nil
+    end
+  end
+
+  def target(site)
+    # return site.customer.target in a SQL optimized fashion: only one SQL request needed
+
+    targetsOfSite = @allTargets.select {|target| customer(site).target_id == target.id }
+    if targetsOfSite.count == 1
+      targetsOfSite[0]
+    else
+      nil
+    end
+  end
+%>
 <% webportal_provisioningbutton_visible = ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] %>
 
 	<h1>
@@ -64,13 +90,13 @@ $('.user').hover(function() {
     <% @sites.each do |site| %>
       <tr>
         <td><%= link_to site.name, site %></td>
-        <td><%= link_to site.target.name, site.target unless site.target.nil? || site.target.name.nil? %></td>
+        <td><%= link_to target(site).name, target(site) unless target(site).nil? || target(site).name.nil? %></td>
         <% if @customer.nil? %>
         <td>
-        	<% if site.customer.nil? %>
-        	<%= link_to site.customer, site.customer %>
+        	<% if customer(site).nil? %>
+        	<%= link_to customer(site), customer(site) %>
         	<% else %>
-        	<%= link_to site.customer.name, site.customer %>
+        	<%= link_to customer(site).name, customer(site) %>
         	<% end %>       	
         </td>
         <% end %>
@@ -90,12 +116,16 @@ $('.user').hover(function() {
           <%= link_to site.status, site_provisionings_path(site), {:style => "color: #{statuscolor}"}%>
         </td>
 <%  @provisioningobject = site; %>
-        <td><%= render 'shared/edit_button.html.erb' %></td>
+        <td><%= render 'shared/edit_button.html.erb' unless defined? edit_button_included
+                edit_button %></td>
 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
         <td><%= link_to 'Synchronize', synchronize_site_path(site), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 <% end %>
-        <td><%= render 'shared/provision_button.html.erb' %></td>
-        <td><%= render 'shared/destroy_button.html.erb' %></td>
+        <td><%= render 'shared/provision_button.html.erb' unless defined? provision_button_included
+                provision_button %></td>
+        <td><%= render 'shared/destroy_button.html.erb' unless defined? destroy_button_included
+                destroy_button %></td>
+
       </tr>
     <% end %>
   </tbody>

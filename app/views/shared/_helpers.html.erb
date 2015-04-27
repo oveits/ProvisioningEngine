@@ -1,4 +1,10 @@
 <% 
+return if defined? helpers_included
+
+def helpers_included
+  true
+end
+
 def myObject(obj="Customer")
   #"Customer"
   obj

@@ -1,3 +1,17 @@
+<%
+  @allTargets = Target.all
+ 
+  def target(customer)
+    #return customer.target in a SQL optimized fashion: only one SQL request needed
+
+    targetsOfCustomer = @allCustomers.select {|target| customer.target_id == target.id}
+    if targetsOfCustomer.count == 1
+      targetsOfCustomer[0]
+    else
+      nil
+    end
+  end
+%>
 <h1>Customers</h1>
 
 <div>
@@ -9,15 +23,15 @@
       <th>Name</th>
       <th>Target</th>
       <th>Status</th>
-      <th colspan="3"></th>
+      <th colspan="10"></th>
     </tr>
   </thead>
   <tbody>
 
-    <% @customers.each do |customer| %>
+    <% @provisioningobjects.each do |customer| %>
       <tr>
       	<% begin %>
-      	<% @target = Target.find(customer.target_id) %>
+      	<% @target = target(customer) %>
       	<% rescue %>
       	<% end %>
         <td><%= customer.id %></td>
@@ -45,12 +59,16 @@
        </td>
 
         <%  @provisioningobject = customer; %>
-	<td><%= render 'shared/edit_button.html.erb' %></td>
+        <td><%= render 'shared/edit_button.html.erb' unless defined? edit_button_included
+                edit_button %></td>
 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
         <td><%= link_to 'Synchronize', synchronize_customer_path(customer), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 <% end %>
- 	<td><%= render 'shared/provision_button.html.erb' %></td>
- 	<td><%= render 'shared/destroy_button.html.erb' %></td>
+        <td><%= render 'shared/provision_button.html.erb' unless defined? provision_button_included
+                provision_button %></td>
+        <td><%= render 'shared/destroy_button.html.erb' unless defined? destroy_button_included
+                destroy_button %></td>
+
       </tr>
     <% end %>
     <% if true %>

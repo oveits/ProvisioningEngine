@@ -1,3 +1,31 @@
+<% 
+  @allSites = Site.all
+  @allCustomers = Customer.all 
+
+  def site(user)
+    #return user.site, but optimized: done with DRAM with a single SQL query per page refresh
+
+    sitesOfUser = @allSites.select {|site| user.site_id == site.id}
+    if sitesOfUser.count == 1
+      sitesOfUser[0]
+    else
+      nil
+    end
+  end
+
+  def customer(user)
+    #return user.site.customer, but optimized: done with DRAM with a single SQL query per page refresh
+
+    return nil if site(user).nil?
+    customersOfUser = @allCustomers.select {|customer| site(user).customer_id == customer.id }
+    if customersOfUser.count == 1
+      customersOfUser[0]
+    else
+      nil
+    end
+
+  end
+%>
 <% if !@site.nil?; @customer = @site.customer; end %>
 	<h1>
 		Users	
@@ -43,7 +71,7 @@
         
         	<% if @customer.nil? %>
         <td>	
-        	<% if !user.site.nil? && !user.site.customer.nil? %>			
+        	<% if !user.site_id.nil? && !user.site.customer_id.nil? %>			
         	<%= link_to user.site.customer.name, user.site.customer %>
         	<% end %>
         </td>
@@ -51,14 +79,13 @@
         
         	<% if @site.nil? %>
         <td>
-        	<% if user.site.nil? %>
-        	<%= link_to user.site, user.site %>
+        	<% if site(user).nil? %>
+        	<%= link_to site(user), site(user) %>
         	<% else %>
         	<%= link_to user.site.name, user.site %>
         	<% end %>
         </td>
         	<% end %>      	
-        
         
         <td><%= user.givenname %></td>
         <td><%= user.familyname %></td>
@@ -78,7 +105,13 @@
              end
           %>
 
-          <%= link_to user.status, site_provisionings_path(user.site), {:style => "color: #{statuscolor}"}%>
+          <%= 
+             if site(user).nil?
+               user.status + '(Warning: Site Reference missing!)'
+             else
+               link_to user.status, site_provisionings_path(site(user)), {:style => "color: #{statuscolor}"}
+             end
+           %>
         </td>
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
 	<td><%= link_to 'Edit', edit_user_path(user), class: "btn btn-default" %></td>
@@ -87,12 +120,15 @@
         <td><%= link_to 'Provision', provision_user_path(user), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 			<% end %>
 <%  @provisioningobject = user; %>
-        <td><%= render 'shared/edit_button.html.erb' %></td>
+        <td><%= render 'shared/edit_button.html.erb' unless defined? edit_button_included
+                edit_button %></td>
 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
         <td><%= link_to 'Synchronize', synchronize_user_path(user), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 <% end %>
-        <td><%= render 'shared/provision_button.html.erb' %></td>
-        <td><%= render 'shared/destroy_button.html.erb' %></td>
+        <td><%= render 'shared/provision_button.html.erb' unless defined? provision_button_included
+                provision_button %></td>
+        <td><%= render 'shared/destroy_button.html.erb' unless defined? destroy_button_included
+                destroy_button %></td>
 
       </tr>
     <% end %>

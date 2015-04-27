@@ -16,40 +16,49 @@ scope(path: baseURL) do
   
   root 'application#root'
   
-    #resources :customers
-   # not tested; trying to use synchronize instead
-  #resources :customers, except: [:patch] do
-  resources :customers, :sites, :users do
+  # allow for a possibility to remove all provisionins using a single button press:
+  # see http://stackoverflow.com/questions/21489528/unable-to-delete-all-records-in-rails-4-through-link-to
+#  resources :provisionings, except: [:destroy] do
+#   collection do
+#     delete :removeAll
+#   end
+#   member do
+#     delete :stop
+#   end 
+#  end
+  
+  # OV replaced by:
+  #resources :customers, :sites, :users, :provisionings, except: [:destroy] do
+  # only supported for customers and provisionings yet:
+  resources :customers, :sites, :users, :provisionings, except: [:destroy, :update] do
+   collection do
+     delete :removeAll
+   end 
+  end
+
+  resources :customers, :sites, :users , except: [:destroy, :update] do
     collection do
       #patch :synchronizeAll
       patch :synchronize
     end
   end
- 
-  resources :targets do
-    resources :customers
-  end
-  
 
-  resources :users do
+    #resources :customers
+   # not tested; trying to use synchronize instead
+  #resources :customers, except: [:patch] do
+  resources :customers, :sites, :users do
     resources :provisionings, :member => { :deliver => :post}
+    collection do
+      #patch :synchronizeAll
+      patch :synchronize
+    end
     member do
      patch :synchronize
      patch :provision
      patch :deprovision
-    end 
+    end
   end
-
-  # allow for a possibility to remove all provisionins using a single button press:
-  # see http://stackoverflow.com/questions/21489528/unable-to-delete-all-records-in-rails-4-through-link-to
-  resources :provisionings, except: [:destroy] do
-   collection do
-     delete :removeAll
-   end
-   member do
-     delete :stop
-   end 
-  end
+ 
   
   resources :provisionings do
     member do
@@ -57,39 +66,31 @@ scope(path: baseURL) do
     end
   end
 
-  resources :sites do
-    resources :sites, :users
-    resources :provisionings, :member => { :deliver => :post}
-    member do
-     patch :synchronize
-     patch :provision
-     patch :deprovision
-    end 
-  end
-  
-
-  
-    
-  # OV replaced by:
-  resources :customers, except: [:destroy] do
-   collection do
-     delete :removeAll
-   end 
+  resources :targets do
+    resources :customers, :sites, :users
   end
 
   resources :customers do
+    # TODO: OV: what is needed this for?
+    #get :index, :controller => :sites
+
     resources :sites, :users
-    get :index, :controller => :sites
-    resources :provisionings, :member => { :deliver => :post}
+  end
+
+  resources :sites do
+    resources :users
+  end
+  
+
+  # TODO: is this needed? See http://stackoverflow.com/questions/21489528/unable-to-delete-all-records-in-rails-4-through-link-to
+  resources  :provisionings, except: [:destroy] do
     member do
-     patch :synchronize
-     patch :provision
-     patch :deprovision
+      delete :stop
     end
   end
- 
- #require 'delayed_job_web'
- match "/delayed_job" => DelayedJobWeb, :anchor => false, via: [:get, :post]
+
+  #require 'delayed_job_web'
+  match "/delayed_job" => DelayedJobWeb, :anchor => false, via: [:get, :post]
 
 
 

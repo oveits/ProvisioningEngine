@@ -1,13 +1,39 @@
-<% render 'shared/helpers.html.erb' %>
+<%
+  # if we happen to reach here, although the file is included already, we return right away...
+  return if defined? provision_button_included
 
-<% if @provisioningobject.provisioned? %>
-<%= link_to 'De-Provision', provisioningobject_path(@provisioningobject, 'deprovision'),  method: :patch, class: "btn btn-warning",  data: { confirm: 'Are you sure? This will de-provision the customers from the target system, including all related children (sites, users).' }   %>
-<% else if /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
-<button class= "btn btn-default" onclick="alert('Please wait for the provisioning process to finish!');">Waiting...</button>
-	<% else %>
-<%= link_to 'Provision', provisioningobject_path(@provisioningobject, 'provision'), method: :patch, class: "btn btn-warning", data: { confirm: "Are you sure?" } %>
+  def provision_button_included
+    true
+  end
 
-<% 	end 
-   end 
+  render 'shared/helpers.html.erb' unless defined? helpers_included
+
+  def provision_button
+
+    # define the link
+    def myLink(linkLabel = 'Provision')
+      case linkLabel
+        when 'Provision'
+          link_to linkLabel, provisioningobject_path(@provisioningobject, 'provision'), method: :patch, class: "btn btn-warning", data: { confirm: "Are you sure?" }
+        when 'De-Provision'
+          link_to linkLabel, provisioningobject_path(@provisioningobject, 'deprovision'),  method: :patch, class: "btn btn-warning",  data: { confirm: 'Are you sure? This will de-provision the customers from the target system, including all related children (sites, users).' }
+        when 'Waiting'
+          '<button class= "btn btn-default" onclick="alert(\'Please wait for the provisioning process to finish!\');">Waiting...</button>'
+        else
+          abort "myLink called with wrong linkLabel=#{linkLabel}"
+      end
+    end
+
+    # return the link
+    if @provisioningobject.provisioned?
+      return myLink('De-Provision')
+    else 
+      if /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status)
+        return myLink('Waiting')
+      else
+        return myLink('Provision')
+      end
+    end
+
+  end # def provision_button
 %>
-

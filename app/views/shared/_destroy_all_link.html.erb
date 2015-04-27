@@ -1,0 +1,6 @@
+<% render 'shared/helpers.html.erb' %>
+<% label="Clear #{@provisioningobject.class.name} Table" %>
+
+<% if ENV["WEBPORTAL_REMOVEALL_LINK_VISIBLE"] == "true" %>
+<%= link_to label, provisioningobject_path(@provisioningobject, 'removeAll'), method: :delete, data: { confirm: "Are you sure?\nThis cannot be undone!" } %>
+<% end %>

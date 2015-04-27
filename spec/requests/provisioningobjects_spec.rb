@@ -118,7 +118,8 @@ def myProvisioningobject(obj)
 end
 
 def provisioningobjects_path(obj)
-  #customers_path
+  # return the path to the obj index as String, e.g. customers_path = (/dev) "/customers/" or "/dev/customers" in case WEBPORTAL_BASEURL = '/dev'
+# abort send("#{myobjects(obj)}_path".to_sym)
   send("#{myobjects(obj)}_path".to_sym)
 end
 
@@ -291,6 +292,11 @@ def createObjDB(obj, paramsSet = nil)
   # returns the existing object, if it exists
 
   # set default paramsSet:
+  if paramsSet.is_a?(Fixnum)
+    # this will change paramsSet from Fixnum to Hash:
+    paramsSet = defaultParams(obj, paramsSet)
+  end
+
   if  paramsSet.nil? 
     paramsSet = defaultParams(obj, 0) 
   end
@@ -1114,7 +1120,11 @@ end # ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
 end # if false
 
     describe "index" do
-      before(:each) { visit provisioningobjects_path(obj)  }
+      before(:each) do
+        createObjDB(obj, 0)
+        createObjDB(obj, 2)
+        visit provisioningobjects_path(obj)  
+      end
       # not needed:
       subject { page }
     
@@ -1122,6 +1132,8 @@ end # if false
       it "should have the header '#{myObjects(obj)}'" do
         # this works:
         #visit provisioningobjects_path(obj)
+                #abort provisioningobjects_path(obj).inspect
+		#abort page.html.gsub(/[\n\t]/, '')
         expect(page).to have_selector('h1', text: obj)
       end
       

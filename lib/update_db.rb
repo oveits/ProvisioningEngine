@@ -118,16 +118,20 @@ class UpdateDB
       else # if targetobject.id.nil?
         found = false
         doc.root.elements["Sites"].elements.each do |element|
-          if element.elements["SiteName"].text == targetobject.name
+          p "UpdateDB: could not find element.elements[\"SiteName\"] in responsebody = #{responseBody}" if element.elements["SiteName"].nil?
+          if !element.elements["SiteName"].nil? && element.elements["SiteName"].text == targetobject.name
             found = true
             # Note: update_attributes does a validation, and update_attribute does not. 
 	    # We cannot update the extensionlength and mainextension at the same time, since they depend on each other
-            targetobject.update_attribute('sitecode', element.elements["SiteCode"].text ) unless element.elements["SiteCode"].nil?
-            targetobject.update_attribute('gatewayIP', element.elements["GatewayIP"].text ) unless element.elements["GatewayIP"].nil?
-            targetobject.update_attribute('countrycode', element.elements["CountryCode"].text )
-            targetobject.update_attribute('areacode', element.elements["AreaCode"].text )
-            targetobject.update_attribute('localofficecode', element.elements["LocalOfficeCode"].text )
-            targetobject.update_attribute('extensionlength', element.elements["ExtensionLength"].text )
+            {sitecode: "SiteCode", gatewayIP: "GatewayIP", countrycode: "CountryCode", areacode: "AreaCode", localofficecode: "LocalOfficeCode", extensionlength: "ExtensionLength"}.each do |key, value|
+              targetobject.update_attribute(key, element.elements[value].text) unless element.elements[value].nil?
+            end
+#            targetobject.update_attribute('sitecode', element.elements["SiteCode"].text ) unless element.elements["SiteCode"].nil?
+#            targetobject.update_attribute('gatewayIP', element.elements["GatewayIP"].text ) unless element.elements["GatewayIP"].nil?
+#            targetobject.update_attribute('countrycode', element.elements["CountryCode"].text ) unless element.elements["CountryCode"].nil?
+#            targetobject.update_attribute('areacode', element.elements["AreaCode"].text )
+#            targetobject.update_attribute('localofficecode', element.elements["LocalOfficeCode"].text )
+#            targetobject.update_attribute('extensionlength', element.elements["ExtensionLength"].text )
             # MainNumber is either nil (if there is no local gateway) or it is a full E.164 number, while mainextension is only an extension.
             # => we need to calculate the mainextension from the MainNumber to be the last extensionlength digits:
             if !element.elements["MainNumber"].text.nil? && targetobject.extensionlength.to_i < element.elements["MainNumber"].text.length
