@@ -1,14 +1,15 @@
 <%
   @allTargets = Target.all
+  @allCustomers = Customer.all
  
   def target(customer)
     #return customer.target in a SQL optimized fashion: only one SQL request needed
 
-    targetsOfCustomer = @allCustomers.select {|target| customer.target_id == target.id}
+    targetsOfCustomer = @allTargets.select {|target| customer.target_id == target.id}
     if targetsOfCustomer.count == 1
       targetsOfCustomer[0]
     else
-      nil
+      abort "Did not find target of this customer=#{customer.inspect}"
     end
   end
 %>
@@ -30,10 +31,7 @@
 
     <% @provisioningobjects.each do |customer| %>
       <tr>
-      	<% begin %>
       	<% @target = target(customer) %>
-      	<% rescue %>
-      	<% end %>
         <td><%= customer.id %></td>
         <td><%= link_to customer.name, customer %></td>
         <td>

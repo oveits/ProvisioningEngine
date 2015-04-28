@@ -111,3 +111,6 @@ gem "respond-rails", "~> 1.0"
 group :development do
   gem "rails-erd"
 end
+
+gem 'activesupport'
+

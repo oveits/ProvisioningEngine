@@ -26,6 +26,17 @@ class Validate_DisplayLength < ActiveModel::Validator
 end
 
 class User < Provisioningobject #< ActiveRecord::Base
+
+  def self.all_cached
+#    cache_time = Rails.cache.fetch('User.all.cache_time', expires_in: 1.minute) { Time.now }
+    Rails.cache.fetch('User.all', expires_in: 1.minute) { all }
+#    if Time.now - cache_time > 10.seconds
+#      Rails.cache.write('User.all.cache_time', Time.now) 
+#      Rails.cache.write('User.all') { all }
+#    else
+#      Rails.cache.fetch('User.all') { all }
+#    end
+  end
   
   def target
     Target.find(site.customer.target_id) unless site.nil? || site.customer.nil? || site.customer.target_id.nil?
@@ -248,4 +259,5 @@ class User < Provisioningobject #< ActiveRecord::Base
   #validates_format_of :email, :with => /\A[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})\Z/, message: "must be a valid email address, e.g. name@company.com"
   validates_format_of :email, :with => /\A[_A-Za-z0-9\-\+]+(\.[_A-Za-z0-9\-]+)*@[A-Za-z0-9\-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})\Z/, message: "must be a valid email address, e.g. name@company.com"
   validates_with Validate_ExtensionLength, Validate_DisplayLength
+
 end

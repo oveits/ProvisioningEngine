@@ -71,8 +71,8 @@
         
         	<% if @customer.nil? %>
         <td>	
-        	<% if !user.site_id.nil? && !user.site.customer_id.nil? %>			
-        	<%= link_to user.site.customer.name, user.site.customer %>
+        	<% if !user.site_id.nil? && !site(user).customer_id.nil? %>			
+        	<%= link_to customer(user).name, customer(user) %>
         	<% end %>
         </td>
         	<% end %>     	               
@@ -82,7 +82,7 @@
         	<% if site(user).nil? %>
         	<%= link_to site(user), site(user) %>
         	<% else %>
-        	<%= link_to user.site.name, user.site %>
+        	<%= link_to site(user).name, site(user) %>
         	<% end %>
         </td>
         	<% end %>      	
