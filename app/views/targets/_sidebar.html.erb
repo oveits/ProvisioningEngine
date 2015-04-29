@@ -17,17 +17,19 @@
                         Change/Delete
                 </li>
                 <li><%= link_to 'Edit Target', edit_target_path(@target) %></li>
+        <% if false %>
                 <% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-                <li><%= link_to 'Provision', provision_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+                <li><%= link_to 'Provision', provision_target_path(@target), method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
-                <li><%= link_to 'Synchronize', synchronize_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
+                <li><%= link_to 'Synchronize', synchronize_target_path(@target), method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
+         <% end %>
                 <li><%= link_to 'Delete Target', @target, method: :delete, data: { confirm: 'Are you sure?' } %></li>
                 <li class="sidebar-brand">
                         Show related...
                 </li>
-                <li><%= link_to 'Customers (not yet filtered)', customers_path %></li>
+                <li><%= link_to 'Customers', target_customers_path(@target) %></li>
 
 
 <% end %>     

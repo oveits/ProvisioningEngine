@@ -3,6 +3,7 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
   # GET /customers
   # GET /customers.json
   def index
+    super
   end
 
  # GET /customers/new
@@ -45,7 +46,6 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
   # PATCH /customers/1/deprovision.json
   def deprovision
     provisioningobject_provisionings_path = customer_provisionings_path(@provisioningobject, active: true )
-    async = true
 
     super
   end
@@ -77,8 +77,7 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
     # @partentTargets = nil means all parent targets for the synchronizeAll function
     @partentTargets = nil;
     @myClass = Customer
-    #@async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
-    #@async_individual = false
+
     @recursive_all = false
     @recursive_individual = true
     @id = params[:id]
@@ -93,7 +92,6 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
 
   # PATCH       /customers/1/provision
   def provision
-    @async = true
     @provisioningobject = Customer.find(params[:id])
     
     super

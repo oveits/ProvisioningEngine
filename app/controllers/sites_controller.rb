@@ -106,8 +106,7 @@ class SitesController < ProvisioningobjectsController #ApplicationController
 		#@partentTargets = Customer.where(name: "ExampleCustomerV8")
 		#Delayed::Worker.delay_jobs = false
     @myClass = Site
-    #@async_all = false # async does not yet work; not clear, why not, since the same code works fine with "Delayed::Worker.delay_jobs = false"
-    #@async_individual = true
+
     @recursive_all = false
     @recursive_individual = true
     @id = params[:id]
@@ -140,7 +139,6 @@ class SitesController < ProvisioningobjectsController #ApplicationController
     @object = Site.find(params[:id])
     @className = @object.class.to_s
     @classname = @className.downcase
-    async = true
 
     if @object.activeJob?
       flash[:error] = "#{@className} #{@object.name} cannot be de-provisioned: has active jobs running: see below."
@@ -185,48 +183,6 @@ class SitesController < ProvisioningobjectsController #ApplicationController
 
 
     super
-  end
-
-  
-  def destroyOld
-    @object = @site
-    @method = "Delete"
-    @className = @object.class.to_s
-    @classname = @className.downcase
-    async = true
-    
-#flash[:notice] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running."
-#redirect_to customers_url, :flash => { :success => "oops!" }
-#format.html { redirect_to customers_url }
-#abort flash[:error]
-
-#if false    
-    if @object.activeJob?
-      flash[:error] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running: see below."
-      #redirectPath = customer_provisionings_path(@object, true)
-      redirectPath = site_provisionings_path(@object, active: true )
-      #does not work: redirectPath = provisioningobject_provisionings_path(@object)
-    elsif @object.provisioned?
-      flash[:notice] = "#{@className} #{@object.name} is being de-provisioned."
-      redirectPath = :back
-      
-      @object.update_attributes!(:status => 'waiting for deletion') unless @object.activeJob?
-      #provisionTaskExistsAlready =  @object.provisionNew(provisioningAction, async)
-      #provisionTaskExistsAlready =  @object.de_provision(async)
-      @object.provision(:destroy)
-    else
-      flash[:success] = "#{@className} #{@object.name} deleted."
-      redirectPath = sites_url
-      
-      @object.destroy!
-    end 
-    
-    respond_to do |format|
-      format.html { redirect_to redirectPath }
-      format.json { head :no_content }
-    end
-
-#end   
   end
 
   private

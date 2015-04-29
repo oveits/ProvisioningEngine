@@ -308,6 +308,7 @@ def createObjDB(obj, paramsSet = nil)
     myObj = obj.constantize.new(
       paramsSet
     )
+          #abort paramsSet.inspect
     myObj.save!
   end
 
@@ -692,6 +693,32 @@ targetsolutionList.each do |targetsolution|
           target.destroy!
         end
       end # before
+  
+      it "should dump the target to a seed file" do
+        # init:
+        myTarget = nil
+
+        # test: creation of new target:
+        # add a target:
+        expect{ myTarget = createObjDB("Target") }.to change(Object.const_get("Target"), :count)
+        expect( myTarget ).to be_a(Target)
+        
+        SeedDump.dump(Target, file: 'db/seeds_targets.rb', append: true)
+        
+              #abort Target.all.inspect
+        #pwd = `pwd; cd ..`
+        pwd = `pwd`
+        cd = `cd ..`
+        pwd2 = `pwd`
+        pwd3 = `cd ..; pwd`
+        #abort pwd2.inspect
+        #abort pwd3.inspect
+        
+        out = `bundle exec rake db:seed:dump RAILS_ENV=test`
+        out2 = `ls db`
+        #expect( out ).to match
+        abort out2.inspect
+      end
 
       it "should create a Target, if it does not exist already" do
         # init:
@@ -1748,3 +1775,5 @@ end
 
 
 end # targetsolutionList.each do |targetsolution|
+
+

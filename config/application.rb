@@ -37,6 +37,7 @@ module ProvisioningPortalv4
     defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] = "true"
     defaultconfig["WEBPORTAL_BASEURL"] = "/"
     defaultconfig["WEBPORTAL_SIMULATION_MODE"] = "true"
+    defaultconfig["WEBPORTAL_ASYNC_MODE"] = "false"
     
     # obsolete?
     defaultconfig["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] = "true"

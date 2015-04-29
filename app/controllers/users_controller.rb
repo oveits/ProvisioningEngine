@@ -39,50 +39,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
 
   # POST /users
   # POST /users.json
-  def createOld
-    @user = User.new(user_params)
-    
-    ro = 'readonly'; rw = 'readwrite'
-    @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
-
-
-    respond_to do |format|
-      if @user.save
-        format.html { redirect_to @user, notice: 'User is being created.' }
-        format.json { render :show, status: :created, location: @user }
-        
-        @site = @user.site
-        @customer = @site.customer        
-        inputBody ="action=Add User, OSVIP=, XPRIP=, UCIP=, customerName=#{@customer.name}, SiteName=#{@site.name} "
-        inputBody += ", X=#{user_params[:extension]}, givenName=#{user_params[:givenname]}, familyName=#{user_params[:familyname]} "
-        inputBody += ", assignedEmail=#{user_params[:email]}, imAddress=#{user_params[:email]}"
-        @user.provision(inputBody)
-        
-#        if !@site.nil?
-#          @customer = @site.customer
-#        end
-#        
-#        inputBody = ""
-#        #inputBody = "offlineMode=offlineMode, "
-#        inputBody +="action=Add User, OSVIP=, XPRIP=, UCIP=, customerName=#{@customer.name}, SiteName=#{@site.name} "
-#        inputBody += ", X=#{user_params[:extension]}, givenName=#{user_params[:givenname]}, familyName=#{user_params[:familyname]} "
-#        inputBody += ", assignedEmail=#{user_params[:email]}, imAddress=#{user_params[:email]}"
-#
-#        @provisioning = Provisioning.new(action: inputBody, site: @site, customer: @site.customer)
-#        
-#        if @provisioning.save
-#          @provisioning.createdelayedjob
-#        else
-#          @provisioning.errors.full_messages.each do |message|
-#            abort 'error in user.create: provisioning error: ' + message.to_s
-#          end
-#        end
-     else
-        format.html { render :new }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end
-    end
-  end
   
   def create 
     ro = 'readonly'; rw = 'readwrite'
@@ -129,27 +85,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     super
   end
 
-  def synchronizeOld
-
-    if params[:id].nil?
-      # PATCH /users/synchronize
-      targets = nil
-      async = true
-      recursive = false # recursive not yet supported
-      
-      User.synchronizeAll(targets, async, recursive)
-      redirect_to :back, notice: "All Users are being synchronized."
-
-    else
-      # PATCH /users/1/synchronize
-      @object = User.find(params[:id])
-      updateDB = UpdateDB.new
-      @object.update_attributes!(:status => 'synchronization in progress')
-      returnBody = updateDB.delay.perform(@object)
-      redirect_to :back, notice: "#{@object.class.name} #{@object.name} is being synchronized."
-    end
-  end
-
   def provision
     @object = User.find(params[:id])
     respond_to do |format|
@@ -161,26 +96,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
         format.json { render json: @object.errors, status: :unprocessable_entity }
       end # if
     end # do
-  end # def provision
-
-  def provisionOld
-    @user = User.find(params[:id])
-    @site = @user.site
-    @customer = @site.customer
-    inputBody ="action=Add User, OSVIP=, XPRIP=, UCIP=, customerName=#{@customer.name}, SiteName=#{@site.name} "
-    inputBody += ", X=#{user_params[:extension]}, givenName=#{user_params[:givenname]}, familyName=#{user_params[:familyname]} "
-    inputBody += ", assignedEmail=#{user_params[:email]}, imAddress=#{user_params[:email]}"
-    
-    respond_to do |format|
-      if @user.provision(inputBody)
-        @provisionings = Provisioning.where(user: @user)
-        format.html { redirect_to @user, notice: "Site #{@user.name} is being provisioned to target system(s)" }
-        format.json { render :show, status: :ok, location: @user }
-      else
-        format.html { redirect_to @user, notice: "Site #{@user.name} could not be provisioned to target system(s)" }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end # if
-    end # do  
   end # def provision
 
   # PATCH/PUT /users/1
@@ -198,35 +113,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
       end
     end
   end
-
-  # DELETE /users/1
-  # DELETE /users/1.json
-  def destroyOrig
-    @user.destroy
-    respond_to do |format|
-      format.html { redirect_to users_url, notice: 'User was successfully destroyed.' }
-      format.json { head :no_content }
-    end
-  end
-  
-  def destroyOld
-    @user = User.find(params[:id])
-    @site = @user.site
-    @customer = @site.customer
-    inputBody ="action=Delete User, X=#{@user.extension}, customerName=#{@customer.name}, SiteName=#{@site.name}"
-    
-    if @user.provision(inputBody)
-      respond_to do |format|
-        format.html { redirect_to users_path, notice: "User #{@user.name} is being destroyed (background process)." }
-        format.json { head :no_content }
-      end
-    else
-      respond_to do |format|
-        format.html { redirect_to user_provisionings_path(@user), notice: "User #{@user.name} cannot be deleted, since there are active provisioning tasks running." }
-        format.json { head :no_content }
-      end
-    end        
-  end
   
 
   # PATCH /users/1/deprovision
@@ -235,7 +121,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     @object = User.find(params[:id])
     @className = @object.class.to_s
     @classname = @className.downcase
-    async = true
 
     if @object.activeJob?
       flash[:error] = "#{@className} #{@object.name} cannot be de-provisioned: has active jobs running: see below."
@@ -270,7 +155,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     @method = "Delete"
     @className = @object.class.to_s
     @classname = @className.downcase
-    async = true
       
     if @object.activeJob?
       flash[:error] = "#{@className} #{@object.name} cannot be destroyed: has active jobs running: see below."

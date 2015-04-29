@@ -1,6 +1,7 @@
 class ProvisioningobjectsController < ApplicationController
   before_action :set_provisioningobject, only: [:show, :edit, :update, :destroy, :deprovision, :provision]
   before_action :set_provisioningobjects, only: [:index] #, :removeAll]
+  before_action :set_async_mode
 
 
   def ro
@@ -24,6 +25,37 @@ def redirect_back_or_default(default = root_url, options)
   redirect_to(session.delete(:return_to) || request.referer || default, options)
 end
 
+
+  # GET /customers
+  # GET /customers.json
+  def index
+    # :customer_id
+    this_id_sym = "#{myClass.name.downcase}_id".to_sym
+    
+    # :target_id
+    parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym
+        
+    if(params[parent_id_sym])
+      # @parent = Target.find(params[:target_id])
+      @parent = myClass.parentClass.find(params[parent_id_sym])
+      
+      # @target = @parent
+      instance_variable_set("@#{myClass.parentClass.name.downcase}", @parent)
+      
+      # @these = Customer.where(target_id: params[:target_id])
+      @provisioningobjects = myClass.where(target_id: params[parent_id_sym])
+              #abort @these.inspect
+    else
+      # @these = Customer.all
+      @provisioningobjects = myClass.all      
+    end
+    
+    # @customers = @these
+    instance_variable_set("@#{myClass.name.downcase.pluralize}", @provisioningobjects)
+    
+    #abort @customers.inspect
+  end
+  
   # POST /customers
   # POST /customers.json
   def create
@@ -75,7 +107,7 @@ end
     # individual settings are done e.g. in customers_controller.rb#deprovision
 
     # default setting:
-    async = true if async.nil?
+    #@async = true if @async.nil?
     className = @provisioningobject.class.name
 
     if @provisioningobject.activeJob?
@@ -164,11 +196,13 @@ end
   # PATCH /customers/synchronize
   # -> find all customers of all known target (i.e. targets found in the local database), and synchronize them to the local database
   def synchronize
+
+#abort @async.inspect
     # individual settings are done e.g. in customers_controller.rb#deprovision
     @partentTargets = nil if @partentTargets.nil? 
 
-    @async_all = true if @async_all.nil?
-    @async_individual = true if @async_individual.nil?
+    @async_all = true if @async && @async_all.nil?
+    @async_individual = true if @async && @async_individual.nil?
 		#abort @async_all.inspect
 
     @recursive_all = false if @recursive_all.nil?
@@ -208,9 +242,6 @@ end
   def provision
     # individual settings are done e.g. in customers_controller.rb#provision
 
-    #default values:
-    @async = true if @async.nil?
-
     respond_to do |format|
       if @provisioningobject.provision(:create, @async)
         format.html { redirect_to :back, notice: "#{@provisioningobject.class.name} #{@provisioningobject.name} is being provisioned to target system(s)" }
@@ -237,5 +268,14 @@ private
   def set_provisioningobjects
     @provisioningobjects = provisioningobjects
   end
+  
+  def set_async_mode
+    if ENV["WEBPORTAL_ASYNC_MODE"] == "true"
+      @async = true
+    else 
+      @async = false  
+    end
+  end
+    
 
 end
