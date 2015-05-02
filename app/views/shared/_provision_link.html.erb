@@ -1,5 +1,9 @@
 <% render 'shared/helpers.html.erb' %>
 
+<% if false %>
+<%= link_to "Provision #{@provisioningobject.class.name}", provisioningobject_path(@provisioningobject, 'provision'), method: :patch, data: { confirm: "Are you sure?" } %>
+<% end %>
+
 <% if @provisioningobject.provisioned? %>
 <%= link_to "De-Provision #{@provisioningobject.class.name}", provisioningobject_path(@provisioningobject, 'deprovision'),  method: :patch, data: { confirm: 'Are you sure? This will de-provision the customers from the target system, including all related children (sites, users).' }   %>
 <% else if /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>

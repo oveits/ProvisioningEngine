@@ -79,11 +79,6 @@ class Site < Provisioningobject #< ActiveRecord::Base
   
   def children
     children = User.where(site: id)
-    if children.count > 0
-      children
-    else
-      nil
-    end
   end
   
   def parent

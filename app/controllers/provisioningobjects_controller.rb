@@ -1,6 +1,6 @@
 class ProvisioningobjectsController < ApplicationController
   before_action :set_provisioningobject, only: [:show, :edit, :update, :destroy, :deprovision, :provision]
-  before_action :set_provisioningobjects, only: [:index] #, :removeAll]
+  #before_action :set_provisioningobjects, only: [:index] #, :removeAll]
   before_action :set_async_mode
 
 
@@ -26,34 +26,102 @@ def redirect_back_or_default(default = root_url, options)
 end
 
 
-  # GET /customers
-  # GET /customers.json
+  # e.g. GET /customers
+  # e.g. GET /customers.json
   def index
-    # :customer_id
-    this_id_sym = "#{myClass.name.downcase}_id".to_sym
-    
-    # :target_id
-    parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym
-        
-    if(params[parent_id_sym])
-      # @parent = Target.find(params[:target_id])
-      @parent = myClass.parentClass.find(params[parent_id_sym])
+    # return all items, but may be filtered. E.g. /targets/3/sites will return only sites of the specific target chosen.
+
+
+    # find the closets relative upwards that is specified
+    # e.g. if called with GET /targets/3/sites, the closest upward relative is Target with id==3
+
+    # init
+    ancestor = nil
+    ancestorClass = myClass
+    while !ancestorClass.parentClass.nil?
+      ancestorClass = ancestorClass.parentClass
+
+      # e.g. :target_id
+      ancestor_id_sym = "#{ancestorClass.name.downcase}_id".to_sym 
+  
+      # e.g. @parent = Target.find(params[:target_id])
+      ancestor = ancestorClass.find(params[ancestor_id_sym]) if params[ancestor_id_sym]
+      break unless ancestor.nil? # do not stop, if ancestor was not yet found
+    end
+
+    # now ancestor is either nil, or points to the closes relative upwards, e.g. Target.find(3)
+   
+ #@provisioningobjects = myClass.all_in(ancestor, false)[1..50]
+    @provisioningobjects = myClass.all_in(ancestor, true, 1, 50)
+		#abort @provisioningobjects.inspect
+
+    # e.g. @customers = @provisioningobjects 
+    # TODO: remove the next line, afer all views have been changed to wirk with @provisioningobjects instead of @targets, @customers, @sites or @users
+    instance_variable_set("@#{myClass.name.downcase.pluralize}", @provisioningobjects)
+		#abort @sites.inspect
+		#abort @provisioningobjects.inspect
+  end
+
+  def indexOld
+    unless @ancestor.nil?
+
+        # if ancestor is the grandpa or grandgrandpa..., no such column is availsble. Instead, we read all items form the database and do the filtering afterwards:
+        all_children_of_ancestor = [@ancestor]
+        currentClass = @ancestor.class
+        while currentClass != myClass
+          all_children_of_ancestor = @ancestor.children
+          currentClass = currentClass.childClass
+        end # if @ancestor.class == myClass.parentClass
+        # now all_children_of_ancestor is a list or parents, that matches the anchestor
+        parent_list = all_children_of_ancestor
+
+#abort myClass.where(parent_id_sym => 579).map {|i| i }.inspect
+#abort myClass.all.inspect
+#abort parent_list.inspect
+
+        @provisioningobjects = []
+        parent_list.each do |parent|
+#abort ([].concat []).inspect
+          provisioningobjects_of_this_parent = myClass.where(parent_id_sym => parent.id).map {|i| i } 
+#abort provisioningobjects_of_this_parent.inspect if provisioningobjects_of_this_parent.count > 0
+#abort provisioningobjects_of_this_parent.class.name if provisioningobjects_of_this_parent.count > 0
+          @provisioningobjects = @provisioningobjects.concat provisioningobjects_of_this_parent if provisioningobjects_of_this_parent.count > 0
+#abort @provisioningobjects.inspect if provisioningobjects_of_this_parent.count > 0
+#abort provisioningobjects_of_this_parent.inspect
+
+abort @provisioningobjects.inspect
+abort all_children_of_ancestor.inspect
+abort currentClass.inspect
+        all_provisioningobjects = myClass.all.map {|i| i }
+abort all_provisioningobjects.first.send("target").inspect
+abort all_provisioningobjects.inspect
+        @provisioningobjects = all_provisioningobjects.select { |i|  i.send(ancestorMethodString)  }
+      end # else # @ancestor.class == myClass.parentClass
+      # ancestor not found, e.g. in case the link was called as GET /customers/
+
+      # e.g. @target = @parent
+# not needed?
+#      instance_variable_set("@#{ancestorClass.name.downcase}", @ancestor)
       
-      # @target = @parent
-      instance_variable_set("@#{myClass.parentClass.name.downcase}", @parent)
-      
-      # @these = Customer.where(target_id: params[:target_id])
-      @provisioningobjects = myClass.where(target_id: params[parent_id_sym])
-              #abort @these.inspect
-    else
+      # e.g. @these = Customer.where(target_id: params[:target_id])
+      #@provisioningobjects = myClass.where(ancestor_id_sym => params[ancestor_id_sym])
+abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).inspect
+      @provisioningobjects = myClass.where(ancestor_id_sym => params[ancestor_id_sym])
+
+    else # @parent == nil; i.e. the index waa called plainly with path GET /customers/ (as an example)
+
       # @these = Customer.all
-      @provisioningobjects = myClass.all      
+      @provisioningobjects = myClass.all.map {|i| i }      
+
     end
     
-    # @customers = @these
+    # e.g. @customers = @these
     instance_variable_set("@#{myClass.name.downcase.pluralize}", @provisioningobjects)
+
+    # at this point, both, @provisioningobjects and @customers are set to the ActiveRecords relation (list)
     
-    #abort @customers.inspect
+    		#abort @customers.inspect
+    		abort @provisioningobjects.inspect
   end
   
   # POST /customers
@@ -264,9 +332,17 @@ private
     # returns e.g. User.all
     myClass.all
   end
+ 
+  def provisioningobject
+    myClass.find(params[:id])
+  end
 
   def set_provisioningobjects
     @provisioningobjects = provisioningobjects
+  end
+
+  def set_provisioningobject
+    @provisioningobject = provisioningobject
   end
   
   def set_async_mode

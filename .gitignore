@@ -33,3 +33,4 @@ config/application.yml
 *.pem
 *.key
 *private*
+resulttext

@@ -8,6 +8,79 @@ class Provisioningobject < ActiveRecord::Base
  
   after_initialize :init
 
+  def self.all_in(ancestor=nil, pagination = false, page=1, items_per_page=50)
+    #
+    # returns all provisioningobjects found in the DB as Array; 
+    # if ancester is not nil, it returns only the descendants of this ancestor (e.g. for showing GET /targets/1/sites will show only the sites of target 1
+    # all_in als has helped to reduce the number of SQL queries for large indices (e.g. only one SQL query instead of N+1 queries)
+    #
+
+    # return all, if ancestor is nil, but paginate, if requested
+
+    first_index_of_page = (page-1) * items_per_page if pagination
+    last_index_of_page = page * items_per_page - 1 if pagination
+
+    if ancestor.nil?
+      if pagination
+        pagedReturn = self.all.map {|i| i }[first_index_of_page..last_index_of_page]
+        pagedReturn = [] if pagedReturn.nil?
+		#abort pagedReturn.inspect
+        return pagedReturn
+      else
+        return self.all.map {|i| i }
+      end
+    end
+
+    # perform single SQL query with filter, if filtered per parent, e.g. GET /customers/1/sites
+    if ancestor.is_a?(parentClass)
+      # single parent
+
+      # e.g. :target_id
+      parent_id_sym = "#{parentClass.name.downcase}_id".to_sym
+      return self.where(parent_id_sym => ancestor.id).map {|i| i }
+    end unless parentClass.nil?
+
+    # calculate list of parents; go down the tree in order to save SQL queries:
+    # with this method, only 3 SQL statements are needed to find the Site of a Target: 
+    # 1) get the Target, 
+    # 2) get all Customers of this target, 
+    # 3) get all Sites and filter by the list of Customers (filtering done in memory on an array) 
+		#abort ancestor.inspect
+
+    # find all parents recursively. Start at ancestor level, e.g. at the target
+    parent_list = [ancestor]
+    children_list = []
+    currentClass = ancestor.class
+    while currentClass != parentClass # stop if you have found all parents. E.g. if you search for all Sites of the Target, we will stop if we have found all Customers
+
+      # for all parents in the list, find all children and write them to the children_list
+      parent_list.each do |parent|
+        children_list = children_list.concat parent.children
+      end
+
+      # go down one level, e.g. if you have found all Customers of a Target, write the Customers to the parent_list, in case of searched Sites, we stop here. In case of Users being looked for, we go one step further and will find all children of the Customers in the next iteration
+      parent_list = children_list
+      currentClass = currentClass.childClass
+    end # while currentClass != parentClass
+
+    # convert the parent_list to a list of IDs only:
+    parent_list_ids = parent_list.map!(&:id).sort
+
+    # get the full, unfiltered list as Array; e.g. for /targets/1/users, find all users and write them to the unfiltered_all list:
+    unfiltered_all = self.all_in
+
+    # now filter and return:
+    # from the full list, find all items, whose parents are in the parent_list:
+    filtered_all = unfiltered_all.select{ |i| parent_list_ids.include? i.send("#{parentClass.name.downcase}_id") } # e.g. filtered_all = unfiltered_all.select{ |i| parent_list_ids.include? i.site_id }
+
+    # handle pagination, if needed:
+    if pagination
+      return filtered_all[first_index_of_page..last_index_of_page]
+    else
+      return filtered_all
+    end
+  end
+
   def init
     self.status ||= 'not provisioned'
   end
@@ -65,7 +138,7 @@ class Provisioningobject < ActiveRecord::Base
   
   def provisioned?
     case status
-      when /was already de-provisioned/
+      when /was already de-provisioned|not provisioned/
         false
       when /provisioning success|failed \(import errors\)|deletion failed|waiting for deletion/
         true
@@ -274,6 +347,8 @@ class Provisioningobject < ActiveRecord::Base
   def provision(method, async=true)
 
     provisioningobject = self
+		#abort provisioningobject.inspect
+		#abort method.inspect
 
     # update the status of the object; throws an exception, if the object cannot be saved.
     case method
@@ -322,7 +397,7 @@ class Provisioningobject < ActiveRecord::Base
     
     inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
 
-    object_sym = self.class.to_s.downcase.to_sym
+    object_sym = :provisioningobject
     
     @provisioning = Provisioning.new(action: inputBody, object_sym => provisioningobject)
               #abort @provisioning.inspect

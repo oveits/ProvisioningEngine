@@ -82,6 +82,7 @@ class Provisioning < ActiveRecord::Base
       thisaction = 'deletion' unless action[/action[ ]*=[ ]*Delete /].nil?
       thisaction = 'reading' unless action[/action[ ]*=[ ]*Show /].nil?
       thisaction = 'reading' unless action[/action[ ]*=[ ]*List /].nil?
+      thisaction = 'preparation' unless action[/action[ ]*=[ ]*PrepareSystem/].nil?
       # if not found:
       thisaction = 'unknown action' if thisaction.nil?  
 
@@ -99,134 +100,165 @@ class Provisioning < ActiveRecord::Base
         
       
       # update the status of the target objects
-      targetobjects = [user, site, customer] # extend, if needed; highest priority first (see comment below)
+      targetobjects = [user, site, customer, provisioningobject] # extend, if needed; highest priority first (see comment below)
+
+      # find targetobject:
+      targetobject = nil
+      targetobjects.each do |targetobject_i|
+        unless targetobject_i.nil? 
+            #abort targetobject_i.inspect
+          targetobject = targetobject_i
+          break
+        end
+      end
+
+      abort "Provisioning.deliver: could not find target object for provisioning" if targetobject.nil? unless thisaction == 'reading'
+
         # e.g. with "provisioning.action = 'Add Customer, ...', update the status of the customer object to 'provisioning in progress'"
         # only the first non-nil object is updated
 	# i.e., if user is defined, then the user status is updated only
 	# 	if user is nil and the site is definde, then only the status of the site is updated
 	# 	if both, the user and site are nil and the customer is defined, then the customer status is updated
-      targetobjects.each do |targetobject|
-        targetobject.update_attribute(:status, thisaction + ' in progress') unless targetobject.nil?
-        break unless targetobject.nil?
-      end unless thisaction == 'reading'
+      targetobject.update_attribute(:status, thisaction + ' in progress') unless targetobject.nil? || thisaction == 'reading'
 
       resulttext = provisioningRequest.perform(action, uriString, httpreadtimeout, httpopentimeout)
       
-      case resulttext 
-        when nil 
-        # error: Apache Camel based CloudWebPortal does not seem to be running or is unreachable
-          # for the case the BODY was empty
-          resulttext = "connection timout for #{uriString} at " + Time.now.to_s
-          returnvalue = 8
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil?
-            break unless targetobject.nil?
-          end unless thisaction == 'reading'
-          abort 'provisioning.deliver: ' + resulttext
-        #when /Warnings:0    Errors:0     Syntax Errors:0/ 
-        when /Errors:0     Syntax Errors:0/ 
-        # success
-          resulttext = 'finished successfully at ' + Time.now.to_s
-          returnvalue = 0
-          # update status of targetobject
-          targetobjects.each do |targetobject|
-            if thisaction == 'deletion'
-              targetobject.update_attribute(:status, thisaction + ' successful (press "Destroy" again to remove from database)') unless targetobject.nil?
-            else
-              targetobject.update_attribute(:status, thisaction + ' successful') unless targetobject.nil?
-            end
-            break unless targetobject.nil?
-            #abort targetobjects.inspect unless targetobject.nil?
-          end unless thisaction == 'reading'
-          #provisioning.update_attributes!(:delayedjob => nil)
-          # 0
-          #abort targetobjects.inspect
-        when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/
-        # timeout
-          returnvalue = 3        
-          resulttext = "last unsuccessful attempt with ERROR[#{returnvalue.to_s}]=\""  + resulttext[/ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/] + '" at ' + Time.now.to_s
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' failed (timed out); trying again') unless targetobject.nil?
-            break unless targetobject.nil?
-          end unless thisaction == 'reading'
-          	#abort resulttext
-          abort 'provisioning.deliver: connection timout of one or more target systems'
-        when /TEST MODE.*$/
-        # test mode
-          returnvalue = 4
-          resulttext = "finished with success (TEST MODE [#{returnvalue.to_s}])\"" + '" at ' + Time.now.to_s
-	# do not change the status in case of a test mode query:
-#          targetobjects.each do |targetobject|
-#            targetobject.update_attribute(:status, thisaction + ' successful (test mode)') unless targetobject.nil?
-#            break unless targetobject.nil? 
-#          end
-          #provisioning.update_attributes!(:delayedjob => nil)
-        when /Script aborted.*$/
-        # deletion script or ccc.sh script aborted
-          returnvalue = 6
-          resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Script aborted.*$/] + '" at ' + Time.now.to_s
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' failed (script error)') unless targetobject.nil?
-            break unless targetobject.nil?
-          end unless thisaction == 'reading'
-        when /error while loading shared libraries.*$/
-        # OSV shared library export bug
-          returnvalue = 7
-          resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/error while loading shared libraries.*$/] + '" at ' + Time.now.to_s
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' failed (OSV export error)') unless targetobject.nil?
-            break unless targetobject.nil?       
-          end unless thisaction == 'reading'
-          abort 'provisioning.deliver: OSV export error'
-        #when /ERROR.*Site Name .* exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
-        when /ERROR.*Site.*exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
-        # failure: object exists already
-          returnvalue = 100
-          resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Site.*exists already.*$|Customer.*exists already.*|phone number is in use already.*$/] + '" at ' + Time.now.to_s
-          #resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/[^:]*exists already.*$/] + '" at ' + Time.now.to_s
-          # TODO: update Site Data as seen from OSV
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' success: was already provisioned') unless targetobject.nil?
-            p targetobject.status unless targetobject.nil?
-            unless targetobject.nil?
-              updateDB = UpdateDB.new
-              updateDB.perform(targetobject) 
-            end
-            break unless targetobject.nil? 
-          end unless thisaction == 'reading'
-          #provisioning.update_attributes!(:delayedjob => nil)
-          # TODO: update database from information read from target system
-        when /ERROR.*does not exist.*$/
-        # failure: object already deleted
-          returnvalue = 101
-          resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/ERROR.*does not exist.*$/][7,400] + '" at ' + Time.now.to_s
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' failed: was already de-provisioned (press "Destroy" or "Delete" again to remove from database') unless targetobject.nil?
-          end  unless thisaction == 'reading'
-        when /Warnings/
-        # import errors
-          returnvalue = 5
-          #resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext[/OSV.*Success.*$/] unless resulttext[/OSV.*Success.*$/].nil?
-          resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext #unless resulttext[/OSV.*Success.*$/].nil?
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' failed (import errors)') unless targetobject.nil?
-            break unless targetobject.nil?
-          end unless thisaction == 'reading'
-          #provisioning.update_attributes!(:delayedjob => nil)
-        when /xml version|<Result>/
-        # show command with XML output
-	  returnvalue = 9
-          # keep resulttext, no status change
+      case thisaction
+        when 'preparation'
+          result = {}
+          result['SSH Password Support'] = 'SSH ProvisioningEngine support added for OSV' if /added password authentication support/.match(resulttext)
+          result['SSH Password Support'] = 'SSH ProvisioningEngine support was already added to OSV' if /password authentication is already supported/.match(resulttext)
+          result['SSH user login'] = 'SSH access for user srx now allowed from ProvisioningEngine' if /added Web Portal to the list of allowed srx ssh hosts/.match(resulttext)
+          result['SSH user login'] = 'SSH access for user srx was already allowed from ProvisioningEngine' if /Web Portal already allowed/.match(resulttext)
+          peScriptVersion = resulttext.match(/version of new ProvisioningScripts.*$/).to_s.gsub('version of new ProvisioningScripts = ([^ \n]*)', '\1') unless resulttext.nil?
+          result['ProvisioningScripts Version'] = "ProvisioningScripts version = #{peScriptVersion.inspect}"
+##          case result
+#            when ...
+#              unless thisaction == 'reading'
+#                if thisaction == 'creation'
+                  targetobject.update_attribute(:status, result.inspect)
+#                else
+#                  targetobject.update_attribute(:status, thisaction + ' successful') unless targetobject.nil?
+#                end
+#                #abort targetobjects.inspect unless targetobject.nil?
+#              end
+
+#File.open("resulttext", "w") { |file| file.write resulttext }
+#abort result.inspect
+#abort resulttext
+#existingVersion = resulttext.match(/version of existing.*$/).inspect
+#newVersion = resulttext.match(/version of new.*$/).inspect
+#updated = false if /Existing ProvisioningScripts do not need to be upgraded/.match(resulttext)
+#abort newVersion.inspect
+#abort result.inspect
         else
-        # failure
-          returnvalue = 1
-          resulttext = "finished with unknown ERROR[#{returnvalue.to_s}]=BODY[0,400]=\"" + resulttext[0,400] + '" at ' + Time.now.to_s unless resulttext.nil? 
-          targetobjects.each do |targetobject|
-            targetobject.update_attribute(:status, thisaction + ' failed') unless targetobject.nil?
-            break unless targetobject.nil? 
-          end unless thisaction == 'reading'
-      end  # case resulttext
-  
+          case resulttext 
+            when nil 
+            # error: Apache Camel based CloudWebPortal does not seem to be running or is unreachable
+              # for the case the BODY was empty
+              resulttext = "connection timout for #{uriString} at " + Time.now.to_s
+              returnvalue = 8
+              targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil? || thisaction == 'reading'
+              abort 'provisioning.deliver: ' + resulttext
+            #when /Warnings:0    Errors:0     Syntax Errors:0/ 
+            when /Errors:0     Syntax Errors:0/ 
+            # success
+              resulttext = 'finished successfully at ' + Time.now.to_s
+              returnvalue = 0
+              # update status of targetobject
+              unless thisaction == 'reading'
+                if thisaction == 'deletion'
+                  targetobject.update_attribute(:status, thisaction + ' successful (press "Destroy" again to remove from database)') unless targetobject.nil?
+                else
+                  targetobject.update_attribute(:status, thisaction + ' successful') unless targetobject.nil?
+                end
+                #abort targetobjects.inspect unless targetobject.nil?
+              end 
+              #provisioning.update_attributes!(:delayedjob => nil)
+              # 0
+              #abort targetobjects.inspect
+            when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/
+            # timeout
+              returnvalue = 3        
+              resulttext = "last unsuccessful attempt with ERROR[#{returnvalue.to_s}]=\""  + resulttext[/ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/] + '" at ' + Time.now.to_s
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (timed out); trying again') unless targetobject.nil?
+              end unless thisaction == 'reading'
+          	    #abort resulttext
+              abort 'provisioning.deliver: connection timout of one or more target systems'
+            when /TEST MODE.*$/
+            # test mode
+              returnvalue = 4
+              resulttext = "finished with success (TEST MODE [#{returnvalue.to_s}])\"" + '" at ' + Time.now.to_s
+	    # do not change the status in case of a test mode query:
+    #          targetobjects.each do |targetobject|
+    #            targetobject.update_attribute(:status, thisaction + ' successful (test mode)') unless targetobject.nil?
+    #            break unless targetobject.nil? 
+    #          end
+              #provisioning.update_attributes!(:delayedjob => nil)
+            when /Script aborted.*$/
+            # deletion script or ccc.sh script aborted
+              returnvalue = 6
+              resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Script aborted.*$/] + '" at ' + Time.now.to_s
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (script error)') unless targetobject.nil?
+              end
+            when /error while loading shared libraries.*$/
+            # OSV shared library export bug
+              returnvalue = 7
+              resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/error while loading shared libraries.*$/] + '" at ' + Time.now.to_s
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (OSV export error)') unless targetobject.nil?
+              end
+              abort 'provisioning.deliver: OSV export error'
+            #when /ERROR.*Site Name .* exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
+            when /ERROR.*Site.*exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
+            # failure: object exists already
+              returnvalue = 100
+              resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Site.*exists already.*$|Customer.*exists already.*|phone number is in use already.*$/] + '" at ' + Time.now.to_s
+              #resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/[^:]*exists already.*$/] + '" at ' + Time.now.to_s
+              # TODO: update Site Data as seen from OSV
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' success: was already provisioned') unless targetobject.nil?
+                p targetobject.status unless targetobject.nil?
+                unless targetobject.nil?
+                  updateDB = UpdateDB.new
+                  updateDB.perform(targetobject) 
+                end
+              end unless thisaction == 'reading'
+              #provisioning.update_attributes!(:delayedjob => nil)
+              # TODO: update database from information read from target system
+            when /ERROR.*does not exist.*$/
+            # failure: object already deleted
+              returnvalue = 101
+              resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/ERROR.*does not exist.*$/][7,400] + '" at ' + Time.now.to_s
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed: was already de-provisioned (press "Destroy" or "Delete" again to remove from database') unless targetobject.nil?
+              end
+            when /Warnings/
+            # import errors
+              returnvalue = 5
+              #resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext[/OSV.*Success.*$/] unless resulttext[/OSV.*Success.*$/].nil?
+              resulttext = "Import ERROR[#{returnvalue.to_s}]=\"" + resulttext #unless resulttext[/OSV.*Success.*$/].nil?
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (import errors)') unless targetobject.nil?
+              end
+              #provisioning.update_attributes!(:delayedjob => nil)
+            when /xml version|<Result>/
+            # show command with XML output
+	      returnvalue = 9
+              # keep resulttext, no status change
+            else
+            # failure
+              returnvalue = 1
+              resulttext = "finished with unknown ERROR[#{returnvalue.to_s}]=BODY[0,1000]=\"" + resulttext[0,1000] + '" at ' + Time.now.to_s unless resulttext.nil? 
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/ERROR.*\Z/).to_s}") unless targetobject.nil?
+              end
+          end  # case resulttext
+          
+      end # case thisaction
+
       p '------------------resulttext------------------'
       p 'resulttext = ' + resulttext
       p 'returnvalue = ' + returnvalue.to_s
@@ -286,6 +318,7 @@ class Provisioning < ActiveRecord::Base
   belongs_to :customer
   belongs_to :site
   belongs_to :user
+  belongs_to :provisioningobject, :polymorphic => true
   #handle_asynchronously :deliverasynchronously
   validates_with Validate_action
 end

@@ -1,4 +1,4 @@
-class TargetsController < ApplicationController
+class TargetsController < ProvisioningobjectsController #ApplicationController
   before_action :set_target, only: [:show, :edit, :update, :destroy]
 
   # GET /targets
@@ -62,6 +62,11 @@ class TargetsController < ApplicationController
       format.js { render nothing: true }
     end
   end
+
+  # PATCH       /target/1/provision
+  def provision
+    super
+  end # def provision
 
   private
     # Use callbacks to share common setup or constraints between actions.

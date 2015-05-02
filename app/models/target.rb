@@ -30,6 +30,14 @@ class Target < Provisioningobject #ActiveRecord::Base
     self
   end
 
+  def parentClass
+    nil
+  end
+
+  def self.parentClass
+    nil
+  end
+
   def parent
     nil
   end
@@ -42,8 +50,19 @@ class Target < Provisioningobject #ActiveRecord::Base
     nil
   end
   
-  def provisioningAction(method)
+  def self.provisioningAction(method)
     nil
+  end
+  
+  def provisioningAction(method)
+
+    case method
+      when :create
+        "action=PrepareSystem"
+      else
+        abort "Unsupported provisioning method"
+    end
+
   end
   
   def self.childClass
@@ -54,33 +73,12 @@ class Target < Provisioningobject #ActiveRecord::Base
     Customer
   end
 
-  def provision(method, async=true)
-    # overrides the provision method found in app/models/provisioningobject.rb
-    # since provisioning is not supported and :read will never be supported, we need a specific handling for targets
+  def children
+    Customer.where(target_id: id)
+  end
 
-# not yet supported:
-    return false
-#######################################
-#    @provisioningobject = self
-#
-#    # update the status of the object; throws an exception, if the object cannot be saved.
-#    case method
-#      when :create
-#        methodNoun = "provisioning"
-#        abort "provisioning not supported yet for targets"
-#        #return false if activeJob?
-#        #return false if provisioned?
-#      when :destroy
-#        methodNoun = "de-provisioning"
-#        abort "provisioning not supported yet for targets"
-#        #return false if activeJob?
-#        #return false if !provisioned?
-#      when :read
-#        methodNoun = "reading"
-#        return "<Result><Target>#{name}</Target></Result>"
-#      else
-#        abort "provision(method=#{method}, async=#{async}): Unknown method"
-#    end
+  def provision(method, async=true)
+    super
   end
   
   def recursiveConfiguration

@@ -30,13 +30,13 @@ scope(path: baseURL) do
   # OV replaced by:
   #resources :customers, :sites, :users, :provisionings, except: [:destroy] do
   # only supported for customers and provisionings yet:
-  resources :customers, :sites, :users, :provisionings, except: [:destroy, :update] do
+  resources :targets, :customers, :sites, :users, :provisionings, except: [:destroy, :update] do
    collection do
      delete :removeAll
    end 
   end
 
-  resources :customers, :sites, :users , except: [:destroy, :update] do
+  resources :targets, :customers, :sites, :users , except: [:destroy, :update] do
     collection do
       #patch :synchronizeAll
       patch :synchronize
@@ -46,7 +46,7 @@ scope(path: baseURL) do
     #resources :customers
    # not tested; trying to use synchronize instead
   #resources :customers, except: [:patch] do
-  resources :customers, :sites, :users do
+  resources :targets, :customers, :sites, :users do
     resources :provisionings, :member => { :deliver => :post}
     collection do
       #patch :synchronizeAll

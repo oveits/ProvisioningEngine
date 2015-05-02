@@ -3,6 +3,10 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   # GET /sites
   # GET /sites.json
   def index
+    super
+  end
+
+  def indexOld
     if(params[:customer_id])
       @customer = Customer.find(params[:customer_id])
       @sites = Site.where(customer: params[:customer_id])

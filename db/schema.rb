@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150406190851) do
+ActiveRecord::Schema.define(version: 20150429141009) do
 
   create_table "customers", force: true do |t|
     t.string   "name"
@@ -50,6 +50,8 @@ ActiveRecord::Schema.define(version: 20150406190851) do
     t.integer  "delayedjob_id"
     t.integer  "attempts"
     t.integer  "user_id"
+    t.integer  "provisioningobject_id"
+    t.string   "provisioningobject_type"
   end
 
   add_index "provisionings", ["customer_id"], name: "index_provisionings_on_customer_id"

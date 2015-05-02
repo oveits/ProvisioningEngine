@@ -3,6 +3,10 @@ class UsersController < ProvisioningobjectsController #ApplicationController
   # GET /users
   # GET /users.json
   def index
+    super
+  end
+
+  def indexOld
     
     if(params[:site_id])
       @site = Site.find(params[:site_id])

@@ -61,11 +61,12 @@ class Customer < Provisioningobject #< ActiveRecord::Base
   
   def children
     children = Site.where(customer: id)
-    if children.count > 0
-      children
-    else
-      nil
-    end
+# better to return an empty relation instead of nil; therefore commented out:
+#    if children.count > 0
+#      children
+#    else
+#      nil
+#    end
   end
   
   def parent
