@@ -1,4 +1,4 @@
-<% myclass = request.original_url.gsub(/http.*\/(customers|sites|users|provisionings|targets)(\/[a-z]*){0,1}(\/[1-9][0-9]*){0,1}$/, '\1')
+<% myclass = /customers|sites|users|provisionings|targets/.match request.original_url.to_s
 if ENV["WEBPORTAL_BASEURL"] == "false" || ENV["WEBPORTAL_BASEURL"].nil?
   baseURL = '/'
 else
@@ -9,7 +9,7 @@ end
     
 %>
 <% case request.original_url %>
-<%     when /#{myclass}$|#{myclass}\/$|#{myclass}\/\#$|#{myclass}\/index.html$/ %> 
+<%     when /#{myclass}(\/(\?.*)?)?(#)?/ %>
                 <li class="sidebar-brand">
                         Functions
                 </li>

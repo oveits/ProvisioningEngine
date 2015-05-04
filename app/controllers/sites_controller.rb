@@ -109,6 +109,7 @@ class SitesController < ProvisioningobjectsController #ApplicationController
     @partentTargets = nil;
 		#@partentTargets = Customer.where(name: "ExampleCustomerV8")
 		#Delayed::Worker.delay_jobs = false
+		#Delayed::Worker.delay_jobs = true
     @myClass = Site
 
     @recursive_all = false

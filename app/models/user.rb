@@ -90,7 +90,8 @@ class User < Provisioningobject #< ActiveRecord::Base
 #      else
 #        abort "whatever"
 #      end
-      "action=List Users"
+      "action=List Users" if myparent.nil?
+      "action=List Users, SiteName=#{myparent.name}, customerName=#{myparent.customer.name}" unless myparent.nil?
     else
       abort "unknown method for User.provisioningAction(method)"
     end

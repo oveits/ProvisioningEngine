@@ -3,6 +3,9 @@
 
   // specify the URLs, where we want to perform page reloads:
   pattern = "customers[/#]*$|customers/[1-9][0-9]*[/#]*$|sites[/#]*$|sites/[1-9][0-9]*[/#]*$|users[/#]*$|users/[1-9][0-9]*[/#]*$|provisionings[/#]*$|provisionings/[1-9][0-9]*[/#]*$";
+
+// temporarily switched off:
+//pattern = "@@@@@@@@@@@@@@@@@@@@@---switched--off---@@@@@@@@@@@@@@@@@@@@@@@"
   //pattern = "customers[/#]*$|customers/[1-9][0-9]*[/#]*$|sites[/#]*$|sites/[1-9][0-9]*[/#]*$|provisionings[/#]*$|provisionings/[1-9][0-9]*[/#]*$";
   var idArray = ["page-content-wrapper", "flash", "sidebar-wrapper"];
 

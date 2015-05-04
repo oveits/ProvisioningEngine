@@ -1017,6 +1017,7 @@ objectList.each do |obj|
        if obj == "Customer" || obj == "Site" || obj == "User"
         it "should synchronize the index with the objects found on the target system" do
           # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
+          Delayed::Worker.delay_jobs = false
           provisionedObject = initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
           
           # check that initObj was working correctly and the object is not in the database:
@@ -1034,7 +1035,6 @@ objectList.each do |obj|
           expect( notProvisionedObject.status ).not_to match(/not provisioned/)
           
           #initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: false)
-          Delayed::Worker.delay_jobs = false
           if testTarget == 'model'
             # TODO: add the corresponding code
             myClass = Object.const_get(myObject(obj))
@@ -1066,7 +1066,7 @@ objectList.each do |obj|
 
             # the "Synchronize" link should be present:
             expect(page).to have_link( "Synchronize #{obj}s" ) #, href: synchronize_provisioningobjects_path(obj) )
-            
+
             # clicking the "Synchronize" link should increase the number of objects by 1 or more:
             expect{ click_link "Synchronize #{obj}s" }.to change(Object.const_get(obj), :count).by_at_least(1)
             

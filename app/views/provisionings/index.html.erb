@@ -1,6 +1,13 @@
 	<h1>
 	<% if @active %> Active <% end %>	
-		Provisioning Tasks
+		Provisioning Tasks 
+                 <% if @provisionings.count >= 50 %>
+                 (show
+                 <% if @show != 50  %><%= link_to 'last 50',  provisionings_path(show: 50)  %>|<% else %>last 50|<% end %>
+                 <% if @show != 200 %><%= link_to 'last 200', provisionings_path(show: 200) %>|<% else %>last 200|<% end %>
+                 <% if @show != 0   %><%= link_to 'all',      provisionings_path(show: 0)   %><% else %>all<% end %>
+                 )
+                 <% end %>
 	<% if !@site.nil? %>
 		of Site <%= @site.name %>
 	<% end %>
@@ -103,5 +110,12 @@
   </tbody>
 </table>
 </div>
+<% if @provisionings.count >= 50 %>
+                 (show
+                 <% if @show != 50  %><%= link_to 'last 50',  provisionings_path(show: 50)  %>|<% else %>last 50|<% end %>
+                 <% if @show != 200 %><%= link_to 'last 200', provisionings_path(show: 200) %>|<% else %>last 200|<% end %>
+                 <% if @show != 0   %><%= link_to 'all',      provisionings_path(show: 0)   %><% else %>all<% end %>
+                 )
+                 <% end %>
 
 

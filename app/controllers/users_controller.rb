@@ -6,19 +6,6 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     super
   end
 
-  def indexOld
-    
-    if(params[:site_id])
-      @site = Site.find(params[:site_id])
-      @users = User.where(site: params[:site_id])
-    elsif(params[:customer_id])
-      @customer = Customer.find(params[:customer_id])
-      @users = User.where(customer: params[:customer_id])      
-    else
-      @users = User.all
-    end
-  end
-
   # GET /users/1
   # GET /users/1.json
   def show

@@ -55,7 +55,7 @@ class Provisioningobject < ActiveRecord::Base
 
       # for all parents in the list, find all children and write them to the children_list
       parent_list.each do |parent|
-        children_list = children_list.concat parent.children
+        children_list = children_list.concat parent.children unless parent.children.nil?
       end
 
       # go down one level, e.g. if you have found all Customers of a Target, write the Customers to the parent_list, in case of searched Sites, we stop here. In case of Users being looked for, we go one step further and will find all children of the Customers in the next iteration
@@ -148,7 +148,7 @@ class Provisioningobject < ActiveRecord::Base
   end
   
   def synchronize(async=true, recursive=true)
-#abort async.inspect
+		#abort async.inspect
     #return false if /waiting|progress/.match(status)
     #updateDB = UpdateDB.new
     if async
@@ -167,6 +167,41 @@ class Provisioningobject < ActiveRecord::Base
       returnBody = synchronizeSynchronously(recursive)
     end
   end
+
+  def self.synchronizeTree(ancestor = nil, async=true, recursive=false)
+    #
+    # synchronizes all objects of the specific class to the local database
+    # with recursive == true, also the child classes are synchronized
+    #
+    # TODO: create rspec tests for recursive synchronizeAll, if not already present and test with recursive = true (also see controller)
+
+    abort "recursive mode of synchronizeAll is not yet supported" if recursive
+
+    if ancestor.nil?
+      targetsArray = Target.all.map {|i| i}
+    else
+      targetsArray = [ ancestor.target ] unless ancestor.nil?
+    end
+		#abort targetsArray.inspect
+
+    parents_all = parentClass.all_in(ancestor) unless ancestor.nil?
+    parents_all = parentClass.all_in if ancestor.nil?
+    
+    targetsArray.each do |target_i|
+      parents = parents_all unless ancestor.nil?
+      parents = parents_all.select{ |i| i.target == target_i } if ancestor.nil?
+
+    end
+
+abort parents.inspect    
+    # TODO: rebuild the functions of self.synchronizeAll with less SQL requests.
+    # idea: build a tree from ancestor (or root) to the to be updated level. 
+    # It should be possible to find the anchestors without any additional SQL statement (e.g. if user = tree[target_i][customer_i][site_i][user_i] then user.customer = tree[target_i][customer_i]. 
+    # e.g. Loop through each level similar to what I already have done in the customer's index view
+    #  
+    # 
+    
+  end
   
   def self.synchronizeAll(parents = nil, async=true, recursive=false)
     # 
@@ -177,15 +212,18 @@ class Provisioningobject < ActiveRecord::Base
     
     abort "recursive mode of synchronizeAll is not yet supported" if recursive
 
-    parents ||= parentClass.all
+    parents ||= parentClass.all_in
+		#abort parents.inspect
 
     # find target systems involved:
     targetsArray = parents.map {|i| i.target}.uniq
 		#abort targetsArray.inspect
-		#abort async.inspect
 
     # for each target involved, perform a synchronization task (in the background for async==true):
     targetsArray.each do |target_i|
+
+		# for tests:
+		#next unless target_i.name.match(/CSL9DEV/)
 
       # For each target, find all parents, which are in the parents list and are on this target
       parents_of_this_target = parents.select{ |i| i.target.id == target_i.id} #targetsArray 
@@ -243,6 +281,7 @@ class Provisioningobject < ActiveRecord::Base
 
       # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
       responseBody = "synchronizeAllSynchronously: ERROR: #{self.class.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
+#abort "lerghoesrhgoerhgos"
 
       p "SSSSSSSSSSSSSSSSSSSSSSSSS    #{self.name}.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS" if verbose
       p responseBody.inspect if verbose
@@ -291,14 +330,8 @@ class Provisioningobject < ActiveRecord::Base
               abort "too many matches"           
           end
           
-          # TODO: the update_attribute and synchronizeSynchronously must be removed, when the create_from_REXML_element is enhanced to also update all parameters, including the status:        
-              # note: update_attribute will save the object, even if the validations fail:
-              thisObject.update_attribute(:status, 'found on target but not yet synchronized')
-          
-              # update the parameters of the specific object:
-              thisObject.synchronizeSynchronously(recursive)
-            
-          thisObject.save!(validate: false)
+          thisObject.update_attribute(:status, 'provisioned successfully (found on target and  thus created in the database)')
+		#abort thisObject.status
   
       end # doc.root.elements["GetBGListData"].elements.each do |element|
       
@@ -334,6 +367,16 @@ class Provisioningobject < ActiveRecord::Base
     object_sym = self.class.to_s.downcase.to_sym
 
     returnvalue = provisioning.deliver
+  end
+
+  def self.recursiveDeleteAll
+    #
+    # deletes the contents of an SQL table with a single SQL command (much better performance than self.destroy_all)
+    # deletes all children tables recursively
+    #
+    childClass.recursiveDeleteAll unless childClass.nil?
+		#abort childClass.inspect
+    self.delete_all
   end
   
   def recursiveConfiguration

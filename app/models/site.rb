@@ -165,9 +165,21 @@ class Site < Provisioningobject #< ActiveRecord::Base
   end
   
   def self.create_from_REXML_element(element, mytarget)
+
+    # read parameters from XML input
+    params = {}
+    {name: "SiteName", sitecode: "SiteCode", gatewayIP: "GatewayIP", countrycode: "CountryCode", areacode: "AreaCode", localofficecode: "LocalOfficeCode", extensionlength: "ExtensionLength"}.each do |key, value|
+      params[key] = element.elements[value].text unless element.elements[value].nil?
+    end
+      params[:customer_id] = mytarget.id
+		#abort params.inspect
 		#abort element.elements["SiteName"].text
-    self.new(name: element.elements["SiteName"].text, customer: mytarget)
-            #abort self.new(name: element.elements["SiteName"].text, customer: mytarget).inspect
+
+    # create new object with the above parameters, save it and return it
+    myObject = self.new(params)
+    myObject.save!(validate: false)
+    return myObject
+            	#abort self.new(name: element.elements["SiteName"].text, customer: mytarget).inspect
   end
   
   def provisioningAction(method)

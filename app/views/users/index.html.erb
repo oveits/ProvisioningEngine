@@ -1,6 +1,7 @@
 <% 
   @allSites = Site.all
   @allCustomers = Customer.all 
+  @allTargets = Target.all 
 
   def site(user)
     #return user.site, but optimized: done with DRAM with a single SQL query per page refresh
@@ -20,6 +21,19 @@
     customersOfUser = @allCustomers.select {|customer| site(user).customer_id == customer.id }
     if customersOfUser.count == 1
       customersOfUser[0]
+    else
+      nil
+    end
+
+  end
+
+  def target(user)
+    #return user.site.customer.customer, but optimized: done with DRAM with a single SQL query per page refresh
+
+    return nil if customer(user).nil?
+    targetsOfUser = @allTargets.select {|target| customer(user).target_id == target.id }
+    if targetsOfUser.count == 1
+      targetsOfUser[0]
     else
       nil
     end
@@ -45,6 +59,7 @@
       <th>Name</th>
 <% end %>
       <th>Extension</th>
+      <th>Target</th>
       	<% if @customer.nil? %>
       <th>Customer</th>
       	<% end %>
@@ -68,6 +83,7 @@
         <td><%= link_to user.name, user %></td>
 	<% end %>
         <td><%= link_to user.extension, user_path(user) %></td>
+        <td><%= link_to target(user).name, target(user) %></td>
         
         	<% if @customer.nil? %>
         <td>	

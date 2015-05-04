@@ -16,11 +16,11 @@
   def target(site)
     # return site.customer.target in a SQL optimized fashion: only one SQL request needed
 
-    targetsOfSite = @allTargets.select {|target| customer(site).target_id == target.id }
-    if targetsOfSite.count == 1
-      targetsOfSite[0]
-    else
+    targetsOfSite = @allTargets.select {|target| customer(site).target_id == target.id } unless customer(site).nil?
+    if targetsOfSite.nil? || targetsOfSite.count != 1
       nil
+    else
+      targetsOfSite[0]
     end
   end
 %>

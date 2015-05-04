@@ -246,10 +246,9 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
     		#abort provisioningobjects.inspect
     @redirectPath = :back if @redirectPath.nil?
     if provisioningobjects.count > 0
-      provisioningobjects.each do |provisioningobject| 
-		#abort provisioningobject.inspect
-        provisioningobject.destroy!
-      end
+      
+       # remove all entries with one SQL command per level (better performance than myClass.destroy_all):
+       myClass.recursiveDeleteAll
       flash[:notice] = "All #{myClass.name.pluralize} have been deleted."
     else 
       flash[:notice] = "No #{myClass.name} found; nothing to do."
