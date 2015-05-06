@@ -1,6 +1,6 @@
 <% myclass = /customers|sites|users|provisionings|targets/.match request.original_url.to_s
    case request.original_url
-       when /#{myclass}(\/(\?.*)?)?(#)?/
+       when /#{myclass}(\/(\?.*)?)?(#)?$/
 %>
                 <li class="sidebar-brand">
                         Customer Functions
