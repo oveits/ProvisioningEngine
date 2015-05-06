@@ -114,3 +114,4 @@ end
 
 gem 'activesupport'
 
+gem 'kaminari'

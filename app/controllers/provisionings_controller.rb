@@ -22,14 +22,6 @@ class ProvisioningsController < ApplicationController
   # GET /provisionings.json
   def index
 		#abort params[:show].inspect
-    if params[:show].nil?
-      # default: show last 50 provisioning tesks:
-      @show = 50 
-    else
-      # 0 means "show all"
-      @show = params[:show].to_i 
-    end
-    		#abort @show.inspect
     @active = params[:active]
     # can be :true, :any
     
@@ -75,12 +67,14 @@ class ProvisioningsController < ApplicationController
       @provisionings =  @activeProvisionings
     end 
 
-    @provisionings = @provisionings.map { |i| i }[(-1 * @show)..-1]
-
-
+    # convert to Array:
+    @provisionings = @provisionings.map { |i| i }
     @provisionings = [] if @provisionings.nil?
-    
-    #abort @provisionings.inspect
+    @provisionings = @provisionings.reverse
+
+    # convert to paginatable Array:
+    @provisionings = Kaminari.paginate_array(@provisionings).page(params[:page]).per(10)
+    		#abort @provisionings.inspect
             
   end
 

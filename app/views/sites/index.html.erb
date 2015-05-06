@@ -71,6 +71,9 @@ $('.user').hover(function() {
 </script>
 <% "end of: this is a test of the mouse hover function. Does not work after a page-content_reload, so we need to place it somwhere, where it is not reloaded" %>
 <% end %>
+<div>
+<%= paginate @provisioningobjects %>
+</div>
 
 <div>
 <table>
@@ -131,5 +134,9 @@ $('.user').hover(function() {
   </tbody>
 </table>
 </div>
+<div>
+<%= paginate @provisioningobjects %>
+</div>
+
 
 

@@ -51,8 +51,9 @@ end
 
     # now ancestor is either nil, or points to the closes relative upwards, e.g. Target.find(3)
    
- #@provisioningobjects = myClass.all_in(ancestor, false)[1..50]
-    @provisioningobjects = myClass.all_in(ancestor, true, 1, 50)
+#    @provisioningobjects = myClass.all_in(ancestor, true, 1, 50) unless myClass == User # will be removed later
+    my_array_object = myClass.all_in(ancestor, false)
+    @provisioningobjects = Kaminari.paginate_array(my_array_object).page(params[:page]).per(10) 
 		#abort @provisioningobjects.inspect
 
     # e.g. @customers = @provisioningobjects 

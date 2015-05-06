@@ -16,8 +16,10 @@
 </script>
 
 <h1>Targets</h1>
-<p>Manage Provisioning Targets</p>
-<!-- <div class="view"> -->
+
+<div>
+<%= paginate @provisioningobjects %>
+</div>
 
 <div >
 
@@ -56,8 +58,12 @@ toggleshowhide("<%= target.id %>");
   </tbody>
 
 </table>
-
 </div>
+
+<div>
+<%= paginate @provisioningobjects %>
+</div>
+
 
 <script>
 //document.getElementById('2_fullconfig').style.display='block';

@@ -4,7 +4,8 @@ class TargetsController < ProvisioningobjectsController #ApplicationController
   # GET /targets
   # GET /targets.json
   def index
-    @targets = Target.all
+    super
+    #@targets = Target.all
   end
 
   # GET /targets/1

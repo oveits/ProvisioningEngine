@@ -1,15 +1,7 @@
 <% myclass = /customers|sites|users|provisionings|targets/.match request.original_url.to_s
-if ENV["WEBPORTAL_BASEURL"] == "false" || ENV["WEBPORTAL_BASEURL"].nil?
-  baseURL = '/'
-else
-  baseURL = ENV["WEBPORTAL_BASEURL"]
-end
-  baseURL = '' if baseURL == '/'
+   case request.original_url
+       when /#{myclass}(\/(\?.*)?)?(#)?/ 
 %>
-    
-%>
-<% case request.original_url %>
-<%     when /#{myclass}(\/(\?.*)?)?(#)?/ %>
                 <li class="sidebar-brand">
                         Functions
                 </li>

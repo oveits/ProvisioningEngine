@@ -1,13 +1,6 @@
 	<h1>
 	<% if @active %> Active <% end %>	
-		Provisioning Tasks 
-                 <% if @provisionings.count >= 50 %>
-                 (show
-                 <% if @show != 50  %><%= link_to 'last 50',  provisionings_path(show: 50)  %>|<% else %>last 50|<% end %>
-                 <% if @show != 200 %><%= link_to 'last 200', provisionings_path(show: 200) %>|<% else %>last 200|<% end %>
-                 <% if @show != 0   %><%= link_to 'all',      provisionings_path(show: 0)   %><% else %>all<% end %>
-                 )
-                 <% end %>
+		Provisioning Tasks (latest first) 
 	<% if !@site.nil? %>
 		of Site <%= @site.name %>
 	<% end %>
@@ -17,6 +10,9 @@
 	<% end %>	
 	</h1>
 
+<div>
+<%= paginate @provisionings %>
+</div>
 
 <div>
 <table>
@@ -33,7 +29,7 @@
  
 
   <tbody>
-    <% @provisionings.reverse_each do |provisioning| %>
+    <% @provisionings.each do |provisioning| %>
       <tr>
         <td><%= provisioning.id %></td>
         <td><%= provisioning.action.to_s.gsub(/(assw[^=\n]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
@@ -110,12 +106,8 @@
   </tbody>
 </table>
 </div>
-<% if @provisionings.count >= 50 %>
-                 (show
-                 <% if @show != 50  %><%= link_to 'last 50',  provisionings_path(show: 50)  %>|<% else %>last 50|<% end %>
-                 <% if @show != 200 %><%= link_to 'last 200', provisionings_path(show: 200) %>|<% else %>last 200|<% end %>
-                 <% if @show != 0   %><%= link_to 'all',      provisionings_path(show: 0)   %><% else %>all<% end %>
-                 )
-                 <% end %>
 
+<div>
+<%= paginate @provisionings %>
+</div>
 

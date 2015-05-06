@@ -46,7 +46,7 @@ function page_ajax_id_refresh(idArray) {
 
                   // calculate newhtml:
                   var parser = new DOMParser();
-                  var doc = parser.parseFromString(data, "text/xml");
+                  var doc = parser.parseFromString(data, "text/html");
                   var newhtml = doc.getElementById(id).innerHTML;
 
                   // replace old html by newhtml:
@@ -73,7 +73,7 @@ function page_ajax_id_refresh(idArray) {
     // in the moment, document.getElementById("page-content-wrapper") yields null, and would cause the refresh to stop; threrefore we set the timer manually only for now:
 //    if(document.getElementById("page-content-wrapper").innerHTML.match(/waiting/g) && document.getElementById(id).innerHTML.match(/progress/g)){
 //     // once every 10 seconds, if at least an item is in 'waiting' or 'progress' status
-      refreshTimer = 10000;
+      refreshTimer = 5000;
 //    } else {
 //      // else once every minute should be sufficient:
 //      refreshTimer = 60000;
