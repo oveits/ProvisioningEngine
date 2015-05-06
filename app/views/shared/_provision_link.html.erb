@@ -1,6 +1,6 @@
 <% render 'shared/helpers.html.erb' %>
 
-<% if true %>
+<% if false %>
 <%= link_to "Provision #{@provisioningobject.class.name}", provisioningobject_path(@provisioningobject, 'provision'), method: :patch, data: { confirm: "Are you sure?" } %>
 <% end %>
 

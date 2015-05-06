@@ -58,7 +58,9 @@ class Target < Provisioningobject #ActiveRecord::Base
 
     case method
       when :create
-        "action=PrepareSystem"
+        #"action=PrepareSystem"
+     # for now, since it does not work correctly and is not fully tested:
+        nil
       else
         abort "Unsupported provisioning method"
     end

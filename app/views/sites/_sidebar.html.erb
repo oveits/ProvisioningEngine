@@ -13,7 +13,10 @@
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize Sites', synchronize_sites_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
+<% if ENV["WEBPORTAL_REMOVEALL_LINK_VISIBLE"] == "true" %>
                 <li><%= link_to 'Clear Sites Table', removeAll_sites_path, method: :delete, data: { confirm: 'Are you sure? This will remove all Sites from the database but it will keep the targets untouched. Data not provisioned to a target will be lost.' } %></li>
+<% end %>
+
 
 
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>

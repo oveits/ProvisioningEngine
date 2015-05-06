@@ -1,7 +1,6 @@
 <% 
   # if we happen to reach here, although the file is included already, we return right away...
   return if defined? destroy_button_included
-
   def destroy_button_included
     true
   end
@@ -17,10 +16,10 @@
     end
 
     if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status)
-      if ENV["WEBPORTAL_PROVISIONINGOBJECTS_DESTROY_WO_DEPROVISION"] == "true"
+      if ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false" && ENV["WEBPORTAL_PROVISIONINGOBJECTS_DESTROY_WO_DEPROVISION"] == "true"
         return myLink
       elsif ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false"
-        return '<button class= "btn btn-default" onclick="alert(\'De-Provision the item first!\');">' + label + '</button>'
+        return raw('<button class= "btn btn-default" onclick="alert(\'De-Provision the item first!\');">' + label + '</button>')
       end          
     else
       return myLink

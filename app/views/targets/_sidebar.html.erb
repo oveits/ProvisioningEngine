@@ -16,8 +16,10 @@
                         Change/Delete
                 </li>
                 <li><%= link_to 'Edit Target', edit_target_path(@target) %></li>
+<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_TARGET_VISIBLE"] == "true" %>
                 <% @provisioningobject = @target %>
 		<li><%= render 'shared/provision_link.html.erb' %></li>
+<% end %>
          <% if false %>
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize', synchronize_target_path(@target), method: :patch, data: { confirm: 'Are you sure?' } %></li>
