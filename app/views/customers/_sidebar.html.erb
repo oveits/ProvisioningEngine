@@ -1,4 +1,4 @@
-<% myclass = /customers|sites|users|provisionings|targets/.match request.original_url.to_s
+<% myclass = 'customers' #/customers|sites|users|provisionings|targets/.match request.original_url.to_s
    case request.original_url
        when /#{myclass}(\/(\?.*)?)?(#)?$/
 %>
@@ -32,8 +32,12 @@
                 <li class="sidebar-brand">
                         Show related ...
                 </li>
+<% if ENV["WEBPORTAL_SIDEBAR_RELATED_COUNT_VISIBLE"] == "true" %>
+                <li><%= link_to "Sites (#{ Site.where(customer_id: @customer.id).count.to_s})", customer_sites_path(customer = @customer) %></li>
+<% else %>
                 <li><%= link_to "Sites", customer_sites_path(customer = @customer) %></li>
-                <li><%= link_to 'Users', customer_users_path(@customer) %></li>
+<% end %>
+                <li><%= link_to "Users", customer_users_path(@customer) %></li>
                 <li><%= link_to 'Provisioning Tasks', customer_provisionings_path(@customer) %></li>
 
 

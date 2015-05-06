@@ -55,12 +55,18 @@
         <td><%= link_to 'Provision', provision_customer_path(@customer), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 			<% end %>
 <%  @provisioningobject = @customer; %>
-        <td><%= render 'shared/edit_button.html.erb' %></td>
+        <td><%= render 'shared/edit_button.html.erb' 
+                edit_button
+            %></td>
 			<% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
   <td><%= link_to 'Synchronize', synchronize_customer_path(@customer), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' }%></td>
 			<% end %>
-        <td><%= render 'shared/provision_button.html.erb' %></td>
-        <td><%= render 'shared/destroy_button.html.erb' %></td>
+        <td><%= render 'shared/provision_button.html.erb' 
+                provision_button
+            %></td>
+        <td><%= render 'shared/destroy_button.html.erb' 
+                destroy_button
+            %></td>
 
       </tr>
       <%= render @customer.sites %>

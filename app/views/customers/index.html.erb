@@ -14,6 +14,10 @@
   end
 %>
 <h1>Customers</h1>
+<% unless @filteredvia.nil? %>
+<p>filtered via: <%= @filteredvia.class.name %> <%= link_to @filteredvia.name, @filteredvia %> (<%= link_to 'show all', customers_path %>)</p>
+<% end %>
+
 <div>
 <%= paginate @provisioningobjects %>
 </div>

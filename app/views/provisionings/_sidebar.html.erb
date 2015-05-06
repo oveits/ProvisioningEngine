@@ -1,4 +1,4 @@
-<% myclass = /customers|sites|users|provisionings|targets/.match request.original_url.to_s
+<% myclass = 'provisionings' #/customers|sites|users|provisionings|targets/.match request.original_url.to_s
    case request.original_url
        when /#{myclass}(\/(\?.*)?)?(#)?$/
 %>
@@ -10,7 +10,7 @@
             <% end %>
 
                 <li><%= link_to 'Clear Table', removeAll_provisionings_path, method: :delete, data: { confirm: 'This will remove all Provisioning Tasks from the Database. Are you sure?' } %></li>
-                <li><%= link_to "Delayed Jobs", "delayed_job/overview", :target => "_blank" %></li>
+                <li><%= link_to "Delayed Jobs", "/delayed_job/overview", :target => "_blank" %></li>
 <%     when /#{myclass}\/[1-9][0-9]*$/ %>
                 <li class="sidebar-brand">
                         Create

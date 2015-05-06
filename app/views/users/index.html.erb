@@ -41,15 +41,11 @@
   end
 %>
 <% if !@site.nil?; @customer = @site.customer; end %>
-	<h1>
-		Users	
-	<% if !@site.nil? %>
-		of Site <%= link_to @site.name, @site %>
-		<% if !@customer.nil? %>
-			of Customer <%= link_to @customer.name, @customer %>
-		<% end %>
-	<% end %>	
-	</h1>
+	<h1>Users</h1>
+<% unless @filteredvia.nil? %>
+<p>filtered via: <%= @filteredvia.class.name %> <%= link_to @filteredvia.name, @filteredvia %> (<%= link_to 'show all', users_path %>)</p>
+<% end %>
+
 <div>
 <%= paginate @provisioningobjects %>
 </div>

@@ -1,4 +1,4 @@
-<% myclass = /customers|sites|users|provisionings|targets/.match request.original_url.to_s
+<% myclass = 'users' #/customers|sites|users|provisionings|targets/.match request.original_url.to_s
    case request.original_url
        when /#{myclass}(\/(\?.*)?)?(#)?$/
 %>

@@ -61,6 +61,9 @@ end
     instance_variable_set("@#{myClass.name.downcase.pluralize}", @provisioningobjects)
 		#abort @sites.inspect
 		#abort @provisioningobjects.inspect
+
+    # set filteredvia variable that can be used in the views to show, how the data was filtered
+    @filteredvia = ancestor unless ancestor.nil?
   end
 
   def indexOld
