@@ -1,3 +1,4 @@
+</div>
 <div class="container-fluid">
  <div class="row">
   <nav>
@@ -11,6 +12,7 @@
            <%= select_tag :target_id, options_for_select(Target.all.map {|target| [target.name,target.id]}.insert(0, 'none'), selected: params[:target_id] || 'none'), onchange: "this.form.submit()" %>
          <% end %>
       </li>
+      <li><%= link_to "Refresh", request.path, :method => :get, class: "btn btn-xs btn-default" %></li>
 <% end %>
 
     </ul>
