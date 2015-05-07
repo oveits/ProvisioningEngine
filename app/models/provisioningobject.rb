@@ -39,6 +39,7 @@ class Provisioningobject < ActiveRecord::Base
       parent_id_sym = "#{parentClass.name.downcase}_id".to_sym
       return self.where(parent_id_sym => ancestor.id).map {|i| i }
     end unless parentClass.nil?
+#abort ancestor.inspect
 
     # calculate list of parents; go down the tree in order to save SQL queries:
     # with this method, only 3 SQL statements are needed to find the Site of a Target: 
@@ -48,30 +49,21 @@ class Provisioningobject < ActiveRecord::Base
 		#abort ancestor.inspect
 
     # find all parents recursively. Start at ancestor level, e.g. at the target
-    parent_list = [ancestor]
+    filtered_all = [ancestor]
     children_list = []
     currentClass = ancestor.class
-    while currentClass != parentClass # stop if you have found all parents. E.g. if you search for all Sites of the Target, we will stop if we have found all Customers
+    while currentClass != self # stop if you have found all parents. E.g. if you search for all Sites of the Target, we will stop if we have found all Customers
 
       # for all parents in the list, find all children and write them to the children_list
-      parent_list.each do |parent|
+      filtered_all.each do |parent|
         children_list = children_list.concat parent.children unless parent.children.nil?
       end
 
       # go down one level, e.g. if you have found all Customers of a Target, write the Customers to the parent_list, in case of searched Sites, we stop here. In case of Users being looked for, we go one step further and will find all children of the Customers in the next iteration
-      parent_list = children_list
+      filtered_all = children_list
+      children_list = []
       currentClass = currentClass.childClass
     end # while currentClass != parentClass
-
-    # convert the parent_list to a list of IDs only:
-    parent_list_ids = parent_list.map!(&:id).sort
-
-    # get the full, unfiltered list as Array; e.g. for /targets/1/users, find all users and write them to the unfiltered_all list:
-    unfiltered_all = self.all_in
-
-    # now filter and return:
-    # from the full list, find all items, whose parents are in the parent_list:
-    filtered_all = unfiltered_all.select{ |i| parent_list_ids.include? i.send("#{parentClass.name.downcase}_id") } # e.g. filtered_all = unfiltered_all.select{ |i| parent_list_ids.include? i.site_id }
 
     # handle pagination, if needed:
     if pagination
@@ -280,7 +272,7 @@ abort parents.inspect
       abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
 
       # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
-      responseBody = "synchronizeAllSynchronously: ERROR: #{self.class.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
+      responseBody = "synchronizeAllSynchronously: ERROR: #{self.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
 #abort "lerghoesrhgoerhgos"
 
       p "SSSSSSSSSSSSSSSSSSSSSSSSS    #{self.name}.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS" if verbose
@@ -289,7 +281,8 @@ abort parents.inspect
       # abort, if it is still a Fixnum:
       abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
       # business logic error:
-      abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
+      #abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
+      next unless responseBody[/ERROR.*$/].nil?
     
       require 'rexml/document'
       xml_data = responseBody

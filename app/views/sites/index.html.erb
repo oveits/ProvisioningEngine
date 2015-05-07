@@ -27,10 +27,6 @@
 <% webportal_provisioningbutton_visible = ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] %>
 
 	<h1>Sites</h1>
-<% unless @filteredvia.nil? %>
-<p>filtered via: <%= @filteredvia.class.name %> <%= link_to @filteredvia.name, @filteredvia %> (<%= link_to 'show all', sites_path %>)</p>
-<% end %>
-
 
 <% if false %>
 <% "this is a test of the mouse hover function. Does not work after a page-content_reload, so we need to place it somwhere, where it is not reloaded" %>
@@ -70,10 +66,9 @@ $('.user').hover(function() {
 </script>
 <% "end of: this is a test of the mouse hover function. Does not work after a page-content_reload, so we need to place it somwhere, where it is not reloaded" %>
 <% end %>
-<div>
-<%= paginate @provisioningobjects %>
-</div>
+<%= render 'shared/pagination.html.erb' %>
 
+<br />
 <div>
 <table>
   <thead>

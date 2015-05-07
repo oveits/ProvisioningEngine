@@ -23,7 +23,8 @@
         <td><%= @customer.name %></td>
         <td>
         	<% begin %>
-        	<%= Target.find(@customer.target_id).name %>
+        	<%= target = Target.find(@customer.target_id)
+                    link_to target.name, target %>
         	<% rescue %>
         	[id] <%= @customer.target_id %>
         	<% end %>

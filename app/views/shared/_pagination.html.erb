@@ -1,0 +1,44 @@
+<div class="container-fluid">
+ <div class="row">
+  <nav>
+   <ul class="nav navbar-nav navbar-right">
+<% if true %>
+      <li> filtered via target</li>
+<% # TODO: need a better filter concept. Wait for active_admin?
+%>
+      <li>
+         <%= form_tag request.path, method: :get do %>
+           <%= select_tag :target_id, options_for_select(Target.all.map {|target| [target.name,target.id]}.insert(0, 'none'), selected: params[:target_id] || 'none'), onchange: "this.form.submit()" %>
+         <% end %>
+      </li>
+<% end %>
+
+    </ul>
+  </nav>
+<% if @provisioningobjects.total_count > 10 %>
+   <nav>
+     <ul class="nav navbar-nav navbar-left">
+       <li>
+          <%= form_tag request.path, method: :get do %>
+            <% per_page = params[:per_page]
+               per_page = 1000000 if params[:per_page] == 'all'
+               per_page ||= 10 %>
+            <%= select_tag :per_page, options_for_select(['all', 10, 50], selected: per_page), onchange: "this.form.submit()" %>
+          <% end %>
+       </li>
+       <li> of <%= @provisioningobjects.total_count %> entries</li>
+     </ul>
+  </nav>
+</div>
+</div>
+<div class="container-fluid">
+  <div class="row">
+    <nav>
+      <ul class="nav navbar-left">
+        <li><%= raw((paginate @provisioningobjects).gsub('<nav class="pagination">','').gsub('</nav>','')) %></li>
+      </ul>
+    </nav>
+<% end %>
+  </div>
+</div>
+

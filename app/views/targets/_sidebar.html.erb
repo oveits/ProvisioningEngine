@@ -1,6 +1,6 @@
 <% myclass = 'targets' #/customers|sites|users|provisionings|targets/.match request.original_url.to_s
    case request.original_url
-       when /#{myclass}(\/(\?.*)?)?(#)?$/
+       when /#{myclass}(\/?(\?.*)?)?(#)?$/
 %>
                 <li class="sidebar-brand">
                         Functions
@@ -29,9 +29,9 @@
                 <li class="sidebar-brand">
                         Show related...
                 </li>
-                <li><%= link_to 'Customers', target_customers_path(@target) %></li>
-                <li><%= link_to 'Sites', target_sites_path(@target) %></li>
-                <li><%= link_to 'Users', target_users_path(@target) %></li>
+                <li><%= link_to 'Customers', "#{customers_path}?target_id=#{@target.id}" %></li>
+                <li><%= link_to 'Sites', "#{sites_path}?target_id=#{@target.id}" %></li>
+                <li><%= link_to 'Users', "#{users_path}?target_id=#{@target.id}" %></li>
 
 
 <% end %>     

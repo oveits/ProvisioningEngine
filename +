@@ -1,7 +1,7 @@
 class ProvisioningobjectsController < ApplicationController
   before_action :set_provisioningobject, only: [:show, :edit, :update, :destroy, :deprovision, :provision]
   #before_action :set_provisioningobjects, only: [:index] #, :removeAll]
-  before_action :set_async_mode, :remove_target_id_if_needed
+  before_action :set_async_mode
 
 
   def ro
@@ -36,10 +36,9 @@ end
     # e.g. if called with GET /targets/3/sites, the closest upward relative is Target with id==3
 
     # init
-#abort params[:target_id].inspect
     per_page = params[:per_page]
     per_page = 10 if per_page.nil?
-    per_page = 1000000 if per_page == 'all'
+    per_page = 0 if per_page == 'all'
 #abort per_page.inspect
     #per_page = 1000000 if per_page == 0
 
@@ -59,10 +58,9 @@ end
     # now ancestor is either nil, or points to the closes relative upwards, e.g. Target.find(3)
    
 #    @provisioningobjects = myClass.all_in(ancestor, true, 1, 50) unless myClass == User # will be removed later
-    # default ancestor:
-    ancestor = Target.find(params[:target_id]) if ancestor.nil? && !params[:target_id].nil? && params[:target_id] != 'none'
+    ancestor = Target.find(params[:filter_via]) if ancestor.nil? && !params[:filter_via].nil? && !params[:filter_via] == 'none'
+abort ancestor.inspect
     my_array_object = myClass.all_in(ancestor, false)
-#abort my_array_object.map!(&:target).inspect # (ruby1.9 or Ruby 1.8.7).inspect
     @provisioningobjects = Kaminari.paginate_array(my_array_object).page(params[:page]).per(per_page)
 		#abort @provisioningobjects.inspect
 
@@ -365,11 +363,6 @@ private
       @async = false  
     end
   end
-  def remove_target_id_if_needed
-    def is_number?(mystring)
-      true if Float(mystring) rescue false
-    end
-    params[:target_id] = nil unless is_number?(params[:target_id])
-  end    
+    
 
 end

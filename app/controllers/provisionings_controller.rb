@@ -73,7 +73,7 @@ class ProvisioningsController < ApplicationController
     @provisionings = @provisionings.reverse
 
     # convert to paginatable Array:
-    @provisionings = Kaminari.paginate_array(@provisionings).page(params[:page]).per(10)
+    @provisionings = Kaminari.paginate_array(@provisionings).page(params[:page]).per(20)
     		#abort @provisionings.inspect
             
   end

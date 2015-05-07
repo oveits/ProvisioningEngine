@@ -52,8 +52,8 @@ else
 #  targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
 #  targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #  targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
-#  targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-  targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+  targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
+#  targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #  targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #  targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
  
@@ -119,8 +119,10 @@ end
 
 def provisioningobjects_path(obj)
   # return the path to the obj index as String, e.g. customers_path = (/dev) "/customers/" or "/dev/customers" in case WEBPORTAL_BASEURL = '/dev'
-# abort send("#{myobjects(obj)}_path".to_sym)
-  send("#{myobjects(obj)}_path".to_sym)
+ 		#abort send("#{myobjects(obj)}_path".to_sym) + "?per_page=0"
+
+  # index page with no pagination, so all entries can be seen:
+  send("#{myobjects(obj)}_path".to_sym) + "?per_page=all"
 end
 
 def new_provisioningobject_path(obj)
