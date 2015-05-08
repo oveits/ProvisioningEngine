@@ -8,6 +8,8 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
 
  # GET /customers/new
   def new
+    @target_id = params[:target_id]
+#abort @target_id.inspect
     @customer = Customer.new
     @provisioningobject = @customer
     @myparams = {"id"=>'ro', "name"=>rw, "language"=>'showLanguageDropDown', "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}

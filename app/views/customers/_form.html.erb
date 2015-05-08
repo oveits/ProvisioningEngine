@@ -49,7 +49,7 @@ select {<%= minWidthStyle %>}
 			    <td>
 			    <% begin %>
 			    	<% if @alwaysDropDown %>
-			    		<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target", :selected => @target.id) %>
+			    		<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target", :selected => @target_id) %>
 			    	<% else %>
 		    			<%= f.text_field attribute[0], :value => @target.id,:readonly => true, :style => myreadonlystyle %>
 			    	<% end %>

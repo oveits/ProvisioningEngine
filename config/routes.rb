@@ -66,9 +66,10 @@ scope(path: baseURL) do
     end
   end
 
-  resources :targets do
-    resources :customers, :sites, :users
-  end
+#  not needed anymore: e.g. targets/3/customers is now replaced /customers?target_id=3; in this method, it can be used for filtering in the index
+#  resources :targets do
+#    resources :customers, :sites, :users
+#  end
 
   resources :customers do
     # TODO: OV: what is needed this for?

@@ -30,7 +30,9 @@ end
   # e.g. GET /customers.json
   def index
     # return all items, but may be filtered. E.g. /targets/3/sites will return only sites of the specific target chosen.
-
+    
+    # needed for refresh:
+    @params = params
 
     # find the closets relative upwards that is specified
     # e.g. if called with GET /targets/3/sites, the closest upward relative is Target with id==3

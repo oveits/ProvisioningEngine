@@ -5,7 +5,7 @@
                 <li class="sidebar-brand">
                         Customer Functions
                 </li>
-                <li><%= link_to 'New Customer', new_customer_path %></li>
+                <li><%= link_to 'New Customer', new_customer_path(@params) %></li>
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize Customers', synchronize_customers_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
