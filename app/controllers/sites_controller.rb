@@ -130,7 +130,7 @@ class SitesController < ProvisioningobjectsController #ApplicationController
 
   # PATCH       /sites/1/provision
   def provision
-    @provisioningobject = Customer.find(params[:id])
+    @provisioningobject = Site.find(params[:id])
     
     super
   end # def provision
