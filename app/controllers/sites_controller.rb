@@ -5,15 +5,6 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   def index
     super
   end
-
-  def indexOld
-    if(params[:customer_id])
-      @customer = Customer.find(params[:customer_id])
-      @sites = Site.where(customer: params[:customer_id])
-    else
-      @sites = Site.all
-    end
-  end
   
   def list
     if(params[:customer_id])
@@ -53,12 +44,25 @@ class SitesController < ProvisioningobjectsController #ApplicationController
 
   # POST /sites
   # POST /sites.json
-  def create 
+  def create
+        # TODO: the next line is still needed. Is this the right place to control, whether a param is ro or rw?
+    @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>'showDropDown', "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
+
+    @provisioningobject = Site.new(provisioningobject_params)
+#abort @provisioningobject.inspect
+    @site = @provisioningobject
+    @className = @provisioningobject.class.to_s
+#abort @provisioningobject.provisioningtime.inspect
+
+    super
+  end
+  
+  def createOld 
     ro = 'readonly'; rw = 'readwrite'
     #@myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
     @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>'showDropDown', "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
 
-    @object = Site.new(site_params)
+    @object = Site.new(provisioningobject_params)
     @site = @object
     @className = @object.class.to_s
     async = true
@@ -87,7 +91,7 @@ class SitesController < ProvisioningobjectsController #ApplicationController
     @myparams = {"id"=>ro, "name"=>rw, "customer_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "sitecode"=>rw, "countrycode"=>'showDropDown', "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
 
     respond_to do |format|
-      if @site.update(site_params)
+      if @site.update(provisioningobject_params)
         @site.update_attributes!(:status => 'edited (provisioning status unknown)')
         format.html { redirect_to @site, notice: "Site #{@site.name} successfully updated in the database, but provisioning of target systems is not yet supported. Click \"synchronize\", for re-gaining consistency." }
         #format.html { redirect_to @site.customer, notice: 'Site was successfully updated.' }
@@ -123,8 +127,15 @@ class SitesController < ProvisioningobjectsController #ApplicationController
                 #abort "dehgosdöhgliöodsf"
     super
   end
-  
+
+  # PATCH       /sites/1/provision
   def provision
+    @provisioningobject = Customer.find(params[:id])
+    
+    super
+  end # def provision
+  
+  def provisionOld
     @site = Site.find(params[:id])
     respond_to do |format|
       if @site.provision(:create)
@@ -207,7 +218,8 @@ class SitesController < ProvisioningobjectsController #ApplicationController
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
-    def site_params
+    
+    def provisioningobject_params
       params.require(:site).permit(:name, :customer_id, :sitecode, :gatewayIP, :countrycode, :areacode, :localofficecode, :extensionlength, :mainextension, :provisioningtime)
     end
 end

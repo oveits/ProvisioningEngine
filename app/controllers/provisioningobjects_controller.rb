@@ -154,11 +154,18 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
 
     respond_to do |format|         
       if @provisioningobject.save
-        if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @provisioningobject.provision(:create, @async)
-          @notice = "#{@provisioningobject.class.name} is being created (provisioning running in the background)."
+        if @async 
+          if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @provisioningobject.provision(:create, @async)
+            @notice = "#{@provisioningobject.class.name} is being created (provisioning running in the background)."
+          else
+            @notice = "#{@provisioningobject.class.name} is created and can be provisioned ad hoc."
+          end
+        elsif @provisioningobject.provision(:create, @async)
+          @notice = "#{@provisioningobject.class.name} is provisioned"
         else
-          @notice = "#{@provisioningobject.class.name} is created and can be provisioned ad hoc."
+          @notice = "#{@provisioningobject.class.name} could not be provisioned"
         end
+          
         format.html { redirect_to @provisioningobject, notice: @notice }
         format.json { render :show, status: :created, location: @provisioningobject } 
       else
@@ -337,7 +344,7 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
         else
           flashtext = "#{@provisioningobject.class.name} #{@provisioningobject.name} is provisioned to target system(s)"            
         end
-        format.html { redirect_to :back, notice: "#{@provisioningobject.class.name} #{@provisioningobject.name} is being provisioned to target system(s)" }
+        format.html { redirect_to :back, notice: flashtext  }
         format.json { render :show, status: :ok, location: @provisioningobject }
       else
         format.html { redirect_to :back, notice: "#{@provisioningobject.class.name} #{@provisioningobject.name} could not be provisioned to target system(s)" }
