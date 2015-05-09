@@ -77,12 +77,14 @@ select {<%= minWidthStyle %>}
 <% end %>
 			</tr>
 			<% end %>
+			    <% if @async %>
                         <tr>
-			    <td><%= f.label 'Provisioning Schedule' %></td>
+			    <td><%= f.label "Provisioning Schedule#{' (ignored in synchronous mode)' unless @async}"  %></td>
 			    <td>
 				<%= render 'shared/form_provisioningtime.html.erb', object: @customer, f: f %>
 			    </td>
                         </tr>
+                <% end %>
 			<tr>
 				<td>
 				  	<%= f.submit 'Save', type: "submit", class: "btn btn-default" %>

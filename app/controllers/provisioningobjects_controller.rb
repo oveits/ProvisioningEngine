@@ -154,7 +154,7 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
 
     respond_to do |format|         
       if @provisioningobject.save
-        if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @provisioningobject.provision(:create)
+        if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @provisioningobject.provision(:create, @async)
           @notice = "#{@provisioningobject.class.name} is being created (provisioning running in the background)."
         else
           @notice = "#{@provisioningobject.class.name} is created and can be provisioned ad hoc."
@@ -199,10 +199,15 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
       redirectPath = provisioningobject_provisionings_path
 
     elsif @provisioningobject.provisioned?
-      flash[:notice] = "#{className} #{@provisioningobject.name} is being de-provisioned."
+      if @async
+        flash[:notice] = "#{className} #{@provisioningobject.name} is being de-provisioned."
+      else
+        flash[:notice] = "#{className} #{@provisioningobject.name} is de-provisioned."
+      end
+      
       redirectPath = :back
       
-      @provisioningobject.provision(:destroy)
+      @provisioningobject.provision(:destroy, @async)
     else
       flash[:error] = "#{className} #{@provisioningobject.name} cannot be destroyed: is not provisioned."
       redirectPath = :back
@@ -223,7 +228,7 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
     
     if @provisioningobject.provisioned?
       if deprovision
-        @provisioningobject.provision(:destroy)
+        @provisioningobject.provision(:destroy, @async)
         flash[:success] = "#{@provisioningobject.class.name} #{@provisioningobject.name} is being de-provisioned."
         #redirectPath = :back
       else
@@ -327,6 +332,11 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
 
     respond_to do |format|
       if @provisioningobject.provision(:create, @async)
+        if @async
+          flashtext = "#{@provisioningobject.class.name} #{@provisioningobject.name} is being provisioned to target system(s)"
+        else
+          flashtext = "#{@provisioningobject.class.name} #{@provisioningobject.name} is provisioned to target system(s)"            
+        end
         format.html { redirect_to :back, notice: "#{@provisioningobject.class.name} #{@provisioningobject.name} is being provisioned to target system(s)" }
         format.json { render :show, status: :ok, location: @provisioningobject }
       else
