@@ -177,6 +177,22 @@ class Provisioning < ActiveRecord::Base
               #provisioning.update_attributes!(:delayedjob => nil)
               # 0
               #abort targetobjects.inspect
+            when /ERROR: Variables file.*have read rights for user srx/
+              returnvalue = 103
+              resulttext = "ERROR[#{returnvalue.to_s}]=\" Target system has reported a missing file in ~srx/ProvisioningScripts/ccc_config.txt\nFull text:"  + resulttext
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed: target system has reported a missing file in ~srx/ProvisioningScripts/ccc_config.txt') unless targetobject.nil?
+              end unless thisaction == 'reading'
+            when /org.apache.camel.CamelExchangeException: Cannot execute command/
+            # timeout
+              returnvalue = 3        
+              resulttext = "ERROR[#{returnvalue.to_s}]=\" Apache Camel ProvisioningEngine cannot login as user srx: has srx access been prepared?\nFull text:"  + resulttext
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed: target system has denied access; is the target initialized correctly for usage with the ProvisioningEngine?') unless targetobject.nil?
+              end unless thisaction == 'reading'
+                #abort resulttext
+              #abort 'provisioning.deliver: connection timout of one or more target systems'
+
             when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/
             # timeout
               returnvalue = 3        
