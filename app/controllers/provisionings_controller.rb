@@ -34,13 +34,19 @@ class ProvisioningsController < ApplicationController
     if @provisionings.nil?   
       if(params[:user_id])
         @user = User.find(params[:user_id])
-        @provisionings = Provisioning.where(user: params[:user_id])
+        @provisionings = Provisioning.where(provisioningobject: User.find(params[:user_id]))
+        # for backwards compatibility:
+        @provisionings = Provisioning.where(user: params[:user_id]) if @provisionings.count == 0
       elsif(params[:site_id])
         @site = Site.find(params[:site_id])
-        @provisionings = Provisioning.where(site: params[:site_id])
+        @provisionings = Provisioning.where(provisioningobject: Site.find(params[:site_id]))
+        # for backwards compatibility:
+        @provisionings = Provisioning.where(site: params[:site_id]) if @provisionings.count == 0
       elsif(params[:customer_id])
         @customer = Customer.find(params[:customer_id])
-        @provisionings = Provisioning.where(customer: params[:customer_id]) 
+        @provisionings = Provisioning.where(provisioningobject: Customer.find(params[:customer_id]))
+        # for backwards compatibility:
+        @provisionings = Provisioning.where(customer: params[:customer_id]) if @provisionings.count == 0
         #TODO: search for all provisionings, where customer: this customer(done), or site: one of the sites of this customer (open) or user: one of the users of the sites of this customer (open)
       else
         @provisionings = Provisioning.all
