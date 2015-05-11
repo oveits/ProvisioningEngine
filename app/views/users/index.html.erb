@@ -126,9 +126,6 @@
                         <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
 	<td><%= link_to 'Edit', edit_user_path(user), class: "btn btn-default" %></td>
 			<% end %>
-			<% if ENV["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] == "true" %>
-        <td><%= link_to 'Provision', provision_user_path(user), method: :patch, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
-			<% end %>
 <%  @provisioningobject = user; %>
         <td><%= render 'shared/edit_button.html.erb' unless defined? edit_button_included
                 edit_button %></td>

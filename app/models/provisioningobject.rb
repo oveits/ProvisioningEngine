@@ -404,6 +404,7 @@ abort parents.inspect
 
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     inputBody = provisioningAction(method)
+        #abort inputBody.inspect
     return false if inputBody.nil?  # no provisioningAction defined for this type
     
     unless target.nil?
@@ -429,7 +430,7 @@ abort parents.inspect
     # recursive creation of parents for Add (:create) functions
     if inputBody.include?("Add ") && !inputBody.include?("testMode")
        self.parent.provision(:create, async) unless self.parent.nil?
-    end
+    end 
     
     inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?
 
@@ -437,10 +438,15 @@ abort parents.inspect
     
     @provisioning = Provisioning.new(action: inputBody, object_sym => provisioningobject)
               #abort @provisioning.inspect
+              #abort @provisioning.action.inspect
+              #abort method.inspect
+              #abort async.inspect
     if method == :read || @provisioning.save
        if async == true
          returnvalue = @provisioning.deliverasynchronously
        else
+              #abort @provisioning.inspect
+              #abort @provisioning.action.inspect
          returnvalue = @provisioning.deliver
        end
     else

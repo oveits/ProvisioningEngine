@@ -32,7 +32,7 @@ module ProvisioningPortalv4
     config.assets.precompile += %w( application.css )
     
     defaultconfig = {}
-    defaultconfig["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] = "true"
+    defaultconfig["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] = "false" # because the simulation does not work correctly yet on all Customer names and Site names
     defaultconfig["PROVISIONINGENGINE_CAMEL_URL"] = "http://1.1.1.1/ProvisioningEngine"
     defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] = "true"
     defaultconfig["WEBPORTAL_BASEURL"] = "/"

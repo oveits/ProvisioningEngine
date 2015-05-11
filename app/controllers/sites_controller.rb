@@ -129,9 +129,7 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   end
 
   # PATCH       /sites/1/provision
-  def provision
-    @provisioningobject = Site.find(params[:id])
-    
+  def provision    
     super
   end # def provision
   
@@ -152,6 +150,12 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   # PATCH /sites/1/deprovision
   # PATCH /sites/1/deprovision.json
   def deprovision
+    provisioningobject_provisionings_path = site_provisionings_path(@provisioningobject, active: true )
+
+    super    
+  end
+  
+  def deprovisionOld
     @object = Site.find(params[:id])
     @className = @object.class.to_s
     @classname = @className.downcase

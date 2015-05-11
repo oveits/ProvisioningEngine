@@ -2,7 +2,8 @@ class HttpPostRequest
   def perform(headerInput, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     #
     # renders headerInput="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
-    #
+    #  
+    verbose = false
     
     if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
       simulationMode = true
@@ -29,6 +30,7 @@ class HttpPostRequest
 #    p array.map(&:strip).inspect
     
     #array = array.map(&:strip)
+#abort array.inspect
     
     headerHash = {}
 
@@ -43,8 +45,8 @@ class HttpPostRequest
   
       while array[0]
         variableValuePairArray = array.shift.split(/=/).map(&:strip)
-  #      p '+++++++++++++++++++++++++  variableValuePairArray ++++++++++++++++++++++++++++++++'
-  #      p variableValuePairArray.inspect
+            #p '+++++++++++++++++++++++++  variableValuePairArray ++++++++++++++++++++++++++++++++'
+            #p variableValuePairArray.inspect
         if variableValuePairArray.length.to_s[/^2$/]
           headerHash[variableValuePairArray[0]] = variableValuePairArray[1]
         elsif variableValuePairArray.length.to_s[/^1$/]
@@ -74,102 +76,139 @@ class HttpPostRequest
     #flash[:notice]  = "Sent HTTP POST Data to #{uriString} #{simulationLogString}"
 
     if simulationMode
-          begin
-            # if not initialized, the following line will fail:
-            @@customerprovisioned.nil?
-          rescue
-            # and the variable will be initialized
-            @@customerprovisioned = nil
-          end
-          begin
-            # if not initialized, the following line will fail:
-            @@siteprovisioned.nil?
-          rescue
-            # and the variable will be initialized
-            @@siteprovisioned = nil
-          end
-          begin
-            # if not initialized, the following line will fail:
-            @@userprovisioned.nil?
-          rescue
-            # and the variable will be initialized
-            @@userprovisioned = nil
-          end
+      
+      @headerHash = headerHash
+      
+      # {target: "myTargetNyme"}
+      def targetID(myheaderHash = @headerHash)
+        {target: myheaderHash["OSVIP"]} #.match(/OSVIP.*[,&]/)
+      end
+      
+#abort target.inspect
+      
+      # return {target: "myTargetNyme", customer: "myCustomerName"}
+      def customerID(myheaderHash = @headerHash)
+        returnValue = targetID(myheaderHash)
+        returnValue[:customer] = myheaderHash["customerName"]
+        returnValue
+      end      
+            #abort customerID.inspect
+      
+      # return {target: "myTargetNyme", customer: "myCustomerName", site: "mySiteName"}
+      def siteID(myheaderHash = @headerHash)
+        return nil if myheaderHash["SiteName"].nil?
+        returnValue = customerID(myheaderHash)
+        returnValue[:site] = myheaderHash["SiteName"]
+        returnValue
+      end
+      
+      
+      # return {user: "4989700720800"}
+      def userID(myheaderHash = @headerHash)
+        return nil if myheaderHash["X"].nil?
+        
+        # in case of :read, target, customer and site are not known. Instead, CC, AC and LOC can be sent as variables in the headerHash:
+        unless myheaderHash["CC"].nil? || myheaderHash["AC"].nil? || myheaderHash["LOC"].nil? || myheaderHash["X"].nil?
+          returnValue = {}
+          returnValue[:user] = myheaderHash["CC"] + myheaderHash["AC"] + myheaderHash["LOC"] + myheaderHash["X"]
+          return returnValue
+        end
+        
+        # in case of :create and :delete, target, customer and site are not known, but CC, AC. LOC are not known:        
+        #abort myheaderHash.inspect
+        returnValue = siteID(myheaderHash)
+        return nil if returnValue.nil?
+
+        # find CC, AC, LOC from site:
+        myTargetID = Target.where("configuration LIKE ?", "%OSVIP=#{returnValue[:target]}" )[0].id
+        myCustomerID = Customer.where(target: myTargetID, name: returnValue[:customer])[0].id
+        mySite = Site.where(customer: myCustomerID, name: returnValue[:site])[0]
+        
+        # re-initialize the returnValue, since target, customer and site is not needed, but we will return the full DN instead
+        returnValue = {}
+
+        returnValue[:user] = mySite["countrycode"] + mySite["areacode"] + mySite["localofficecode"] + myheaderHash["X"]
+        return returnValue
+        
+      end      
+
+      if verbose
+        p "@@provisioned[customerID] before: #{@@provisioned[customerID]}"
+        p "@@provisioned[siteID] before: #{@@provisioned[siteID]}"
+        p "userID = #{userID.inspect}"
+        p "@@provisioned[userID] before: #{@@provisioned[userID]}"
+      end
  
       sleep 100.seconds / 1000
       case headerHash["action"]
         when /Add Customer/
-          if @@customerprovisioned.nil?
+          if @@provisioned[customerID].nil? || !@@provisioned[customerID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@customerprovisioned = true
+            @@provisioned[customerID] = true #unless customerID.nil?
+            #abort @@provisioned.inspect
+            #@@customerprovisioned = true
           else 
-            @@customerprovisioned = true
+            @@provisioned[customerID] = true #unless customerID.nil?
             responseBody = 'ERROR: java.lang.Exception: Cannot Create customer ExampleCustomerV8: Customer exists already!'
           end
         when /Add Site/
-          p "Before Add Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
-          if @@siteprovisioned.nil?
+          if @@provisioned[siteID].nil? || !@@provisioned[siteID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@siteprovisioned = true
+            @@provisioned[siteID] = true
           else
-            @@siteprovisioned = true
+            @@provisioned[siteID] = true
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" exists already in the data base (Numbering Plan = NP_Site1_00010)!'
           end
-          p "After Add Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
         when /Add User/
-          if @@userprovisioned.nil?
+          if @@provisioned[userID].nil? || !@@provisioned[userID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@userprovisioned = true
+            @@provisioned[userID] = true
           else
-            @@userprovisioned = true
+            @@provisioned[userID] = true
             responseBody = 'ERROR: java.lang.Exception: Cannot create user with phone number +49 (99) 7007 30800: phone number is in use already!'
           end
         when /Delete Customer/
-          if @@customerprovisioned == true
+          if @@provisioned[customerID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@customerprovisioned = nil
+            @@provisioned[customerID] = false
           else
             responseBody = 'ERROR: java.lang.Exception: Customer "ExampleCustomerV8" does not exist on the data base!'
-            @@customerprovisioned = nil
+            @@provisioned[customerID] = false
           end
         when /Delete Site/
-          p "Before Delete Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
-          if @@siteprovisioned == true
+          if @@provisioned[siteID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@siteprovisioned = nil
+            @@provisioned[siteID] = false
           else
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" does not exist in the data base!'
-            @@siteprovisioned = nil
+            @@provisioned[siteID] = false
           end
-          p "After Delete Site: @@siteprovisioned = #{@@siteprovisioned.inspect}"
         when /Delete User/
-          if @@userprovisioned == true
+          if @@provisioned[userID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@userprovisioned = nil
+            @@provisioned[userID] = false
           else
             responseBody = 'ERROR: java.lang.Exception: Cannot delete user with phone number +49 (99) 7007 30800: phone number does not exist for this customer!'
-            @@userprovisioned = nil
+            @@provisioned[userID] = false
           end
         when /Show Sites/
-		#p "@@siteprovisioned is #{@@siteprovisioned.inspect}"
-		#p "Before Show Sites: @@siteprovisioned = #{@@siteprovisioned.inspect}"
-          if @@siteprovisioned == true
+          if @@provisioned[siteID] == true
             responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Result>
     <ResultCode>0</ResultCode>
     <ResultText>Success</ResultText>
     <Sites>
         <Site>
-            <CustomerName>ExampleCustomerV8</CustomerName>
-            <SiteName>ExampleCustomerV8</SiteName>
+            <CustomerName>' + siteID[:customer] + '</CustomerName>
+            <SiteName>' + siteID[:customer] + '</SiteName>
             <NumberingPlanName>CNP_ExampleCustomerV8_00007</NumberingPlanName>
             <GatewayIP></GatewayIP>
             <MainNumber></MainNumber>
         </Site>
         <Site>
-            <CustomerName>ExampleCustomerV8</CustomerName>
-            <SiteName>ExampleSite</SiteName>
-            <NumberingPlanName>NP_ExampleSite_00008</NumberingPlanName>
+            <CustomerName>' + siteID[:customer] + '</CustomerName>
+            <SiteName>' + siteID[:site] + '</SiteName>
+            <NumberingPlanName>NP_' + siteID[:site] + '_00008</NumberingPlanName>
             <GatewayIP>47.68.190.57</GatewayIP>
             <SiteCode>99821</SiteCode>
             <CountryCode>49</CountryCode>
@@ -196,19 +235,18 @@ class HttpPostRequest
 </Result>'
             end
         when /List Users/
-          if @@userprovisioned == true
-            responseBody = '<Result><ServiceId>4999700730800</ServiceId><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
+          if @@provisioned[userID]
+            responseBody = '<Result><ServiceId>' + userID[:user] + '</ServiceId><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           else
             responseBody = '<Result><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           end
         when /List Customers/
-		#p "Before List Customers: @@customerprovisioned = #{@@customerprovisioned.inspect}"
-          if @@customerprovisioned == true
+          if @@provisioned[customerID]
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
-<SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>Thomas1</BGName><BGName>OllisTestCustomer</BGName><BGName>ExampleCustomerV8</BGName><BGName>OllisTestCustomer2</BGName><BGName>ExampleCustomer</BGName></GetBGListData></SOAPResult>'
+<SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>' + customerID[:customer] + '</BGName></GetBGListData></SOAPResult>'
           else
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
-<SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>Thomas1</BGName><BGName>OllisTestCustomer</BGName><BGName>OllisTestCustomer2</BGName></GetBGListData></SOAPResult>'
+<SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName></GetBGListData></SOAPResult>'
           end
         when /PrepareSystem/
           alreadyProvisioned = true
@@ -447,8 +485,12 @@ finished execution of batch file batchFile-93733174.sh
       end
     end # else # if simulationMode
 
-    #flash[:notice]  = "Received answer: #{responesBody.to_s}"
-  
+    if verbose
+      p "@@provisioned[customerID] after: #{@@provisioned[customerID]}"
+      p "@@provisioned[siteID] after: #{@@provisioned[siteID]}"
+      p "userID = #{userID.inspect}"
+      p "@@provisioned[userID] after: #{@@provisioned[userID]}"
+    end
     
     return responseBody
   end # def perform

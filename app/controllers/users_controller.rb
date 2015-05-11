@@ -30,12 +30,23 @@ class UsersController < ProvisioningobjectsController #ApplicationController
 
   # POST /users
   # POST /users.json
+  def create
+    # TODO: the next line is still needed. Is this the right place to control, whether a param is ro or rw?
+    @myparams = {"id"=>'none', "name"=>rw, "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
+
+    @provisioningobject = User.new(provisioningobject_params)
+
+    @user = @provisioningobject
+    @className = @provisioningobject.class.to_s
+
+    super
+  end
   
-  def create 
+  def createOld 
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>'none', "name"=>rw, "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
 
-    @object = User.new(user_params)
+    @object = User.new(provisioningobject_params)
     @user = @object
     @className = @object.class.to_s
     
@@ -76,7 +87,13 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     super
   end
 
-  def provision
+  # PATCH       /users/1/provision
+  def provision 
+    #abort @provisioningobject.inspect  
+    super
+  end # def provision
+  
+  def provisionOld
     @object = User.find(params[:id])
     respond_to do |format|
       if @object.provision(:create)
@@ -95,7 +112,7 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>ro, "name"=>rw, "site_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
     respond_to do |format|
-      if @user.update(user_params)
+      if @user.update(provisioningobject_params)
         format.html { redirect_to @user, notice: "User #{@user.name} successfully updated in the database, but provisioning of target systems is not yet supported." }
         format.json { render :show, status: :ok, location: @user }
       else
@@ -109,6 +126,12 @@ class UsersController < ProvisioningobjectsController #ApplicationController
   # PATCH /users/1/deprovision
   # PATCH /users/1/deprovision.json
   def deprovision
+    provisioningobject_provisionings_path = user_provisionings_path(@provisioningobject, active: true )
+
+    super    
+  end
+  
+  def deprovisionOld
     @object = User.find(params[:id])
     @className = @object.class.to_s
     @classname = @className.downcase
@@ -181,7 +204,7 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
-    def user_params
+    def provisioningobject_params
       params.require(:user).permit(:name, :site_id, :extension, :givenname, :familyname, :email, :provisioningtime)
     end
 end
