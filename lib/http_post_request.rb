@@ -3,7 +3,7 @@ class HttpPostRequest
     #
     # renders headerInput="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
     #  
-    verbose = false
+    verbose = true
     
     if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
       simulationMode = true
