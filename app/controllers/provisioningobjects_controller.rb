@@ -31,20 +31,19 @@ end
   def index
     # return all items, but may be filtered. E.g. /targets/3/sites will return only sites of the specific target chosen.
     
-    # needed for refresh:
+    # needed for page refresh:
     @params = params
-    #abort @params.inspect
+          #abort @params.inspect
 
     # find the closets relative upwards that is specified
     # e.g. if called with GET /targets/3/sites, the closest upward relative is Target with id==3
 
     # init
-#abort params[:target_id].inspect
+          #abort params[:target_id].inspect
     per_page = params[:per_page]
     per_page = 10 if per_page.nil?
     per_page = 1000000 if per_page == 'all'
-#abort per_page.inspect
-    #per_page = 1000000 if per_page == 0
+          #abort per_page.inspect
 
     ancestor = nil
     ancestorClass = myClass
@@ -61,19 +60,18 @@ end
 
     # now ancestor is either nil, or points to the closes relative upwards, e.g. Target.find(3)
    
-#    @provisioningobjects = myClass.all_in(ancestor, true, 1, 50) unless myClass == User # will be removed later
     # default ancestor:
     ancestor = Target.find(params[:target_id]) if ancestor.nil? && !params[:target_id].nil? && params[:target_id] != 'none'
     my_array_object = myClass.all_in(ancestor, false)
-#abort my_array_object.map!(&:target).inspect # (ruby1.9 or Ruby 1.8.7).inspect
+          #abort my_array_object.map!(&:target).inspect # (ruby1.9 or Ruby 1.8.7).inspect
     @provisioningobjects = Kaminari.paginate_array(my_array_object).page(params[:page]).per(per_page)
-		#abort @provisioningobjects.inspect
+		      #abort @provisioningobjects.inspect
 
     # e.g. @customers = @provisioningobjects 
     # TODO: remove the next line, afer all views have been changed to wirk with @provisioningobjects instead of @targets, @customers, @sites or @users
     instance_variable_set("@#{myClass.name.downcase.pluralize}", @provisioningobjects)
-		#abort @sites.inspect
-		#abort @provisioningobjects.inspect
+		      #abort @sites.inspect
+		      #abort @provisioningobjects.inspect
 
     # set filteredvia variable that can be used in the views to show, how the data was filtered
     @filteredvia = ancestor unless ancestor.nil?
@@ -216,10 +214,13 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
 
     # default setting:
     #@async = true if @async.nil?
+    
     className = @provisioningobject.class.name
 
     if @provisioningobject.activeJob?
       flash[:error] = "#{className} #{@provisioningobject.name} cannot be de-provisioned: has active jobs running: see below."
+      
+      provisioningobject_provisionings_path = send("#{myClass.name.downcase}_provisionings_path", @provisioningobject)
       redirectPath = provisioningobject_provisionings_path
 
     elsif @provisioningobject.provisioned?
