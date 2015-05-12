@@ -79,12 +79,12 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
 * heroku
   # if not done already in this folder:
     * heroku create 
-  # else
-    * heroku connect --app <app found above>
+  # else, after each acommand the option 
+    * heroku <command> --app <app found via 'heroku apps'> is needed in the subsequent lines
   * git push heroku # or
   * git push heroku yourbranch:master #, if you are not on the master branch
   * heroku apps
-  * heroku run rake db:migrate --app <app found above>
+  * heroku run rake db:migrate --app <app found above> (e.g. heroku run rake db:migrate --app salty-peak-4964)
 * heroku run rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
 * heroku open # this will open a browser with the correct link
 

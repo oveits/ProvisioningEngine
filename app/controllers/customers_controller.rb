@@ -8,11 +8,16 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
 
  # GET /customers/new
   def new
-    @target_id = params[:target_id]
-#abort @target_id.inspect
-    @customer = Customer.new
-    @provisioningobject = @customer
+    super
+    
+        #abort @params.inspect
+    
     @myparams = {"id"=>'ro', "name"=>rw, "language"=>'showLanguageDropDown', "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
+    
+    # for backwards compatibilit< (needed until views are DRYed):
+    @customer = @provisioningobject    
+    @target_id = @parent.id unless @parent.nil? #params[:target_id]
+
   end
 
   # GET /customers/1/edit

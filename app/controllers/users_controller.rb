@@ -13,6 +13,16 @@ class UsersController < ProvisioningobjectsController #ApplicationController
 
   # GET /users/new
   def new
+    super
+    
+    @myparams = {"id"=>'none', "name"=>'none', "site_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
+
+    # for backwards compatibilit< (needed until views are DRYed):
+    @user = @provisioningobject
+    @site = @parent
+  end
+  
+  def newOld
     @user = User.new
     
     if(params[:site_id])
@@ -88,8 +98,7 @@ class UsersController < ProvisioningobjectsController #ApplicationController
   end
 
   # PATCH       /users/1/provision
-  def provision 
-    #abort @provisioningobject.inspect  
+  def provision  
     super
   end # def provision
   

@@ -120,7 +120,7 @@ class HttpPostRequest
         return nil if returnValue.nil?
 
         # find CC, AC, LOC from site:
-        myTargetID = Target.where("configuration LIKE ?", "%OSVIP=#{returnValue[:target]}" )[0].id
+        myTargetID = Target.where("configuration LIKE ?", "%OSVIP=#{returnValue[:target]}%" )[0].id
         myCustomerID = Customer.where(target: myTargetID, name: returnValue[:customer])[0].id
         mySite = Site.where(customer: myCustomerID, name: returnValue[:site])[0]
         
@@ -130,12 +130,16 @@ class HttpPostRequest
         returnValue[:user] = mySite["countrycode"] + mySite["areacode"] + mySite["localofficecode"] + myheaderHash["X"]
         return returnValue
         
-      end      
+      end 
+      
+      @@provisioned = {} unless defined?(@@provisioned) 
 
       if verbose
+        p "customerID = #{customerID}"
+        p "siteID = #{siteID}"
+        p "userID = #{userID.inspect}"
         p "@@provisioned[customerID] before: #{@@provisioned[customerID]}"
         p "@@provisioned[siteID] before: #{@@provisioned[siteID]}"
-        p "userID = #{userID.inspect}"
         p "@@provisioned[userID] before: #{@@provisioned[userID]}"
       end
  
@@ -192,23 +196,38 @@ class HttpPostRequest
             @@provisioned[userID] = false
           end
         when /Show Sites/
-          if @@provisioned[siteID] == true
+          # quick and dirty for synchronizeAll rspec tests:
+          mySiteID = siteID
+                  #p "111111111111111111111111111" + mySiteID.inspect if verbose
+                  #p "111111111111111111111111111" + mySiteID.nil?.inspect if verbose
+          if mySiteID.nil?
+            mySiteID = customerID
+            mySiteID[:site] = "ExampleSite"
+                  #p "222222222222222222222222222" + mySiteID.inspect if verbose
+          end
+                  #p "333333333333333333333333333" + mySiteID.inspect if verbose
+                  #p @@provisioned.inspect if verbose
+                  #p "44444444444444444444444444 @@provisioned[mySiteID] = " + @@provisioned[mySiteID].inspect if verbose
+                  #p "5555555555555555555555555 siteID[:customer] = " + mySiteID[:customer].inspect if verbose
+                  #p "6666666666666666666666666 siteID[:site] = " + mySiteID[:customer].inspect if verbose
+
+          if @@provisioned[mySiteID] == true
             responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Result>
     <ResultCode>0</ResultCode>
     <ResultText>Success</ResultText>
     <Sites>
         <Site>
-            <CustomerName>' + siteID[:customer] + '</CustomerName>
-            <SiteName>' + siteID[:customer] + '</SiteName>
+            <CustomerName>' + mySiteID[:customer] + '</CustomerName>
+            <SiteName>' + mySiteID[:customer] + '</SiteName>
             <NumberingPlanName>CNP_ExampleCustomerV8_00007</NumberingPlanName>
             <GatewayIP></GatewayIP>
             <MainNumber></MainNumber>
         </Site>
         <Site>
-            <CustomerName>' + siteID[:customer] + '</CustomerName>
-            <SiteName>' + siteID[:site] + '</SiteName>
-            <NumberingPlanName>NP_' + siteID[:site] + '_00008</NumberingPlanName>
+            <CustomerName>' + mySiteID[:customer] + '</CustomerName>
+            <SiteName>' + mySiteID[:site] + '</SiteName>
+            <NumberingPlanName>NP_' + mySiteID[:site] + '_00008</NumberingPlanName>
             <GatewayIP>47.68.190.57</GatewayIP>
             <SiteCode>99821</SiteCode>
             <CountryCode>49</CountryCode>
@@ -219,6 +238,7 @@ class HttpPostRequest
         </Site>
     </Sites>
 </Result>'
+                  #p "7777777777777777777777777777777 responseBody = " + responseBody.inspect if verbose
             else
               responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Result>
@@ -235,13 +255,44 @@ class HttpPostRequest
 </Result>'
             end
         when /List Users/
+          # quick and dirty for synchronizeAll rspec tests:
+          userID = {:user => "4999700730800"} if userID.nil?
           if @@provisioned[userID]
             responseBody = '<Result><ServiceId>' + userID[:user] + '</ServiceId><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           else
             responseBody = '<Result><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           end
         when /List Customers/
-          if @@provisioned[customerID]
+                    #abort "ooooooooooooooooooooooooo" + customerID[:customer].nil?.inspect         
+          if customerID[:customer].nil?
+            
+            # this is a List Customer with no customer specified; we need to fake the list answer
+            # for now, we will only look at ExampleCustomerV7R1 and ExampleCustomerV8 needed by rspec
+            # TODO: read provisioned BGs from @@provisioned, instead of only adding ExampleCustomerV7R1 and ExampleCustomerV8
+            snippet = ""
+            snippets = {}
+            # as of today, the name ExampleCustomerV7R1 is not used, therefore commented out:
+#            ['ExampleCustomerV7R1', 'ExampleCustomerV8'].each do |cust_i|
+            ['ExampleCustomerV8'].each do |cust_i|  
+              customerID_i = customerID
+              customerID_i[:customer] = cust_i
+                        #abort "ooooooooooooooooooooooooo" + customerID_i.inspect
+                        #abort "ooooooooooooooooooooooooo" + @@provisioned[customerID_i].inspect
+                        #abort "ooooooooooooooooooooooooo" + @@provisioned.inspect
+              snippets[cust_i] = "<BGName>#{cust_i}</BGName>" if @@provisioned[customerID_i]
+                        #abort "ooooooooooooooooooooooooo" + snippets.inspect              
+            end
+            
+            snippets.each do |key, value|
+              snippet = "#{snippet}#{value}"
+            end
+            
+                        #abort "ooooooooooooooooooooooooo" + snippet
+            
+            responseBody = '<?xml version="1.0" encoding="UTF-8"?>
+<SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName>' + snippet + '</GetBGListData></SOAPResult>'
+                        #abort "ooooooooooooooooooooooooo" + responseBody           
+          elsif @@provisioned[customerID]                         
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>' + customerID[:customer] + '</BGName></GetBGListData></SOAPResult>'
           else
@@ -476,6 +527,16 @@ finished execution of batch file batchFile-93733174.sh
         else # case headerHash["action"]
           responseBody = "HttpPostRequest.perform: action=#{headerHash["action"]} not supported in simulation mode"
       end # case headerHash["action"]
+
+      if verbose
+        p "customerID = #{customerID}"
+        p "siteID = #{siteID}"
+        p "userID = #{userID.inspect}"
+        p "@@provisioned[customerID] after: #{@@provisioned[customerID]}"
+        p "@@provisioned[siteID] after: #{@@provisioned[siteID]}"
+        p "@@provisioned[userID] after: #{@@provisioned[userID]}"
+      end    
+    
     else # if simulationMode   
       begin
         response = http.request(request)
@@ -485,12 +546,6 @@ finished execution of batch file batchFile-93733174.sh
       end
     end # else # if simulationMode
 
-    if verbose
-      p "@@provisioned[customerID] after: #{@@provisioned[customerID]}"
-      p "@@provisioned[siteID] after: #{@@provisioned[siteID]}"
-      p "userID = #{userID.inspect}"
-      p "@@provisioned[userID] after: #{@@provisioned[userID]}"
-    end
     
     return responseBody
   end # def perform

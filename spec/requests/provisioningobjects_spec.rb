@@ -2,17 +2,52 @@ require 'spec_helper'
 
 RSpec.configure do |c|
   # run all test cases, but not the broken ones:
+  myFilter = {broken: true}
   if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
-    c.filter_run_excluding broken: true, simulationbroken: true #, provisioning: true #, untested: true
-  else 
-    c.filter_run_excluding broken: true #, provisioning: true #, untested: true
+    myFilter[:simulationbroken] =  true
   end
+  
+  unless ENV["WEBPORTAL_ASYNC_MODE"] == "true"
+    myFilter[:syncmodebroken] =  true
+  end
+  
+  myFilter[:obsolete] = true
+  
+  c.filter_run_excluding(myFilter)
+  
   # stop on first failure, if set to true:
-#  c.fail_fast = false
-  c.fail_fast = true
+  c.fail_fast = false
+#  c.fail_fast = true
 
   # TODO: this filter does not work: run only broken test cases
   #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
+end
+
+def expectedProvisionStatus
+  case ENV["WEBPORTAL_ASYNC_MODE"]
+  when "true"
+    "waiting for provisioning"
+  else
+    "is provisioned"
+  end
+end
+
+def expectedProvisionFlash
+  case ENV["WEBPORTAL_ASYNC_MODE"]
+  when "true"
+    "is being created|is being provisioned"
+  else
+    "is provisioned"
+  end
+end
+
+def expectedDeprovisionStatus
+  case ENV["WEBPORTAL_ASYNC_MODE"]
+  when "true"
+    "waiting for de-provisioning"
+  else
+    "is de-provisioned"
+  end
 end
 
 # if set to false, the Gatewayip input is kept empty, when a new site is created
@@ -671,11 +706,6 @@ shared_examples_for Customer do
 end
 
 
-describe Site do
-    # does not work: it will test the Customer page instead of the Site page:
-    #it_behaves_like Customer
-end
-
 targetsolutionList.each do |targetsolution|
   describe "On target solution '#{targetsolution}'" do  
     before do
@@ -955,7 +985,7 @@ objectList.each do |obj|
       end # it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
 
      if obj == "Site" || obj == "User" || obj == "Customer"
-      it "should synchronize the index with the objects found on the target system, if called with a specially named dummy object" do
+      it "should synchronize the index with the objects found on the target system, if called with a specially named dummy object", obsolete: true do
         # if called with dummy object (id==nil), objects found on the target should be synchronized with the database
         initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
         # set default paramsSet:
@@ -1156,7 +1186,11 @@ end # if false
       #  "should have link to 'New Customer'"
       it "should have link to 'New #{obj}'" do     
         #expect(page).to have_link( 'New Customer', href: new_customer_path )
-        expect(page).to have_link( "New #{obj}", href: new_provisioningobject_path(obj) )
+                #p page.html.gsub(/[\n\t]/, '')
+
+        # TODO: need to find a way to have the same expect command for all provisioningobjects
+        expect(page).to have_link( "New #{obj}", href: new_provisioningobject_path(obj) + '?per_page=all') #unless obj == "Site"
+        #expect(page).to have_link( "New #{obj}", href: new_provisioningobject_path(obj) ) if obj == "Site"
       end
       
       #   "link to 'New Customer' leads to correct page"
@@ -1418,19 +1452,19 @@ end # if false
             end
           end  
 
-          it "should save an #{obj} with status 'waiting for provisioning'" do
+          it "should save a #{obj} with status '#{expectedProvisionStatus}'" do
             Delayed::Worker.delay_jobs = true
             click_button submit, match: :first
-            expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for provisioning/)
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/#{expectedProvisionStatus}/)
             # flash:
-            expect(page.html.gsub(/[\n\t]/, '')).to match(/is being created|is being provisioned/)
+            expect(page.html.gsub(/[\n\t]/, '')).to match(/#{expectedProvisionFlash}/)
           end
 
           #if obj == 'Customer'
           it "with provisioning time set to ad hoc, should save an #{obj} with status 'not provisioned'" do
             Delayed::Worker.delay_jobs = true
             select Provisioningobject::PROVISIONINGTIME_AD_HOC, :from => "#{myobject(obj)}[provisioningtime]"
-p page.html.gsub(/[\n\t]/, '')
+#p page.html.gsub(/[\n\t]/, '')
             click_button submit, match: :first
             expect(page.html.gsub(/[\n\t]/, '')).to match(/not provisioned/)
             expect(page.html.gsub(/[\n\t]/, '')).to match(/is created and can be provisioned ad hoc/)
@@ -1607,10 +1641,10 @@ p page.html.gsub(/[\n\t]/, '')
           #click_link 'De-Provision', match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/De-Provision #{obj}/)
           click_link "De-Provision #{obj}", match: :first
-          expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/#{expectedDeprovisionStatus}/)
         end
 
-	it "should update the status of #{obj} 'waiting for de-provisioning' also for objects that had import errors" do
+	it "should update the status of #{obj} '#{expectedDeprovisionStatus}' also for objects that had import errors" do
           myObjects = myProvisioningobject(obj).where(name: $customerName ) if obj == "Customer"
           myObjects = myProvisioningobject(obj).where(name: "Example#{obj}" ) unless obj == "User" || obj == "Customer"
           myObjects = myProvisioningobject(obj).where(Extension: "30800" ) if obj == "User"
@@ -1620,7 +1654,7 @@ p page.html.gsub(/[\n\t]/, '')
           #click_link 'De-Provision', match: :first
           click_link "De-Provision #{obj}", match: :first
       		#p page.html.gsub(/[\n\t]/, '')
-          expect(page.html.gsub(/[\n\t]/, '')).to match(/waiting for de-provisioning/)
+          expect(page.html.gsub(/[\n\t]/, '')).to match(/#{expectedDeprovisionStatus}/)
         end
 
         # TODO: add destroy use cases

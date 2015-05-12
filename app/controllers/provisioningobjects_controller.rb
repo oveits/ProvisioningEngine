@@ -33,6 +33,7 @@ end
     
     # needed for refresh:
     @params = params
+    #abort @params.inspect
 
     # find the closets relative upwards that is specified
     # e.g. if called with GET /targets/3/sites, the closest upward relative is Target with id==3
@@ -139,6 +140,19 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
     		#abort @customers.inspect
     		abort @provisioningobjects.inspect
   end
+
+  # GET /customers/new  
+  def new
+    @provisioningobject = myClass.new
+    
+    parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym 
+
+    if(params[parent_id_sym])
+      @parent = parentClass.find(params[parent_id_sym])
+    end
+    
+    @provisioningtime = params[:provisioningtime]
+  end
   
   # POST /customers
   # POST /customers.json
@@ -153,22 +167,25 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
 #abort @provisioningobject.inspect
 
     respond_to do |format|         
-      if @provisioningobject.save
-        if @async 
-          if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE && @provisioningobject.provision(:create, @async)
-            @notice = "#{@provisioningobject.class.name} is being created (provisioning running in the background)."
-          else
-            @notice = "#{@provisioningobject.class.name} is created and can be provisioned ad hoc."
+      if @provisioningobject.save        
+        if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE
+          if @provisioningobject.provision(:create, @async)
+            if @async 
+              @notice = "#{@provisioningobject.class.name} is being created (provisioning running in the background)."
+            else
+              @notice = "#{@provisioningobject.class.name} is provisioned."
+            end
+          else # if @provisioningobject.provision(:create, @async)
+            @notice = "#{@provisioningobject.class.name} could not be provisioned"
           end
-        elsif @provisioningobject.provision(:create, @async)
-          @notice = "#{@provisioningobject.class.name} is provisioned"
-        else
-          @notice = "#{@provisioningobject.class.name} could not be provisioned"
+        else # if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE
+          # only save, do not provision:
+          @notice = "#{@provisioningobject.class.name} is created and can be provisioned ad hoc."
         end
           
         format.html { redirect_to @provisioningobject, notice: @notice }
         format.json { render :show, status: :created, location: @provisioningobject } 
-      else
+      else # if @provisioningobject.save
         format.html { render :new  }                   
         format.json { render json: @provisioningobject.errors, status: :unprocessable_entity }
       end

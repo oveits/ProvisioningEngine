@@ -3,6 +3,14 @@
 # local variables: f, object
 #   render 'shared/form_provisioningtime.html.erb', object: @customer, f: f
 %>
+<% 	
+	if object.nil? || object.provisioningtime.nil? 
+		selected = Provisioningobject::PROVISIONINGTIME_IMMEDIATE
+  	else
+  		# needed for keeping track of the provisioningtime in case of an input error (wrong or missing parameter in the form)
+  		selected = object.provisioningtime
+  	end
+%>
 <%= 
-f.select(:provisioningtime, Provisioningobject::PROVISIONINGTIME.map {|provisioningtime| [provisioningtime,provisioningtime]}, {:prompt => "Select a #{:provisioningtime}", :selected => object.provisioningtime } ) 
+f.select(:provisioningtime, Provisioningobject::PROVISIONINGTIME.map {|provisioningtime| [provisioningtime,provisioningtime]}, {:prompt => "Select a #{:provisioningtime}", :selected => selected } ) 
 %>

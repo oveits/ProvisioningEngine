@@ -15,6 +15,7 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
 
 
 <%= form_for(@site) do |f| %>
+
   <% if @site.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@site.errors.count, "error") %> prohibited this site from being saved:</h2>
@@ -26,6 +27,8 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
       </ul>
     </div>
   <% end %>
+  
+  		
 
   <div>
   	 <table> 
@@ -77,11 +80,12 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
 			    </tr>
 			<% end # if %>
 		<% end # each %>
-			    <% if @async %>
+			    <% if true %>
                         <tr>
 			    <td><%= f.label "Provisioning Schedule#{' (ignored in synchronous mode)' unless @async}"  %></td>
 			    <td>
-				<%= render 'shared/form_provisioningtime.html.erb', object: @customer, f: f %>
+
+				<%= render 'shared/form_provisioningtime.html.erb', object: @provisioningobject, f: f %>
 			    </td>
                         </tr>
                 <% end %>

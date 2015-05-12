@@ -19,17 +19,14 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   end
 
   # GET /sites/new
-  def new
-    @site = Site.new
-    if(params[:customer_id])
-      @customer = Customer.find(params[:customer_id])
-    end
+  def new  
+    super
     
-    ro = 'readonly'; rw = 'readwrite'
-    #@myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
-    #@myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>'none', "countrycode"=>rw, "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
     @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>'none', "countrycode"=>'showDropDown', "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
 
+    # for backwards compatibilit< (needed until views are DRYed):
+    @site = @provisioningobject
+    @customer = @parent
   end
 
   # GET /sites/1/edit
