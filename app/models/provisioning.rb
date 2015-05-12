@@ -61,6 +61,42 @@ class Provisioning < ActiveRecord::Base
     end
   end # def createdelayedjob
   
+  def actionAsHash
+    # not yet tested
+    # TODO: test and move to a helper or lib that can be used by targets as well
+  
+    # initialize
+    returnHash = {}
+    
+    if action.is_a?(String) && action.match(/\A([^=\n]+=[^=,\n]*)([,\n]*[^=,\n]+=[^=,\n]*)*\Z/)
+
+      # normalize:
+      actionNormalized = action.gsub(/\r/, '')
+      actionNormalized = actionNormalized.gsub(/^[\s]*\n/,'') # ignore empty lines
+      actionNormalized = actionNormalized.gsub(/\n/, ', ')
+      actionNormalized = actionNormalized.gsub(/,[\s]*\Z/, '')# remove trailing commas 
+
+      array = actionNormalized.split(/,/)
+             
+      while array[0]
+        variableValuePairArray = array.shift.split(/=/).map(&:strip)
+            #p '+++++++++++++++++++++++++  variableValuePairArray ++++++++++++++++++++++++++++++++'
+            #p variableValuePairArray.inspect
+        if variableValuePairArray.length.to_s[/^2$/]
+          returnHash[variableValuePairArray[0]] = variableValuePairArray[1]
+        elsif variableValuePairArray.length.to_s[/^1$/]
+          returnHash[variableValuePairArray[0]] = ""
+        else
+          abort "action (here: #{action}) must be of the format \"variable1=value1,variable2=value2, ...\""
+        end
+      end
+    else
+      abort "HttpPostRequest: wrong action (#{action.inspect}) type or format"
+    end # if action.is_a?(Hash)
+    
+    returnHash
+  end
+  
   def deliver(uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=600, httpopentimeout=6)
 
     # workaround for the fact that List commands need to be sent to "http://192.168.113.104:80/show", while all other commands need to be sent to "http://192.168.113.104:80/ProvisioningEngine"

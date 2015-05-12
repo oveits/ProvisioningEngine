@@ -24,6 +24,7 @@ class Validate_Variable_Value_Pairs < ActiveModel::Validator
   end # def
 end
 
+
 class Target < Provisioningobject #ActiveRecord::Base
 
   def target
