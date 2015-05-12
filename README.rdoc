@@ -1,19 +1,29 @@
 == README
 This README documents whatever steps are necessary to get the Ruby based Provisioning Portal up and running.
 
+=== Purpose
+This ProvisioningEngine / ProvisioningPortal is designed to manage target systems and help administrators to provision Customers, Sites and Users on the target systems.
+
+Check out a running example on https://salty-peak-4964.herokuapp.com/customers (is running in simulated, synchronous mode).
+
+In real live, the ProvisioningEngine uses background jobs to perform the provisioning tasks on VoIP and UC systems. An Apache Camel based connector is used to 
+* manage configuration templates
+* perform scripted remote imports
+* access target system using SOAP/XML and SPML interfaces for reading, verifying and altering the configuration of the target systems.
+
 === Installation
 ==== Installation on your own machine (Windows or Linux)
 * prerequisites:
   * rails v4 is installed
   * ruby v2 is installed
-  * Camel based ProvisioningEngine is up and running and reachable (yet private; not part of this package; if not available, the Web Portal itself will work Okay, but all provisionings will fail)
+  * in simulation mode (default), the ProvisioningEngine can run standalone. In production, the Apache Camel based ProvisioningEngine (private SW) is needed as connector.
 * download:
   * git clone https://github.com/oveits/ProvisioningEngine ProvisioningPortal
 * cd ProvisioningPortal
 * rake db:migrate
 * cd config
-* cp application.yml.example application.yml
-* edit application.yml
+* optional: cp application.yml.example application.yml
+* optional: edit application.yml
   * adapt PROVISIONINGENGINE_CAMEL_URL
   * WEBPORTAL_PROVISIONINGBUTTON_VISIBLE and WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE should be kept to "false" (experimental)
   
@@ -37,10 +47,9 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
       * git config --global user.name "Your Name"
     * git add .
     * git commit -am "description of the change"
-* menu -> Preview -> Port 3000
-  
+* menu -> Preview -> Port 3000 
 
-===  Web server
+===  Start Web server
 * start web server on Windows on port 80:
   * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
   * rails s -p 80   --- or as daemon: rails s -d -p 80 (works also on nitrous.io, if you omit the -p 80, so port 3000 is used)
@@ -66,7 +75,7 @@ This README documents whatever steps are necessary to get the Ruby based Provisi
   * bundle exec rspec --drb spec/requests/provisioningobjects_spec.rb
 
 === Commit & Production
-* if behind proxy (in this case: 172.28.12.5:8080):
+* if behind proxy (e.g.: 172.28.12.5:8080):
   * SET HTTP_PROXY=http://172.28.12.5:8080
 * cd /d F:\veits\RubyOnRails\ProvisioningPortalvx.x.x
 * git add .
