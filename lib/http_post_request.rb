@@ -120,7 +120,7 @@ class HttpPostRequest
         return nil if returnValue.nil?
 
         # find CC, AC, LOC from site:
-        myTargets = Target.where("configuration LIKE ?", "%OSVIP%=%#{returnValue[:target]}%" )[0]
+        myTargets = Target.where("configuration LIKE ?", "%OSVIP%=%#{returnValue[:target]}%" )
         if myTargets.count == 1
           myTargetID = myTargets[0].id
         else
