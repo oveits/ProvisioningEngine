@@ -120,9 +120,25 @@ class HttpPostRequest
         return nil if returnValue.nil?
 
         # find CC, AC, LOC from site:
-        myTargetID = Target.where("configuration LIKE ?", "%OSVIP=#{returnValue[:target]}%" )[0].id
-        myCustomerID = Customer.where(target: myTargetID, name: returnValue[:customer])[0].id
-        mySite = Site.where(customer: myCustomerID, name: returnValue[:site])[0]
+        myTargets = Target.where("configuration LIKE ?", "%OSVIP%=%#{returnValue[:target]}%" )[0]
+        if myTargets.count == 1
+          myTargetID = myTargets[0].id
+        else
+          abort "HttpPostRequest: Cannot determine target with OSVIP = #{returnValue[:target]} in the database while trying to access user with extension = #{myheaderHash['X']}"
+        end
+        myCustomers = Customer.where(target: myTargetID, name: returnValue[:customer])
+        if myCustomers.count == 1
+          myCustomerID = myCustomers[0].id
+        else
+          abort "HttpPostRequest: Cannot determine customer with targetID=#{myTargetID} and name=#{returnValue[:customer]} the database while trying to access user with extension = #{myheaderHash['X']}"
+        end
+        #myCustomerID = Customer.where(target: myTargetID, name: returnValue[:customer])[0].id
+        mySites = Site.where(customer: myCustomerID, name: returnValue[:site])
+        if mySites.count == 1
+          mySite = mySites[0]
+        else
+          abort "HttpPostRequest: Cannot determine site with customerID=#{myCustomerID} and name=#{returnValue[:site]} the database while trying to access user with extension = #{myheaderHash['X']}"
+        end
         
         # re-initialize the returnValue, since target, customer and site is not needed, but we will return the full DN instead
         returnValue = {}
