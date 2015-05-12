@@ -146,7 +146,7 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
     parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym 
 
     if(params[parent_id_sym])
-      @parent = parentClass.find(params[parent_id_sym])
+      @parent = myClass.parentClass.find(params[parent_id_sym])
     end
     
     @provisioningtime = params[:provisioningtime]
