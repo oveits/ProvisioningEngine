@@ -87,7 +87,7 @@
 	<% if ENV["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] == "true" %>
           <td><%= link_to 'Edit', edit_provisioning_path(provisioning), class: "btn btn-default" %></td>
 	<% end %>
-	<% if ENV["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] == "true" %>
+	<% if ENV["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] == "true" %>
           <td><%= link_to 'Destroy', provisioning, method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' } %></td>
 	<% end %>
         <% if false %>

@@ -26,9 +26,6 @@
                 
                 <li><%= link_to 'New Site', new_site_path(@params) %></li>
                 <li><%= link_to 'New User', new_site_user_path(@site) %></li>
-                <% if ENV["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] == "true" %>
-                <li><%= link_to 'Edit Site', edit_site_path(@site) %></li>
-                <% end %>
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize', synchronize_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>

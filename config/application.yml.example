@@ -1,12 +1,33 @@
-# Add application configuration variables here, as shown below.
+# ProvisioningEngine Example Configuration file 
+# (based on the figaro gem)
+# 
+# Rename this file to (base dir)/config/application.rb
+# restart the web server after each change (e.g. (base dir)/stopWebPortal.sh and (base dir)/startWebPortal.sh on Linux)
 #
+
+# control, where the HTTP POST provisioning requests are sent if not in simulation mode:
 PROVISIONINGENGINE_CAMEL_URL: "http://1.1.1.1:80/ProvisioningEngine"
-WEBPORTAL_PROVISIONINGBUTTON_VISIBLE: "true"
-WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE: "true"
-WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS: "true"
-WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE: "false"
-WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE: "false"
-WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE: "false"
-WEBPORTAL_BASEURL: "/"
+
+# run the webportal in simulation mode. In this mode, no Apache Camel ProvisioningEngine module is needed (default: true)
 WEBPORTAL_SIMULATION_MODE: "true"
+
+# run the webportal in async mode. In this case, a task "bundle exec rake jobs:work" must be started (default: false)
+WEBPORTAL_ASYNC_MODE: "false"
+
+# control, whether the user can see the synchronization button (default: true)
+WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE: "true"
+
+# hide all buttons that are not active (default: true)
+WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS: "true"
+
+# base URL of the portal. This allows to run the portal on a different URL base, e.g. /developmentsystem/customers instead of /customers /default: /)
+WEBPORTAL_BASEURL: "/"
+
+# allow the admin user to edit provisioning tasks (default: false)
+WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE: "false"
+
+# allow the admin user to delete provisioning tasks (default: false)
+WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE: "false"
+
+
 

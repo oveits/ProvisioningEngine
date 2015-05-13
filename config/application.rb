@@ -32,18 +32,30 @@ module ProvisioningPortalv4
     config.assets.precompile += %w( application.css )
     
     defaultconfig = {}
-    defaultconfig["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] = "true"
+
+    # control, where the HTTP POST provisioning requests are sent if not in simulation mode:
     defaultconfig["PROVISIONINGENGINE_CAMEL_URL"] = "http://1.1.1.1/ProvisioningEngine"
-    defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] = "true"
-    defaultconfig["WEBPORTAL_BASEURL"] = "/"
+    
+    # run the webportal in simulation mode. In this mode, no Apache Camel ProvisioningEngine module is needed (default: true)
     defaultconfig["WEBPORTAL_SIMULATION_MODE"] = "true"
+    
+    # run the webportal in async mode. In this case, a task "bundle exec rake jobs:work" must be started (default: false)
     defaultconfig["WEBPORTAL_ASYNC_MODE"] = "false"
     
-    # obsolete?
-    defaultconfig["WEBPORTAL_PROVISIONINGBUTTON_VISIBLE"] = "true"
-    defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_EDIT_VISIBLE"] = "false"
+    # control, whether the user can see the synchronization button (default: true)
+    defaultconfig["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] = "true"
+    
+    # hide all buttons that are not active (default: true)
+    defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] = "true"
+    
+    # base URL of the portal. This allows to run the portal on a different URL base, e.g. /developmentsystem/customers instead of /customers /default: /)
+    defaultconfig["WEBPORTAL_BASEURL"] = "/"
+    
+    # allow the admin user to edit provisioning tasks (default: false)
     defaultconfig["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] = "false"
-    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] = "false"
+    
+    # allow the admin user to delete provisioning tasks (default: false)
+    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] = "false" 
     
     # set default values for environment variables that are not yet set:
     defaultconfig.each do |key, value| 
