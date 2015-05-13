@@ -100,10 +100,10 @@
                       <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 --> 
                       <% if ENV["WEBPORTAL_SIMULATION_MODE"] == "true" %>
-                        <h4 style="color:blue; background-color:white; opacity: 0.6; position:fixed; bottom:50px;"> ************** running in simulation mode ************* </h4>
+                        <h4 style="color:blue; background-color:white; opacity: 0.6; position:fixed; top:90px; left: 50%;"> **simulation mode**</h4>
                       <% end %>
                       <% unless @async %>
-                        <h4 style="color:green; background-color:white; opacity: 0.6; position:fixed; bottom:70px;"> ************** running in synchronous mode (foreground operation) ************* </h4>
+                        <h4 style="color:green; background-color:white; opacity: 0.6; position:fixed; top:90px; right:20px;"> **foreground mode** </h4>
                       <% end %>
 
 
