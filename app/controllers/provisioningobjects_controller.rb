@@ -62,7 +62,8 @@ end
    
     # default ancestor:
     ancestor = Target.find(params[:target_id]) if ancestor.nil? && !params[:target_id].nil? && params[:target_id] != 'none'
-    my_array_object = myClass.all_in(ancestor, false)
+    my_array_object = myClass.all_in(ancestor) #, false)
+          #abort my_array_object.inspect
           #abort my_array_object.map!(&:target).inspect # (ruby1.9 or Ruby 1.8.7).inspect
     @provisioningobjects = Kaminari.paginate_array(my_array_object).page(params[:page]).per(per_page)
 		      #abort @provisioningobjects.inspect

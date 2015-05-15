@@ -77,7 +77,7 @@ class Target < Provisioningobject #ActiveRecord::Base
   end
 
   def children
-    Customer.where(target_id: id)
+    Customer.where(target_id: id).order(:name)
   end
 
   def provision(method, async=true)

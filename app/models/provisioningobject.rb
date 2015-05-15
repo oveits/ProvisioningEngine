@@ -7,8 +7,59 @@ class Provisioningobject < ActiveRecord::Base
   attr_accessor :provisioningtime
  
   after_initialize :init
+  
+  def self.all_in(ancestor=nil) #, pagination = false, page=1, items_per_page=50)
+    #
+    # returns all provisioningobjects found in the DB as Array; 
+    # if ancester is not nil, it returns only the descendants of this ancestor (e.g. for showing GET /targets/1/sites will show only the sites of target 1
+    # all_in has helped to reduce the number of SQL queries for large indices: only one SQL query per level (Target/Customer/Site/User) instead of N+1 queries per level
+    #
 
-  def self.all_in(ancestor=nil, pagination = false, page=1, items_per_page=50)
+    # calculate list of parents; go down the tree in order to save SQL queries:
+    # with this method, only 3 SQL statements are needed to find the Site of a Target: 
+    # 1) get the Target, 
+    # 2) get all Customers of this target, 
+    # 3) get all Sites and filter by the list of Customers (filtering done in memory on an array) 
+    #abort ancestor.inspect
+
+    # find all parents recursively. Start at ancestor level, e.g. at the target
+    if ancestor.nil?
+      #filtered_all = Target.all.map {|i| i }
+      #filtered_all = Target.order(created_at: :desc).map {|i| i }
+      filtered_all = Target.order(:name).map {|i| i }
+    else
+      filtered_all = [ancestor]
+    end
+
+            #abort filtered_all.inspect
+            #abort ancestor.inspect
+    children_list = []
+    #currentClass = ancestor.class
+    currentClass = filtered_all[0].class
+           #abort currentClass.inspect
+    while currentClass != self # stop if you have found all parents. E.g. if you search for all Sites of the Target, we will stop if we have found all Customers
+
+      # for all parents in the list, find all children and write them to the children_list
+      filtered_all.each do |parent|
+        children_list = children_list.concat parent.children unless parent.children.nil?
+      end
+
+      # go down one level, e.g. if you have found all Customers of a Target, write the Customers to the parent_list, in case of searched Sites, we stop here. In case of Users being looked for, we go one step further and will find all children of the Customers in the next iteration
+      filtered_all = children_list
+            #abort filtered_all.inspect if filtered_all[0].is_a?(Customer)
+            #abort filtered_all.inspect if filtered_all[0].is_a?(Site)
+            #abort filtered_all.inspect if filtered_all[0].is_a?(User)
+      children_list = []
+      currentClass = currentClass.childClass
+    end # while currentClass != parentClass
+    
+            #abort filtered_all.inspect
+
+    return filtered_all
+  end # def self.all_in(ancestor=nil)
+
+
+  def self.all_inOld(ancestor=nil, pagination = false, page=1, items_per_page=50)
     #
     # returns all provisioningobjects found in the DB as Array; 
     # if ancester is not nil, it returns only the descendants of this ancestor (e.g. for showing GET /targets/1/sites will show only the sites of target 1
@@ -27,10 +78,12 @@ class Provisioningobject < ActiveRecord::Base
 		#abort pagedReturn.inspect
         return pagedReturn
       else
+              abort self.all.map {|i| i }.inspect
         return self.all.map {|i| i }
       end
     end
 
+abort "djköshgoöesrhriogörwheögwiöho"
     # perform single SQL query with filter, if filtered per parent, e.g. GET /customers/1/sites
     if ancestor.is_a?(parentClass)
       # single parent
@@ -50,6 +103,7 @@ class Provisioningobject < ActiveRecord::Base
 
     # find all parents recursively. Start at ancestor level, e.g. at the target
     filtered_all = [ancestor]
+          abort filtered_all.inspect 
     children_list = []
     currentClass = ancestor.class
     while currentClass != self # stop if you have found all parents. E.g. if you search for all Sites of the Target, we will stop if we have found all Customers
@@ -61,6 +115,7 @@ class Provisioningobject < ActiveRecord::Base
 
       # go down one level, e.g. if you have found all Customers of a Target, write the Customers to the parent_list, in case of searched Sites, we stop here. In case of Users being looked for, we go one step further and will find all children of the Customers in the next iteration
       filtered_all = children_list
+            abort filtered_all.inspect 
       children_list = []
       currentClass = currentClass.childClass
     end # while currentClass != parentClass
@@ -71,7 +126,7 @@ class Provisioningobject < ActiveRecord::Base
     else
       return filtered_all
     end
-  end
+  end # def self.all_inOld(ancestor=nil, pagination = false, page=1, items_per_page=50)
 
   def init
     self.status ||= 'not provisioned'
@@ -161,6 +216,7 @@ class Provisioningobject < ActiveRecord::Base
   end
 
   def self.synchronizeTree(ancestor = nil, async=true, recursive=false)
+    # TODO: synchronizeTree is experimental and not used by any 
     #
     # synchronizes all objects of the specific class to the local database
     # with recursive == true, also the child classes are synchronized
@@ -228,8 +284,8 @@ abort parents.inspect
         # there is a problem, if one of the parents is not reachable (abort). In order to synchronize other targets in this case, a rescue is needed.
         begin
           synchronizeAllSynchronously(parents_of_this_target, recursive)
-#        rescue Exception
-#          returnBody = "There were errors with synchronizeAllSynchronously"
+        rescue Exception
+          returnBody = "There were errors with synchronizeAllSynchronously"
         end
       end # if async
 

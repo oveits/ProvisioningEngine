@@ -60,7 +60,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
   end
   
   def children
-    children = Site.where(customer: id)
+    children = Site.where(customer: id).order(:name)
 # better to return an empty relation instead of nil; therefore commented out:
 #    if children.count > 0
 #      children

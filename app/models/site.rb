@@ -78,7 +78,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
   end
   
   def children
-    children = User.where(site: id)
+    children = User.where(site: id).order(:extension)
   end
   
   def parent
