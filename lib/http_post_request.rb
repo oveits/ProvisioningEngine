@@ -146,17 +146,21 @@ class HttpPostRequest
         returnValue[:user] = mySite["countrycode"] + mySite["areacode"] + mySite["localofficecode"] + myheaderHash["X"]
         return returnValue
         
-      end 
+      end
       
+      # quick and dirty for synchronizeAll rspec tests:
+      myUserID = userID
+      myUserID = {:user => "4999700730800"} if myUserID.nil?
+  
       @@provisioned = {} unless defined?(@@provisioned) 
 
       if verbose
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
-        p "userID = #{userID.inspect}"
+        p "myUserID = #{myUserID.inspect}"
         p "@@provisioned[customerID] before: #{@@provisioned[customerID]}"
         p "@@provisioned[siteID] before: #{@@provisioned[siteID]}"
-        p "@@provisioned[userID] before: #{@@provisioned[userID]}"
+        p "@@provisioned[myUserID] before: #{@@provisioned[myUserID]}"
       end
  
       sleep 100.seconds / 1000
@@ -180,13 +184,17 @@ class HttpPostRequest
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" exists already in the data base (Numbering Plan = NP_Site1_00010)!'
           end
         when /Add User/
-          if @@provisioned[userID].nil? || !@@provisioned[userID]
+                  #abort myUserID.inspect
+                  #abort @@provisioned[myUserID].inspect
+          if @@provisioned[myUserID].nil? || !@@provisioned[myUserID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@provisioned[userID] = true
+            @@provisioned[myUserID] = true
           else
-            @@provisioned[userID] = true
+            @@provisioned[myUserID] = true
             responseBody = 'ERROR: java.lang.Exception: Cannot create user with phone number +49 (99) 7007 30800: phone number is in use already!'
           end
+                  #abort myUserID.inspect
+                  #abort @@provisioned[myUserID].inspect
         when /Delete Customer/
           if @@provisioned[customerID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
@@ -204,12 +212,12 @@ class HttpPostRequest
             @@provisioned[siteID] = false
           end
         when /Delete User/
-          if @@provisioned[userID]
+          if @@provisioned[myUserID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@provisioned[userID] = false
+            @@provisioned[myUserID] = false
           else
             responseBody = 'ERROR: java.lang.Exception: Cannot delete user with phone number +49 (99) 7007 30800: phone number does not exist for this customer!'
-            @@provisioned[userID] = false
+            @@provisioned[myUserID] = false
           end
         when /Show Sites/
           # quick and dirty for synchronizeAll rspec tests:
@@ -271,10 +279,11 @@ class HttpPostRequest
 </Result>'
             end
         when /List Users/
-          # quick and dirty for synchronizeAll rspec tests:
-          userID = {:user => "4999700730800"} if userID.nil?
-          if @@provisioned[userID]
-            responseBody = '<Result><ServiceId>' + userID[:user] + '</ServiceId><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
+          
+                  #abort myUserID.inspect
+                  #abort @@provisioned[myUserID].inspect
+          if @@provisioned[myUserID]
+            responseBody = '<Result><ServiceId>' + myUserID[:user] + '</ServiceId><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           else
             responseBody = '<Result><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           end
@@ -547,12 +556,13 @@ finished execution of batch file batchFile-93733174.sh
       if verbose
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
-        p "userID = #{userID.inspect}"
+        p "myUserID = #{myUserID.inspect}"
         p "@@provisioned[customerID] after: #{@@provisioned[customerID]}"
         p "@@provisioned[siteID] after: #{@@provisioned[siteID]}"
-        p "@@provisioned[userID] after: #{@@provisioned[userID]}"
+        p "@@provisioned[myUserID] after: #{@@provisioned[myUserID]}"
       end    
-    
+                  #abort myUserID.inspect
+                  #abort @@provisioned[myUserID].inspect    
     else # if simulationMode   
       begin
         response = http.request(request)

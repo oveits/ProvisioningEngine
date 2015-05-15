@@ -228,8 +228,8 @@ abort parents.inspect
         # there is a problem, if one of the parents is not reachable (abort). In order to synchronize other targets in this case, a rescue is needed.
         begin
           synchronizeAllSynchronously(parents_of_this_target, recursive)
-        rescue Exception
-          returnBody = "There were errors with synchronizeAllSynchronously"
+#        rescue Exception
+#          returnBody = "There were errors with synchronizeAllSynchronously"
         end
       end # if async
 
