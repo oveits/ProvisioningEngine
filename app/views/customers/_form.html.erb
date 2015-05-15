@@ -51,7 +51,7 @@ select {<%= minWidthStyle %>}
 			    <%= f.select(:target_id, Target.all.map {|target| 
 			    	targetname_or_id = ( !target.nil? && target.name.to_s != "") ? target.name : target_id.to_s
 			    	#abort targetname.inspect
-			    	[targetname_or_id, target.id]}, :prompt => "Select a TargetS", selected: selected) %>	    			    		    
+			    	[targetname_or_id, target.id]}, :prompt => "Select a Target", selected: selected) %>	    			    		    
 			    </td>
 
 			<% elsif myparams[attribute[0]] == 'showLanguageDropDown' %>
