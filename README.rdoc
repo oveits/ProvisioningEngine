@@ -103,12 +103,13 @@ In real live, the ProvisioningEngine uses background jobs to perform the provisi
 * synchronize local git with remote git repository:
   * git pull
   
-=== Tipps
-* Pre-view this rdoc: 
-  1. rdoc README.rdoc -o ./tmp/doc
-  2. open (application root)/tmp/doc/README_rdoc.html in a browser 
-  
-* NginX
+=== NginX
+In the productive environment, NginX is used for following purposes:
+  1. Offload of HTTPS
+  2. Allow more than one web server to use the same IP address
+     in our case, e.g. /customers is redirected to the productive web server, while /dev/customers is redirected to a development branch of the web server
+
+How to set up NginX:
   * sudo apt-get update
   * sudo apt-get install nginx
   * cd /etc/nginx
@@ -116,4 +117,16 @@ In real live, the ProvisioningEngine uses background jobs to perform the provisi
   * change config: sudo vi /etc/nginx/sites-enabled/default
   * observe error logs: sudo tail -F /var/log/nginx/error.log
   * in other terminal: sudo service nginx start
+  
+=== Tipps
+* Pre-view this rdoc: 
+  1. rdoc README.rdoc -o ./tmp/doc
+  2. open (application root)/tmp/doc/README_rdoc.html in a browser 
+* set up git, so it does not ask for the username anymore:
+  * if you are bound to use HTTPS instead of SSH, you can set the local repository .git/config file to
+    url = https://oveits@ProvisioningEngine.git
+  * if you are allowed to use SSH and do not want to enter the password, try 
+    url = git@github.com:oveits/ProvisioningEngine.git  
+  
+
 
