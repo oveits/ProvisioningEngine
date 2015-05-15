@@ -1211,16 +1211,11 @@ end # if false
         expect(page).to have_selector('h1', text: "New #{obj}")
       end
       
-      #its "Cancel button in the left menue leads to the Customers index page" do
-      its "Cancel button in the left menue leads to the #{myObjects(obj)} index page" do
-        click_link("Cancel", match: :first)
-        expect(page).to have_selector('h1', text: "#{myObjects(obj)}")    
-      end
-      
       #its "Cancel button in the web form leads to the Customers index page" do
       its "Cancel button in the web form leads to the #{myObjects(obj)} index page" do
         #find html tag with class=index. Within this tag, find and click link 'Cancel' 
         #first('.index').click_link('Cancel')
+p page.html.gsub(/[\n\t]/, '')
         click_link('Cancel')
         expect(page).to have_selector('h1', text: "#{myObjects(obj)}")    
       end

@@ -172,8 +172,10 @@ class HttpPostRequest
           myCustomers.each do |customer|
             #abort @@provisioned[customerID].inspect
             #abort customer.provisioned?.inspect
-            @@provisioned[customerID] = customer.provisioned? if @@provisioned[customerID].nil?
-            @@provisioned[customerID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(customer.status)
+            if @@provisioned[customerID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[customerID] is nil)                         
+              @@provisioned[customerID] = customer.provisioned? if @@provisioned[customerID].nil?
+              @@provisioned[customerID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(customer.status)
+            end
           end
         end
       end
@@ -184,8 +186,10 @@ class HttpPostRequest
           myCustomers.each do |customer|
             mySites = Site.where(name: siteID[:site])
             mySites.each do |site|
-              @@provisioned[siteID] = site.provisioned? if @@provisioned[siteID].nil?
-              @@provisioned[siteID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
+              if @@provisioned[siteID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[siteID] is nil)             
+                @@provisioned[siteID] = site.provisioned? if @@provisioned[siteID].nil?
+                @@provisioned[siteID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
+              end
             end
           end
         end
@@ -226,10 +230,18 @@ class HttpPostRequest
               myUsers.each do |user|
                 #abort user.inspect
                 #abort @@provisioned[userID].inspect
-                @@provisioned[userID] = user.provisioned?
-                # override: is still provisioned in the following cases:
-                @@provisioned[userID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(user.status)
+                p @@provisioned[userID].inspect
+                p user.inspect
+                p user.provisioned?.inspect
+                if @@provisioned[userID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[userID] is nil)
+                  @@provisioned[userID] = user.provisioned? if 
+                  # override: is still provisioned in the following cases:
+                  @@provisioned[userID] = true if @@provisioned[userID].nil? && /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(user.status)
+                end
                 #abort @@provisioned[userID].inspect
+                p @@provisioned[userID].inspect
+                p user.inspect
+                p user.provisioned?.inspect
               end unless myUsers.nil?
               
               myUsers = nil
@@ -237,6 +249,15 @@ class HttpPostRequest
             end
           end
         end
+      end
+      
+      if verbose
+        p "customerID = #{customerID}"
+        p "siteID = #{siteID}"
+        p "myUserID = #{myUserID.inspect}"
+        p "@@provisioned[customerID] before sync: #{@@provisioned[customerID]}"
+        p "@@provisioned[siteID] before sync: #{@@provisioned[siteID]}"
+        p "@@provisioned[myUserID] before sync: #{@@provisioned[myUserID]}"
       end
       
       syncMyCustomersFromDB unless customerID.nil? 
@@ -259,9 +280,9 @@ class HttpPostRequest
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"
-        p "@@provisioned[customerID] before: #{@@provisioned[customerID]}"
-        p "@@provisioned[siteID] before: #{@@provisioned[siteID]}"
-        p "@@provisioned[myUserID] before: #{@@provisioned[myUserID]}"
+        p "@@provisioned[customerID] after sync before provisioning: #{@@provisioned[customerID]}"
+        p "@@provisioned[siteID] after sync before provisioning: #{@@provisioned[siteID]}"
+        p "@@provisioned[myUserID] after sync before provisioning: #{@@provisioned[myUserID]}"
       end
  
       sleep 100.seconds / 1000
@@ -659,9 +680,9 @@ finished execution of batch file batchFile-93733174.sh
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"
-        p "@@provisioned[customerID] after: #{@@provisioned[customerID]}"
-        p "@@provisioned[siteID] after: #{@@provisioned[siteID]}"
-        p "@@provisioned[myUserID] after: #{@@provisioned[myUserID]}"
+        p "@@provisioned[customerID] after provisioning: #{@@provisioned[customerID]}"
+        p "@@provisioned[siteID] after provisioning: #{@@provisioned[siteID]}"
+        p "@@provisioned[myUserID] after provisioning: #{@@provisioned[myUserID]}"
       end    
                   #abort myUserID.inspect
                   #abort @@provisioned[myUserID].inspect    

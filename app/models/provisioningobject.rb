@@ -30,7 +30,13 @@ class Provisioningobject < ActiveRecord::Base
     else
       filtered_all = [ancestor]
     end
+    
+    # return immediately, if no ancestor and no Target is defined:
+    if filtered_all.count == 0
+      return self.all.map {|i| i}
+    end
 
+            #abort Target.all.inspect
             #abort filtered_all.inspect
             #abort ancestor.inspect
     children_list = []
