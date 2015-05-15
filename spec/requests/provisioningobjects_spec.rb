@@ -1215,7 +1215,7 @@ end # if false
       its "Cancel button in the web form leads to the #{myObjects(obj)} index page" do
         #find html tag with class=index. Within this tag, find and click link 'Cancel' 
         #first('.index').click_link('Cancel')
-p page.html.gsub(/[\n\t]/, '')
+    #p page.html.gsub(/[\n\t]/, '')
         click_link('Cancel')
         expect(page).to have_selector('h1', text: "#{myObjects(obj)}")    
       end
