@@ -30,6 +30,7 @@
                 <li><%= link_to 'Synchronize', synchronize_site_path(@site), method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
 <% @provisioningobject = @site %>
+				<li><%= render 'shared/edit_link.html.erb' %></li>
                 <li><%= render 'shared/provision_link.html.erb' %></li>
                 <li><%= render 'shared/destroy_link.html.erb' %></li>
                 <li class="hidden"><%= link_to 'Delete Site', @site, method: :delete, data: { confirm: 'Are you sure?' } %></li>

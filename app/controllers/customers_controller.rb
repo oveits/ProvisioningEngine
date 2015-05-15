@@ -45,8 +45,12 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
   # PATCH/PUT /customers/1
   # PATCH/PUT /customers/1.json
   def update
+    #abort params.inspect
     @myparams = {"id"=>ro, "name"=>rw, "language"=>'showLanguageDropDown', "customer_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "target_id"=>ro }
-    @provisioningobject = @customer
+    #@provisioningobject = @customerS
+    @customer = @provisioningobject
+    
+    #abort @provisioningobject.inspect
 
     super
   end

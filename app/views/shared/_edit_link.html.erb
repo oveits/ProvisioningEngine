@@ -1,0 +1,9 @@
+<% render 'shared/helpers.html.erb' %>
+
+<% unless @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status) %>
+<%= link_to "Edit #{@provisioningobject.class.name}", provisioningobject_path(@provisioningobject, 'edit'),  method: :get, data: { confirm: 'Are you sure?' }   
+%>
+
+<%  
+   end 
+%>

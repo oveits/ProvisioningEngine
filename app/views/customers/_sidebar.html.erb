@@ -23,6 +23,7 @@
                 <li><%= link_to 'New Customer', new_customer_path %></li>
                 <li><%= link_to 'Add Site', new_customer_site_path(@customer) %></li>
 <% @provisioningobject = @customer %>
+        <li><%= render 'shared/edit_link.html.erb' %></li>
 		<li><%= render 'shared/provision_link.html.erb' %></li>
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize', synchronize_customer_path(@customer), method: :patch, data: { confirm: 'Are you sure?' } %></li>

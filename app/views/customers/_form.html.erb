@@ -51,24 +51,14 @@ select {<%= minWidthStyle %>}
 			    <%= f.select(:target_id, Target.all.map {|target| 
 			    	targetname_or_id = ( !target.nil? && target.name.to_s != "") ? target.name : target_id.to_s
 			    	#abort targetname.inspect
-			    	[targetname_or_id, target.id]}, :prompt => "Select a Target", selected: selected) %>	    
-<% if false %>
-			    <% begin %>
-			    	<% if @alwaysDropDown %>
-			    		<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target", :selected => @target_id) %>
-			    	<% else %>
-		    			<%= f.text_field attribute[0], :value => @target.id,:readonly => true, :style => myreadonlystyle %>
-			    	<% end %>
-			    <% rescue %>
-			    	<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target") %>
-			    <% end %>
-<% end %>			    		    
+			    	[targetname_or_id, target.id]}, :prompt => "Select a TargetS", selected: selected) %>	    			    		    
 			    </td>
 
 			<% elsif myparams[attribute[0]] == 'showLanguageDropDown' %>
 			    <td><%= f.label attribute[0] %></td>
 			    <td>
-				<%= f.select(:language, Customer::LANGUAGES.map {|language| [language,language]}, :prompt => "Select the customer main language") %>
+			    	<% selected = @provisioningobject.language %>
+				<%= f.select(:language, Customer::LANGUAGES.map {|language| [language,language]}, :prompt => "Select the customer main language", selected: selected) %>
 			    </td>
 		 	<% end %>
 <% if true %>

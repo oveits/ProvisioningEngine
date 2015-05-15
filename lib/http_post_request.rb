@@ -38,7 +38,7 @@ class HttpPostRequest
 #abort headerInput.is_a?(String).inspect
 #abort (!!headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/)).inspect
     
-    if headerInput.is_a?(Hash)
+    if headerInput.is_a?(Hash)    
       headerHash = headerInput
     #elsif headerInput.is_a?(String) && headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/)
     elsif headerInput.is_a?(String) && headerInput.match(/\A([^=\n]+=[^=,\n]*)([,\n]*[^=,\n]+=[^=,\n]*)*\Z/)
@@ -88,6 +88,7 @@ class HttpPostRequest
       
       # return {target: "myTargetNyme", customer: "myCustomerName"}
       def customerID(myheaderHash = @headerHash)
+              #abort myheaderHash.inspect
         returnValue = targetID(myheaderHash)
         returnValue[:customer] = myheaderHash["customerName"]
         returnValue
@@ -152,7 +153,107 @@ class HttpPostRequest
       myUserID = userID
       myUserID = {:user => "4999700730800"} if myUserID.nil?
   
-      @@provisioned = {} unless defined?(@@provisioned) 
+      @@provisioned = {} unless defined?(@@provisioned)
+      
+      # if the Web server was newly started, it might have forgotten the status of the customer.
+      def myTargets
+        return [] if targetID.nil?
+              #abort targetID.inspect
+        myTargets = Target.where("configuration LIKE ?", "%OSVIP%=%#{targetID[:target]}%" ).map{|i| i}
+              #abort myTargets.inspect
+      end
+      
+      #abort myTargets.inspect
+      #abort @@provisioned.inspect
+      
+      def syncMyCustomersFromDB        
+        myTargets.each do |target|
+          myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
+          myCustomers.each do |customer|
+            #abort @@provisioned[customerID].inspect
+            #abort customer.provisioned?.inspect
+            @@provisioned[customerID] = customer.provisioned? if @@provisioned[customerID].nil?
+            @@provisioned[customerID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(customer.status)
+          end
+        end
+      end
+      
+      def syncMySitesFromDB        
+        myTargets.each do |target|
+          myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
+          myCustomers.each do |customer|
+            mySites = Site.where(name: siteID[:site])
+            mySites.each do |site|
+              @@provisioned[siteID] = site.provisioned? if @@provisioned[siteID].nil?
+              @@provisioned[siteID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
+            end
+          end
+        end
+      end
+      
+      def syncMyUsersFromDB        
+        myTargets.each do |target|
+                #abort target.inspect
+                #abort customerID.inspect
+          if customerID.nil? || customerID[:customer].nil?
+            myCustomers = Customer.where(target_id: target.id) # since I might not know the customer for input like {"action"=>"List Users", "X"=>"2221", "CC"=>"49", "AC"=>"99", "LOC"=>"7007", "OSVIP"=>"1.2.3.4"}, we need to search the user everywhere
+          else 
+            myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
+          end
+                  #abort customerID[:customer].inspect
+                #abort myCustomers.inspect
+          myCustomers.each do |customer|
+                  #abort customer.inspect
+            if siteID.nil? || siteID[:site].nil?
+              mySites = Site.where(customer_id: customer.id).map{|i| i}
+              #abort mySites.inspect unless mySites.count==0
+              
+            else
+              mySites = Site.where(customer_id: customer.id, name: siteID[:site]).map{|i| i}
+            end
+            mySites.each do |site|
+              #abort (/#{site.countrycode}#{site.areacode}#{site.localofficecode}.{#{site.extensionlength}}/.match("498934512345")).inspect
+              matches = /\A#{site.countrycode}#{site.areacode}#{site.localofficecode}.{#{site.extensionlength}}\Z/.match(userID[:user])
+              #matches = /#{site.countrycode}#{site.areacode}#{site.localofficecode}.{4}/.match(userID[:user])
+              
+              #abort /.{#{site.extensionlength}}/.inspect unless matches.nil?
+              #abort matches.inspect unless matches.nil?
+              myExtension = userID[:user].gsub("#{site.countrycode}#{site.areacode}#{site.localofficecode}",'') unless matches.nil?
+              #abort myExtension.inspect unless matches.nil?
+              #abort site.id.inspect unless matches.nil?
+              myUsers = User.where(site_id: site.id, extension: myExtension) unless matches.nil?
+              #abort myUser.inspect unless myUser.nil? || myUser.count == 0 
+              myUsers.each do |user|
+                #abort user.inspect
+                #abort @@provisioned[userID].inspect
+                @@provisioned[userID] = user.provisioned?
+                # override: is still provisioned in the following cases:
+                @@provisioned[userID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(user.status)
+                #abort @@provisioned[userID].inspect
+              end unless myUsers.nil?
+              
+              myUsers = nil
+
+            end
+          end
+        end
+      end
+      
+      syncMyCustomersFromDB unless customerID.nil? 
+      
+      syncMySitesFromDB unless siteID.nil?
+      
+      syncMyUsersFromDB unless userID.nil?
+      #abort userID.inspect
+      
+      
+      
+      #abort @@provisioned.inspect
+      
+      #abort myCustomers.inspect
+      
+
+      #@@provisioned[customerID] = myCustomer.provisioned? unless myCustomer.nil?
 
       if verbose
         p "customerID = #{customerID}"
@@ -212,11 +313,12 @@ class HttpPostRequest
             @@provisioned[siteID] = false
           end
         when /Delete User/
+          #abort @@provisioned[myUserID].inspect
           if @@provisioned[myUserID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
             @@provisioned[myUserID] = false
           else
-            responseBody = 'ERROR: java.lang.Exception: Cannot delete user with phone number +49 (99) 7007 30800: phone number does not exist for this customer!'
+            responseBody = 'ERROR: java.lang.Exception: Cannot delete user with phone number ' + myUserID[:user] + ': phone number does not exist for this customer!'
             @@provisioned[myUserID] = false
           end
         when /Show Sites/
@@ -317,7 +419,7 @@ class HttpPostRequest
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName>' + snippet + '</GetBGListData></SOAPResult>'
                         #abort "ooooooooooooooooooooooooo" + responseBody           
-          elsif @@provisioned[customerID]                         
+          elsif @@provisioned[customerID]                      
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>' + customerID[:customer] + '</BGName></GetBGListData></SOAPResult>'
           else

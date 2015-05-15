@@ -195,6 +195,47 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
   # PATCH/PUT /customers/1
   # PATCH/PUT /customers/1.json
   def update
+              #abort params.inspect
+          params.delete :target_id if params[:target_id].to_s == ""          #params[:target_id] = params[:customer][:target_id] unless params[:customer][:target_id].nil?
+          #abort params.inspect
+    # in the individual object's controller, the following needs to be done (here the example of a customers_controller:
+    ## TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
+    #@myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
+#
+    #@provisioningobject = Customer.new(customer_params)
+    #@customer = @provisioningobject
+    #@className = @provisioningobject.class.to_s
+#abort @provisioningobject.inspect
+#abort @provisioningobject.provisioned?.inspect
+
+    respond_to do |format|         
+      if !@provisioningobject.provisioned? && @provisioningobject.update(provisioningobject_params)       
+        if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE
+          if @provisioningobject.provision(:create, @async)
+            if @async 
+              @notice = "#{@provisioningobject.class.name} is being created (provisioning running in the background)."
+            else
+              @notice = "#{@provisioningobject.class.name} is provisioned."
+            end
+          else # if @provisioningobject.provision(:create, @async)
+            @notice = "#{@provisioningobject.class.name} could not be provisioned"
+          end
+        else # if @provisioningobject.provisioningtime == Provisioningobject::PROVISIONINGTIME_IMMEDIATE
+          # only save, do not provision:
+          @notice = "#{@provisioningobject.class.name} is created and can be provisioned ad hoc."
+          @provisioningobject.update_attribute(:status, "not provisioned")
+        end
+          
+        format.html { redirect_to @provisioningobject, notice: @notice }
+        format.json { render :show, status: :created, location: @provisioningobject } 
+      else # if @provisioningobject.save
+        flash[:error] = "#{@provisioningobject.class.name} could not be updated (already provisioned?)"
+        format.html { render :edit  }                   
+        format.json { render json: @provisioningobject.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+  def updateOld
     # individual settings are done e.g. in customers_controller.rb#update
     respond_to do |format|
       if @provisioningobject.update(provisioningobject_params)
@@ -405,6 +446,7 @@ private
         #abort parent_id_sym.inspect
         #abort this_sym.inspect
         #abort params[this_sym][parent_id_sym].inspect
+        #abort params[parent_id_sym].inspect
         #abort params[:site][:customer_id].inspect
         #abort myClass.parentClass.find(params[this_sym][parent_id_sym]).inspect
 
@@ -414,6 +456,9 @@ private
             #abort params.inspect
             #abort params[this_sym][parent_id_sym].inspect
       @parent = myClass.parentClass.find(params[this_sym][parent_id_sym])
+    elsif !params[:id].nil?
+      # read parent from existing object
+      @parent = myClass.find(params[:id]).parent
     end
         #abort @parent.inspect
   end

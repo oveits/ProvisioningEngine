@@ -36,6 +36,9 @@ class UsersController < ProvisioningobjectsController #ApplicationController
 
   # GET /users/1/edit
   def edit
+    #abort @parent.inspect
+    params[:site_id] = @parent.id
+    #abort params.inspect
   end
 
   # POST /users
@@ -117,7 +120,16 @@ class UsersController < ProvisioningobjectsController #ApplicationController
 
   # PATCH/PUT /users/1
   # PATCH/PUT /users/1.json
-  def update   
+  def update
+    @myparams = {"id"=>ro, "name"=>rw, "site_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
+
+      #abort @provisioningobject.inspect
+    @user = @provisioningobject
+    @className = @provisioningobject.class.to_s
+    super
+  end
+  
+  def updateOld   
     ro = 'readonly'; rw = 'readwrite'
     @myparams = {"id"=>ro, "name"=>rw, "site_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
     respond_to do |format|
