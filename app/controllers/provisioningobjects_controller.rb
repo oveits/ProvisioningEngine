@@ -1,7 +1,10 @@
 class ProvisioningobjectsController < ApplicationController
   before_action :set_provisioningobject, only: [:show, :edit, :update, :destroy, :deprovision, :provision]
+  before_action :set_parent, only: [:new, :create, :show, :edit, :update, :destroy, :deprovision, :provision]
+  
   #before_action :set_provisioningobjects, only: [:index] #, :removeAll]
   before_action :set_async_mode, :remove_target_id_if_needed
+  
 
 
   def ro
@@ -62,7 +65,7 @@ end
    
     # default ancestor:
     ancestor = Target.find(params[:target_id]) if ancestor.nil? && !params[:target_id].nil? && params[:target_id] != 'none'
-    my_array_object = myClass.all_in(ancestor) #, false)
+    my_array_object = myClass.all_in(ancestor)
           #abort my_array_object.inspect
           #abort my_array_object.map!(&:target).inspect # (ruby1.9 or Ruby 1.8.7).inspect
     @provisioningobjects = Kaminari.paginate_array(my_array_object).page(params[:page]).per(per_page)
@@ -142,13 +145,8 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
 
   # GET /customers/new  
   def new
+        #abort params.inspect
     @provisioningobject = myClass.new
-    
-    parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym 
-
-    if(params[parent_id_sym])
-      @parent = myClass.parentClass.find(params[parent_id_sym])
-    end
     
     @provisioningtime = params[:provisioningtime]
   end
@@ -156,6 +154,9 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
   # POST /customers
   # POST /customers.json
   def create
+          #abort params.inspect
+          params.delete :target_id if params[:target_id].to_s == ""          #params[:target_id] = params[:customer][:target_id] unless params[:customer][:target_id].nil?
+          #abort params.inspect
     # in the individual object's controller, the following needs to be done (here the example of a customers_controller:
     ## TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
     #@myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
@@ -394,6 +395,27 @@ private
 
   def set_provisioningobject
     @provisioningobject = provisioningobject
+  end
+  
+  def set_parent
+    
+        #abort @parent.inspect
+    this_sym = "#{myClass.name.downcase}".to_sym
+    parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym
+        #abort parent_id_sym.inspect
+        #abort this_sym.inspect
+        #abort params[this_sym][parent_id_sym].inspect
+        #abort params[:site][:customer_id].inspect
+        #abort myClass.parentClass.find(params[this_sym][parent_id_sym]).inspect
+
+    if(!params[parent_id_sym].nil?) # this is the format needed for all controllers but #create (e.g. #new in case of /customers/5/sites/new or /sites/new?customer_id=5)
+      @parent = myClass.parentClass.find(params[parent_id_sym])
+    elsif( !params[this_sym].nil? && params[this_sym][parent_id_sym].to_s != "")  # this is the format needed for #create
+            #abort params.inspect
+            #abort params[this_sym][parent_id_sym].inspect
+      @parent = myClass.parentClass.find(params[this_sym][parent_id_sym])
+    end
+        #abort @parent.inspect
   end
   
   def set_async_mode

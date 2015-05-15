@@ -42,6 +42,7 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   # POST /sites
   # POST /sites.json
   def create
+    #abort @parent
         # TODO: the next line is still needed. Is this the right place to control, whether a param is ro or rw?
     @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>'showDropDown', "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
 

@@ -28,9 +28,11 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
   # POST /customers
   # POST /customers.json
   def create
+          #abort params.inspect
     # TODO: the next line is still needed. Is this the right place to control, whether a param is ro or rw?
     @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
 
+#abort @provisioningobject.inspect
     @provisioningobject = Customer.new(provisioningobject_params)
 #abort @provisioningobject.inspect
     @customer = @provisioningobject

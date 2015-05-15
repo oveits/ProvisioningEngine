@@ -47,6 +47,12 @@ select {<%= minWidthStyle %>}
 		 	<% elsif myparams[attribute[0]] == 'showTargetDropDown' %>
 			    <td><%= f.label attribute[0] %></td>
 			    <td>
+			    <% selected = @parent.id unless @parent.nil? %>
+			    <%= f.select(:target_id, Target.all.map {|target| 
+			    	targetname_or_id = ( !target.nil? && target.name.to_s != "") ? target.name : target_id.to_s
+			    	#abort targetname.inspect
+			    	[targetname_or_id, target.id]}, :prompt => "Select a Target", selected: selected) %>	    
+<% if false %>
 			    <% begin %>
 			    	<% if @alwaysDropDown %>
 			    		<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target", :selected => @target_id) %>
@@ -55,7 +61,8 @@ select {<%= minWidthStyle %>}
 			    	<% end %>
 			    <% rescue %>
 			    	<%= f.select(:target_id, Target.all.map {|target| [target.name,target.id]}, :prompt => "Select a Target") %>
-			    <% end %>		    
+			    <% end %>
+<% end %>			    		    
 			    </td>
 
 			<% elsif myparams[attribute[0]] == 'showLanguageDropDown' %>

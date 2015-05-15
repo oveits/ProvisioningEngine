@@ -57,15 +57,23 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
 				<tr>
 			    <td><%= f.label attribute[0] %></td>
 			    <td>
-			    <% begin %>
-			    	<% if @alwaysDropDown %>
-			    		<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, {:prompt => "Select a #{:customer}", :selected => @customer.id} ) %>
-			    	<% else %>
-		    			<%= f.text_field attribute[0], size: inputFieldSize, :value => @customer.id,:readonly => true, :style => myreadonlystyle %>
-			    	<% end %>
-			    <% rescue %>
-			    	<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, size: inputFieldSize, :prompt => "Select a #{:customer}") %>
-			    <% end %>		    
+			    <% selected = @parent.id unless @parent.nil? %>
+				<%= f.select(:customer_id, Customer.where.not(target_id: nil).map {|customer| 
+			    	targetname_or_id = ( !customer.nil? && !customer.target.nil? && customer.target.name.to_s != "") ? customer.target.name : customer.target_id.to_s
+			    	customername_or_id = ( !customer.nil? && !customer.name.to_s != "" ) ? customer.name : customer_id.to_s
+			    	#abort targetname.inspect
+			    	[targetname_or_id + ":" + customername_or_id,customer.id]}, :prompt => "Select a Target:Customer", selected: selected) %>	    
+<% if false %>
+			        <% unless @parent.nil? %>
+			        	<%= f.select(:customer_id, Customer.where.not(target_id: nil).map {|customer| [customer.target.name + ":" + customer.name,customer.id]}, :prompt => "Select a Target:Customer", :selected => @parent.id) %>
+					<% else %>
+						<% if true %>
+			        	<%= f.select(:customer_id, Customer.where.not(target_id: nil).map {|customer| [customer.target.name + ":" + customer.name,customer.id]}, :prompt => "Select a Target:Customer") %>
+			        	<% else %>
+			    		<%= f.select(:customer_id, Customer.all.map {|customer| [customer.name,customer.id]}, size: inputFieldSize, :prompt => "Select a #{:customer}") %>
+			    		<% end %>			    	
+			    	<% end %>	
+<% end %>	    
 			    </td>
 			    </tr>
                         <% elsif myparams[attribute[0]] == 'showDropDown' %>
@@ -81,13 +89,13 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
 			<% end # if %>
 		<% end # each %>
 			    <% if true %>
-                        <tr>
+                <tr>
 			    <td><%= f.label "Provisioning Schedule#{' (ignored in synchronous mode)' unless @async}"  %></td>
 			    <td>
 
 				<%= render 'shared/form_provisioningtime.html.erb', object: @provisioningobject, f: f %>
 			    </td>
-                        </tr>
+                </tr>
                 <% end %>
 			<tr>
 				<td>
