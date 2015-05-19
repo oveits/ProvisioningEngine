@@ -62,10 +62,18 @@ select {min-width:<%= (inputFieldSize*15.75/30 + 18.2-15.75) %>em;}
 			    <% selected = @parent.id unless @parent.nil? %>
 					    <%= f.select(:site_id, Site.where.not(customer_id: nil).map {|site| 
 			    	targetname_or_id = ( !site.nil? && !site.customer.nil? && !site.customer.target.nil? && site.customer.target.name.to_s != "") ? site.customer.target.name : site.customer.target_id.to_s
-			    	customername_or_id = ( !site.nil? && !site.customer.nil? && !site.customer.name.to_s != "" ) ? site.customer.name : site.customer_id.to_s
-			    	sitename_or_id = ( !site.nil? && !site.name.to_s != "") ? site.name : site.id.to_s
-			    	#abort targetname.inspect
-			    	[targetname_or_id + ":" + customername_or_id + ":" + sitename_or_id,site.id]}, :prompt => "Select a Target:Customer:Site", selected: selected) %>	    
+			    	customername_or_id = ( !site.nil? && !site.customer.nil? && site.customer.name.to_s != "" ) ? site.customer.name : site.customer_id.to_s
+			    	sitename_or_id = ( !site.nil? && site.name.to_s != "") ? site.name : site.id.to_s
+			    	abort targetname_or_id.inspect if targetname_or_id.nil?
+				abort customername_or_id.inspect if customername_or_id.nil?
+				abort ((!site.nil? && site.name.to_s != "") ? site.name : site.id.to_s).inspect if sitename_or_id.nil?
+				abort site.inspect if sitename_or_id.nil?
+				abort sitename_or_id.inspect if sitename_or_id.nil?
+				abort site.inspect unless site.is_a?(Site) 
+                                #abort selected.inspect
+				#[targetname_or_id + ":" + customername_or_id + ":" + sitename_or_id,site.id]})
+			    	[targetname_or_id + ":" + customername_or_id + ":" + sitename_or_id,site.id]}, :prompt => "Select a Target:Customer:Site", selected: selected) 
+%>	    
 			    </td>
 			    </tr>
 			<% else # default: show as readonly %>

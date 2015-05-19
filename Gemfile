@@ -115,3 +115,16 @@ end
 gem 'activesupport'
 
 gem 'kaminari'
+
+# does not follow redirects, therefore cannot be used here:
+#gem 'rawler'
+
+# better than rawler?
+# I had some trouble to install link-checker: it has me required to remove gem capybara first, then 'sudo apt-get install libxslt-dev libxml2-dev', then 'gem install nokogiri -v '1.5.11'', then re-add capybara and 'bundle install':
+# see e.g. https://github.com/sparklemotion/nokogiri.org-tutorials/blob/8c8175021a09ff39285f558a3d435076ba624c72/content/installing_nokogiri.md
+# OV: does not find any broken links it seems:
+#gem 'link-checker'
+# best soluton so far (see http://stackoverflow.com/questions/5403708/testing-for-broken-links-in-a-rails-application)
+# wget --spider -r -l 1 --header='User-Agent: Mozilla/5.0' http://example.com 2>&1 | grep -B 2 '404'
+# and
+# wget --spider -r -l 1 --header='User-Agent: Mozilla/5.0' http://example.com 2>&1 | grep -B 2 '500'

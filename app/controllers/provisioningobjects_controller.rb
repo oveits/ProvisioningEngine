@@ -442,7 +442,7 @@ private
     
         #abort @parent.inspect
     this_sym = "#{myClass.name.downcase}".to_sym
-    parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym
+    parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym unless myClass.parentClass.nil?
         #abort parent_id_sym.inspect
         #abort this_sym.inspect
         #abort params[this_sym][parent_id_sym].inspect
