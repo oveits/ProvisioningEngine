@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "name": "my-rad-proj",
+  "version": "0.1.0",
+  "engines": {
+    "node": "~0.10.21"
+  }
+}
