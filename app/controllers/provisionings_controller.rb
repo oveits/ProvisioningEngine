@@ -1,5 +1,6 @@
 class ProvisioningsController < ApplicationController
   before_action :set_provisioning, only: [:show, :edit, :update, :destroy]
+  before_action :set_async_mode
 
   def stop
     @provisioning = Provisioning.find(params[:id])
@@ -172,16 +173,25 @@ class ProvisioningsController < ApplicationController
     redirect_to provisionings_url
   end
 
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_provisioning
-      @provisioning = Provisioning.find(params[:id])
-      #@provisionings = Provisioning.all
-      #redirect_to provisionings_path
-    end
+private
+  # Use callbacks to share common setup or constraints between actions.
+  def set_provisioning
+    @provisioning = Provisioning.find(params[:id])
+    #@provisionings = Provisioning.all
+    #redirect_to provisionings_path
+  end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def provisioning_params
-      params.require(:provisioning).permit(:action, :site, :customer, :active, :show)
+  # Never trust parameters from the scary internet, only allow the white list through.
+  def provisioning_params
+    params.require(:provisioning).permit(:action, :site, :customer, :active, :show)
+  end
+
+  def set_async_mode
+    if ENV["WEBPORTAL_ASYNC_MODE"] == "true"
+      @async = true
+    else
+      @async = false
     end
+  end
+
 end

@@ -304,8 +304,17 @@ class Provisioning < ActiveRecord::Base
             # failure
               returnvalue = 1
               resulttext = "finished with unknown ERROR[#{returnvalue.to_s}]=BODY[0,1000]=\"" + resulttext[0,1000] + '" at ' + Time.now.to_s unless resulttext.nil? 
-              unless thisaction == 'reading'
-                targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/ERROR.*\Z/).to_s}") unless targetobject.nil?
+              unless thisaction == 'reading' || targetobject.nil?
+                #targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/ERROR.*\Z/).to_s}") unless targetobject.nil?
+                if resulttext.match(/ERROR.*$/)
+                  targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.gsub('<pre>','').gsub(/#+$\n/, '').match(/ERROR.*$/).to_s} ... (click here for more info)")
+			#abort resulttext
+                else
+                  # first 4 lines, if ERROR does not match:
+                  #targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/\A.*$.*$.*$.*$/).to_s}")
+                  targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.split(/\r\n|\r|\n/)[1..3].join}")
+			#abort resulttext
+                end
               end
           end  # case resulttext
           
