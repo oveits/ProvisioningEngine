@@ -1,18 +1,21 @@
 == README
-This README documents describes the purpose of the software and describes whatever steps are necessary to get the Ruby based Provisioning Portal up and running.
+This README documents describes the purpose of the software and describes the steps are necessary to get the Provisioning Portal up and running.
 
 === Purpose
 This ProvisioningEngine / ProvisioningPortal is a Proof of Concept that shows how to manage target systems (in our case VoIP & UC servers) and help administrators to provision Customers, Sites and Users on the target systems.
 
-Check out a running example on https://salty-peak-4964.herokuapp.com/customers (is running in simulated, synchronous mode).
+Check out a running example on https://salty-peak-4964.herokuapp.com/ (the demo is running in simulated, synchronous mode).
 
-In real live, the ProvisioningEngine uses background jobs to perform the provisioning tasks on VoIP and UC systems. The background jobs are managed from the "Provisioning Tasks" tab. An Apache Camel based connector is used as connector module for to 
-* manage configuration templates (SSH scripts, mass import files)
-* perform scripted remote imports
+For demo purposes, the SW can be run without the Apache Camel module (see below) in simulation mode. An in-built mock service will simulate the answers of the Apache Camel service. Both, synchronous (i.e. foreground mode) or asynchronous mode (i.e. background mode) are possible in simulation mode.
+
+In real live, the ProvisioningEngine uses background jobs to perform the provisioning tasks on VoIP, Voice Mail and Unified Communications systems. The background jobs are managed from the "Provisioning Tasks" tab.
+
+In production, an Apache Camel based connector (private; not published here) is used as connector module for to 
+* manage configuration templates (SSH scripts, mass import files, SPML and SOAP packet templates)
+* perform scripted remote creation and deletion of customers, sites and users
 * access target system using SOAP/XML and SPML interfaces for reading, verifying and altering the configuration of the target systems.
 
-=== Installation
-==== Installation on your own machine (Windows or Linux)
+=== Installation on Windows or Linux
 * prerequisites:
   * rails v4 is installed
   * ruby v2 is installed
@@ -21,19 +24,23 @@ In real live, the ProvisioningEngine uses background jobs to perform the provisi
   * git clone https://github.com/oveits/ProvisioningEngine/tree/simulation_improvements ProvisioningPortal
 * cd ProvisioningPortal
 * rake db:migrate
-* optional: change configuration for asynchronous mode:
-  * cd config
-  * cp application.yml.example application.yml # if not done already
-  * edit application.yml
-    * adapt PROVISIONINGENGINE_CAMEL_URL to point to you Apache Camel ProvisioningEngine adapter (not part of this SW)
-  * restart the web server after each change (e.g. (base dir)/stopWebPortal.sh and (base dir)/startWebPortal.sh on Linux)
-* optional: change configuration for non-simulated mode:
+* optional: allow background jobs (i.e. asynchronous mode):
   * cd config
   * cp application.yml.example application.yml # if not done already
   * edit application.yml:
     * WEBPORTAL_ASYNC_MODE: "true"
+  * restart the web server after each change (e.g. (base dir)/stopWebPortal.sh and (base dir)/startWebPortal.sh on Linux)
+    * On Linux, use the './stop; ./start' shell scripts in the application root (this will restart both, the web server as well as the background jobs)
+    * On Windows, use the 'start.bat' script, and start delayed jobs on a separate window using 'bundle exec rake jobs:work'
+    * On Heroku, the server is startet automatically, but you need to start the background jobs via heroku toolbelt using 'heroku run rake jobs:work' in a separate Window (temporary; for demo purposes; see also below) or start the background job permanently via the Heroku web page.
+* optional: change configuration for non-simulation mode (requires Apache Camel Module, not part of this SW):
+  * cd config
+  * cp application.yml.example application.yml # if not done already
+  * edit application.yml
+    * adapt PROVISIONINGENGINE_CAMEL_URL to point to you Apache Camel ProvisioningEngine adapter (not part of this SW, please ask the author)
+  * restart the web server after each change (e.g. (base dir)/stopWebPortal.sh and (base dir)/startWebPortal.sh on Linux)
   
-==== Installation on Nitrous.IO
+=== Installation on Nitrous.IO (i.e. a cloud based development platform)
 * on www.nitrous.io, create a box with minimum requirements
 * open IDE
 * in the console:
@@ -55,8 +62,8 @@ In real live, the ProvisioningEngine uses background jobs to perform the provisi
     * git commit -am "description of the change"
 * menu -> Preview -> Port 3000 
 
-===  Start Web server
-* start web server on Windows on port 80:
+===  Start the Web server
+* start web server on Windows on port 80 (as an example):
   * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
   * rails s -p 80   --- or as daemon: rails s -d -p 80 (works also on nitrous.io, if you omit the -p 80, so port 3000 is used)
   * rake jobs:work # for starting the background processes (based on the "delayed_job_active_record" gem)
@@ -69,64 +76,107 @@ In real live, the ProvisioningEngine uses background jobs to perform the provisi
 * start web server on Linux on port 80:
   * cd ProvisioningPortal # the root of the SW, as downloaded via git clone above
   * ./start # will start both, the web server and the delayed_jobs in the background and will append the logs to /var/log/WebPortal.log
-* open a browser and connect to URL = http://localhost/ 
-  expected result: redirection to http://localhost/customers, showing a list of configured customers (expected to be empty at this point).
+* open a browser and connect to URL = http://localhost[:port]/ # port is needed, if another port than 80 was chosen
+  expected result: redirection to http://localhost[:port]/customers, showing a list of configured customers (expected to be empty at this point).
 
 === Test Execution
 * rake db:migrate RAILS_ENV=test
-* bundle exec spork # for speeding up rspec test initialization
-* start single test (--drb needed for spork speedup), e.g.: 
-  * bundle exec rspec --drb spec/requests/provisioningobjects_spec.rb -e "with valid information should create a provisioning task with action"
-* start all tests:
-  * bundle exec rspec --drb spec/requests/provisioningobjects_spec.rb
+* on Linux:
+  * change configuration in <application root>/spec/requests/provisioningobjects_spec.rb, if needed
+  * ./startTests [-e "optional pattern"]
+* on Windows:
+  * bundle exec spork # for speeding up rspec test initialization
+  * start single test or set of tests matching a pattern (--drb needed for spork speedup), e.g.: 
+    * bundle exec rspec --drb spec/requests/provisioningobjects_spec.rb -e "with valid information should create a provisioning task with action"
+  * start all tests:
+    * bundle exec rspec --drb spec/requests/provisioningobjects_spec.rb
 
-=== Commit & Production
+== Running the Web Service on Heroku (optional) ==
+  You can run a copy of the server on the Heroku's PaaS cloud. In our case, Heroku is used to run the server as a demo on https://salty-peak-4964.herokuapp.com/, which is always available on Internet.
+  Note that the web server often 'sleeps', but it will wake up automatically, when a packet is directed to it. This is, why the first access might need a minute, or so, for the service to react, but subsequent queries run at normal speed.
+  * prerequisites:
+    * you need a heroku account
+    * heroku toolbelt must be installed
+  # if not done already in the projects root folder:
+    * heroku create 
+  # elsif already created, attach the project to an existing heroku project:
+    * heroku git:remote -a salty-peak-4964 
+    where salty-peak-4964 is the existing heroku app (with heroku toolbelt, issue the command 'heroku apps' to see a list of your heroku apps)
+  # else you need to specify --app <appname> after each  heroku command (does not work for 'git push heroku', though):
+    * heroku <command> --app salty-peak-4964 # where in this example, salty-peak-4964 is the heroku app found via 'heroku apps'
+  # end
+  * if the Heroku app is not configured to automatically deploy after each git push, you need to trigger it manually:
+    * git push heroku # or
+    * git push heroku <yourbranch>:master #, if you are not on the master branch
+  * heroku apps
+  * heroku run rake db:migrate [--app <app found above> # the --app option is needed only, if your local app is not attached to the project with the 'heroku create' or 'heroku git:remote' command, see above]
+    e.g. 'heroku run rake db:migrate --app salty-peak-4964'
+    * (optional: Installation process for automatic migrations on Heroku:
+      Note: on heroku app salty-peak-4964, I have installed multi-buildpacks that automatically migrates at each deploy (see http://gunpowderlabs.com/blog/automatically-run-migrations-when-deploying-to-heroku/)
+      * installation process (one time per app):
+        * create .buildpacks in root directory of your app with following content (do not use comments in the file, this has caused the build processes to fail):
+          https://github.com/heroku/heroku-buildpack-ruby
+          https://github.com/gunpowderlabs/buildpack-ruby-db-migrate.git
+        * for your heroku app, perform:
+          heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
+          (exchange salty-peak-4964 by your app name)
+        * git add .
+        * git commit -am "added automatic db:migrate support via buildpack"
+        * git push
+        * git push heroku
+  * If you need background jobs (i.e. if you have specified WEBPORTAL_ASYNC_MODE: "true" in (app-root)/config/application.yml:
+    * heroku run rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
+  * heroku open # this will open a browser with the correct link
+
+=== Developers Info: Commit & Production
+* first time use of git:
+  * git config --global user.email "you@example.com"
+  * git config --global user.name "Your Name"
+  * optional: set up git, so it does not ask for the username anymore:
+    * if you are bound to use HTTPS instead of SSH, you can set the local repository .git/config file to
+      url = https://oveits@ProvisioningEngine.git # replace oveits by your own git repository login name
+    * if you are allowed to use SSH and do not want to enter the password, try 
+      url = git@github.com:oveits/ProvisioningEngine.git # replace oveits by your own git repository login name
 * if behind proxy (e.g.: 172.28.12.5:8080):
   * SET HTTP_PROXY=http://172.28.12.5:8080
-* cd /d F:\veits\RubyOnRails\ProvisioningPortalvx.x.x
-* git add .
-* git status
-* bundle exec rake assets:precompile # needed in production and/or heroku, if assets like css have changed.
-* git push
-* heroku
-  # if not done already in this folder:
-    * heroku create 
-  # else, after each acommand the option 
-    * heroku <command> --app <app found via 'heroku apps'> is needed in the subsequent lines
-  * git push heroku # or
-  * git push heroku yourbranch:master #, if you are not on the master branch
-  * heroku apps
-  * heroku run rake db:migrate --app <app found above> (e.g. heroku run rake db:migrate --app salty-peak-4964)
-* heroku run rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
-* heroku open # this will open a browser with the correct link
-
-* synchronize local git with remote git repository:
+* cd <your application root> 
+  e.g. on my Windows machine: cd /d F:\veits\RubyOnRails\ProvisioningPortalvx.x.x
+* best practice: perform automatic tests, see "Test Execution"
+* review: which files will be changed?
+  * git status
+* review changes line by line:
+  * git diff
+* commit the changes in case the review was OK:
+  * bundle exec rake assets:precompile # needed in production and/or heroku, if assets like css have changed.
+  * git add .
+  * git commit -am "description of the change"
+  * git push
+  * optional: 
+    * git push heroku 
+    in case your service runs on Heroku, is not configured to automatically deploy, and and your local repository is attached to Heroku (see below)
+* in case another local repository has changed the remote git repository: synchronize local git with remote git repository:
   * git pull
-  
-=== NginX
+    
+=== NginX HTTPS Offload (optional)
 In the productive environment, NginX is used for following purposes:
   1. Offload of HTTPS
-  2. Allow more than one web server to use the same IP address
-     in our case, e.g. /customers is redirected to the productive web server, while /dev/customers is redirected to a development branch of the web server
+  2. Allow more than one web service to use the same IP address
+     in our case, e.g. /customers is redirected to the productive web service running on TCP port 3000, while /dev/customers is redirected to a development branch of the web service running on TCP port 3001
 
 How to set up NginX:
-  * sudo apt-get update
-  * sudo apt-get install nginx
-  * cd /etc/nginx
-  * sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.pem
-  * change config: sudo vi /etc/nginx/sites-enabled/default
-  * observe error logs: sudo tail -F /var/log/nginx/error.log
-  * in other terminal: sudo service nginx start
+* sudo apt-get update
+* sudo apt-get install nginx
+* cd /etc/nginx
+* sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.pem
+* change config: sudo vi /etc/nginx/sites-enabled/default
+* observe error logs: sudo tail -F /var/log/nginx/error.log
+* in other terminal: sudo service nginx start
   
 === Tipps
 * Pre-view this rdoc: 
   1. rdoc README.rdoc -o ./tmp/doc
   2. open (application root)/tmp/doc/README_rdoc.html in a browser 
-* set up git, so it does not ask for the username anymore:
-  * if you are bound to use HTTPS instead of SSH, you can set the local repository .git/config file to
-    url = https://oveits@ProvisioningEngine.git
-  * if you are allowed to use SSH and do not want to enter the password, try 
-    url = git@github.com:oveits/ProvisioningEngine.git  
+
   
 
 
