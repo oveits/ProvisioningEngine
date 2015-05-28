@@ -1192,58 +1192,6 @@ objectList.each do |obj|
        end # if obj == "Customer" || obj == "Site" || obj == "User"
       end # describe "synchronize all #{obj} via testTarget = '#{testTarget}" do
     end # ['model', 'view'].each do |testTarget| 
-    
-if false    
-if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
-    
-    describe "synchronize all #{obj}s via sidebar link 'Synchronize #{obj}s'" do
-      begin
-        #TODO: move initialization from test to here
-
-      end
-
-      let(:submit) { "Synchronize #{obj}s" }
-
-     if obj == "Customer" || obj == "Site" || obj == "User"
-       
-      it "should synchronize the index with the objects found on the target system" do
-        # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
-        provisionedObjectToBeCreatedOnDB = initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
-        
-        # create an object that is on the db, marked as provisioned, but not found on the target (should be marked as not provisioned at the end)
-        notProvisionedObject = createObjDB(obj, defaultParams(obj, 2))
-        notProvisionedObject.update_attribute(:status, 'provisioned successfully')
-        
-        
-        
-        
-                #abort notProvisionedObject.inspect
-        
-        #initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: false)
-        expect(page.html.gsub(/[\n\t]/, '')).not_to match(/#{defaultParams(obj)[:name]}/)
-        visit provisioningobjects_path(obj)
-		          #abort defaultParams(obj)[:name]
-		          #abort "Synchronize #{obj}s"
-        expect(page).to have_link( "Synchronize #{obj}s" ) #, href: synchronize_provisioningobjects_path(obj) )
-        Delayed::Worker.delay_jobs = false
-        expect{ click_link "Synchronize #{obj}s" }.to change(Object.const_get(obj), :count).by_at_least(1)
-        expect(page.html.gsub(/[\n\t]/, '')).to match(/#{defaultParams(obj)[:extension]}/) if obj == "User"
-        expect(page.html.gsub(/[\n\t]/, '')).to match(/#{defaultParams(obj)[:name]}/) unless obj == "User"
-        
-        
-        # the ruby object notProvisionedObject is not updated from DB automatically:
-        # i.e. notProvisionedObject.read_attribute(:status) of notProvisionedObject.status still yields 'provisioned successfully'
-        # If we reload the object from DB again, we see the real value:
-        notProvisionedObject.reload
-        # notProvisionedObject.status now displays the real value       
-              #abort notProvisionedObject.read_attribute(:status)
-        
-        expect(notProvisionedObject.status).to match(/not provisioned/)
-      end # it "should synchronize the index with the objects found on the target system" do
-     end # if obj == "Customer" || obj == "Site" || obj == "User"
-    end # describe "sync(#{obj}) via model" do
-end # ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
-end # if false
 
     describe "index" do
       before(:each) do
