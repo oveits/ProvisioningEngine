@@ -3,7 +3,9 @@ class HttpPostRequest
     #
     # renders headerInput="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
     #  
-    verbose = true
+    
+    #verbose = true
+    verbose = false
     
     if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
       simulationMode = true
@@ -258,6 +260,7 @@ class HttpPostRequest
         p "@@provisioned[customerID] before sync: #{@@provisioned[customerID]}"
         p "@@provisioned[siteID] before sync: #{@@provisioned[siteID]}"
         p "@@provisioned[myUserID] before sync: #{@@provisioned[myUserID]}"
+        p "@@provisioned = #{@@provisioned}"
       end
       
       syncMyCustomersFromDB unless customerID.nil? 
@@ -283,6 +286,7 @@ class HttpPostRequest
         p "@@provisioned[customerID] after sync before provisioning: #{@@provisioned[customerID]}"
         p "@@provisioned[siteID] after sync before provisioning: #{@@provisioned[siteID]}"
         p "@@provisioned[myUserID] after sync before provisioning: #{@@provisioned[myUserID]}"
+        p "@@provisioned = #{@@provisioned}"
       end
  
       sleep 100.seconds / 1000
@@ -417,20 +421,49 @@ class HttpPostRequest
             # this is a List Customer with no customer specified; we need to fake the list answer
             # for now, we will only look at ExampleCustomerV7R1 and ExampleCustomerV8 needed by rspec
             # TODO: read provisioned BGs from @@provisioned, instead of only adding ExampleCustomerV7R1 and ExampleCustomerV8
+            
+            # create customerList of all customers with known provisioning status (i.e. customers, where a Add or Delet Customer was performed since the last start of Web Service)
+            customerList = []
+            @@provisioned.each do |myCustomerID, provisioned|
+                        #abort myCustomerID.inspect
+              target_i = myCustomerID[:target]
+                        #abort target_i.inspect
+                        #abort customerID[:target].inspect
+              if customerID[:target] == myCustomerID[:target]
+                      #abort customerID.inspect + '---' + myCustomerID.inspect                        
+                unless myCustomerID[:customer].nil?
+                      #abort customerID[:customer].inspect + '---' + myCustomerID[:customer].inspect
+                  customerList << myCustomerID[:customer]
+                end
+              end
+            end            
+                    #abort customerList.inspect
+                       
+            customerList << 'ManuallyAddedCust' if ENV["WEBPORTAL_SYNCHRONIZE_ALL_ALWAYS_ADD_MANUALLY_ADDED_CUSTOMER"] == "true"
+                    #abort customerList.inspect
+
+            # create snippets for the answer to 'List Customers':
+            
+            # init
             snippet = ""
             snippets = {}
-            # as of today, the name ExampleCustomerV7R1 is not used, therefore commented out:
-#            ['ExampleCustomerV7R1', 'ExampleCustomerV8'].each do |cust_i|
-
-            ['ExampleCustomerV8'].each do |cust_i_name|  
+            
+            # set snippets:          
+            customerList.each do |cust_i_name|   
               customerID_i = customerID
               customerID_i[:customer] = cust_i_name
-                        #abort "ooooooooooooooooooooooooo" + customerID_i.inspect
-                        #abort "ooooooooooooooooooooooooo" + @@provisioned[customerID_i].inspect
-                        #abort "ooooooooooooooooooooooooo" + @@provisioned.inspect
+                        #abort customerID_i.inspect
+                        #abort @@provisioned[customerID_i].inspect
+                        #abort @@provisioned.inspect
+              
+              # For demo purposes we can always add this special customer named 'ManuallyAddedCust'
+              @@provisioned[customerID_i] = true if /\AManuallyAddedCust\Z/.match(cust_i_name)
+                        #abort @@provisioned[customerID_i].inspect if /\AManuallyAddedCust\Z/.match(cust_i_name)
+              
               snippets[cust_i_name] = "<BGName>#{cust_i_name}</BGName>" if @@provisioned[customerID_i]
-                        #abort "ooooooooooooooooooooooooo" + snippets.inspect              
+                        #abort snippets.inspect              
             end
+            
             
             if myTargets.count == 1
               thisTarget = myTargets[0]
@@ -440,9 +473,10 @@ class HttpPostRequest
             end
             
             unless thisTarget.nil?
-              # DONE: construction of the right 'List Customers' answer 
-              # - in case the Customer is not known because Add or Delete Customer was never called since last restart,
-              # (i.e. @@provisioned[customerID_i]=nil), we read the provisioning status from the Customer's status (using the provisioned? method)
+              # Construction of the right 'List Customers' answer for customers, whose @@provisioned status is unknown
+              # If Add or Delete Customer was never called since last restart, @@provisioned does not know the customer (i.e. @@provisioned[customerID_i]=nil)
+              # 
+              # In this case we read the provisioning status from the Customer's status in the database (using the provisioned? method)
               #
               # 1) from the DB we read all supposedly provisioned Customers
               # 2) for each such Customer, we set the status @@provisioned, if @@provisioned is nil (unknown), but we keep it to false, if it was known to be false
@@ -470,8 +504,8 @@ class HttpPostRequest
                 # 3) if @@provisioned is true, we add the Customer to the answer of 'List Customers'
                 snippets[cust_i_name] = "<BGName>#{cust_i_name}</BGName>" if @@provisioned[customerID_i]
                           #abort snippets.inspect  
-              end
-            end
+              end # provisionedCustomers.each do |cust_i|
+            end # unless thisTarget.nil?
             
             # combine all snippets to a single snippet
             # e.g. if snippets["Cust1"] = "<BGName>Cust1</BGName>" and snippets["Cust2"] = "<BGName>Cust2</BGName>"
@@ -725,6 +759,7 @@ finished execution of batch file batchFile-93733174.sh
         p "@@provisioned[customerID] after provisioning: #{@@provisioned[customerID]}"
         p "@@provisioned[siteID] after provisioning: #{@@provisioned[siteID]}"
         p "@@provisioned[myUserID] after provisioning: #{@@provisioned[myUserID]}"
+        p "@@provisioned = #{@@provisioned}"
       end    
                   #abort myUserID.inspect
                   #abort @@provisioned[myUserID].inspect    

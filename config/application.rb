@@ -61,6 +61,9 @@ module ProvisioningPortalv4
     # in production, it should be set to false, since e.g. an unreachable target should not stop the whole process; instead the synchronization should continue on the other targets
     defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"] = "false"
     
+    # for demo purposes in simulation mode: if "true", this will always add a customer named 'ManuallyAddedCust' with each synchronize all customers, if it does not exist on the database already:
+    defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ALWAYS_ADD_DEMO_MANUALLY_ADDED_CUSTOMER"] = "false"
+    
     # set default values for environment variables that are not yet set:
     defaultconfig.each do |key, value| 
       ENV[key.to_s] = value if ENV[key.to_s].nil?   

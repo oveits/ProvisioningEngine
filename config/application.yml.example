@@ -29,5 +29,12 @@ WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE: "false"
 # allow the admin user to delete provisioning tasks (default: false)
 WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE: "false"
 
+# if set to true and async modus is false, aborts that may happen during synchronizeAll procedures will cause the whole synchronizeAll process to stop with a corresponding error message (good for debugging)
+# in production, it should be set to false, since e.g. an unreachable target should not stop the whole process; instead the synchronization should continue on the other targets
+WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT: "false"
+
+# for demo purposes in simulation mode: if "true", this will always add a customer named 'ManuallyAddedCust' with each synchronize all customers, if it does not exist on the database already:
+WEBPORTAL_SYNCHRONIZE_ALL_ALWAYS_ADD_MANUALLY_ADDED_CUSTOMER: "false"
+
 
 
