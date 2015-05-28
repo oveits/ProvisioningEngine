@@ -421,21 +421,63 @@ class HttpPostRequest
             snippets = {}
             # as of today, the name ExampleCustomerV7R1 is not used, therefore commented out:
 #            ['ExampleCustomerV7R1', 'ExampleCustomerV8'].each do |cust_i|
-            ['ExampleCustomerV8'].each do |cust_i|  
+
+            ['ExampleCustomerV8'].each do |cust_i_name|  
               customerID_i = customerID
-              customerID_i[:customer] = cust_i
+              customerID_i[:customer] = cust_i_name
                         #abort "ooooooooooooooooooooooooo" + customerID_i.inspect
                         #abort "ooooooooooooooooooooooooo" + @@provisioned[customerID_i].inspect
                         #abort "ooooooooooooooooooooooooo" + @@provisioned.inspect
-              snippets[cust_i] = "<BGName>#{cust_i}</BGName>" if @@provisioned[customerID_i]
+              snippets[cust_i_name] = "<BGName>#{cust_i_name}</BGName>" if @@provisioned[customerID_i]
                         #abort "ooooooooooooooooooooooooo" + snippets.inspect              
             end
             
-            snippets.each do |key, value|
-              snippet = "#{snippet}#{value}"
+            if myTargets.count == 1
+              thisTarget = myTargets[0]
+                  #abort myTargets.inspect
+            else 
+              abort "Could not find target for the 'List Customers' request: myTargets = #{myTargets.inspect}"
             end
             
-                        #abort "ooooooooooooooooooooooooo" + snippet
+            unless thisTarget.nil?
+              # DONE: construction of the right 'List Customers' answer 
+              # - in case the Customer is not known because Add or Delete Customer was never called since last restart,
+              # (i.e. @@provisioned[customerID_i]=nil), we read the provisioning status from the Customer's status (using the provisioned? method)
+              #
+              # 1) from the DB we read all supposedly provisioned Customers
+              # 2) for each such Customer, we set the status @@provisioned, if @@provisioned is nil (unknown), but we keep it to false, if it was known to be false
+              # 3) if @@provisioned is true, we add the Customer to the answer of 'List Customers'
+
+              # 1) from the DB we read all supposedly provisioned Customers
+              provisionedCustomers = Customer.where(target_id: thisTarget.id).select {|i| i.provisioned?}
+                    #abort provisionedCustomers.inspect
+              
+              # 2) need to set all snippets according to the found provisionedCustomers, if @@provisioned for this customer is not defined (yet)
+              provisionedCustomers.each do |cust_i|
+                cust_i_name = cust_i.name  
+                customerID_i = customerID
+                          #abort customerID_i.inspect
+                customerID_i[:customer] = cust_i_name
+                          #abort customerID_i.inspect
+                # 2) for each such Customer, we set the status @@provisioned, if @@provisioned is nil (unknown), but we keep it to false, if it was known to be false
+                # if @@provisioned[customerID_i] is nil, then provisioninf status is unknown (no Add/Delete Customer was called before)
+                # in this case, we copy the provisioning status (true for all provisioned Customers) as known by the database
+                @@provisioned[customerID_i] = true if @@provisioned[customerID_i].nil?
+                          #abort @@provisioned[customerID_i].inspect
+                          #abort @@provisioned.inspect
+                          #abort snippets.inspect
+
+                # 3) if @@provisioned is true, we add the Customer to the answer of 'List Customers'
+                snippets[cust_i_name] = "<BGName>#{cust_i_name}</BGName>" if @@provisioned[customerID_i]
+                          #abort snippets.inspect  
+              end
+            end
+            
+            # combine all snippets to a single snippet
+            # e.g. if snippets["Cust1"] = "<BGName>Cust1</BGName>" and snippets["Cust2"] = "<BGName>Cust2</BGName>"
+            # then snippet will be "<BGName>Cust1</BGName><BGName>Cust2</BGName>"
+            snippet = snippets.map {|key, value| value}.join                     
+                        #abort snippet
             
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName>' + snippet + '</GetBGListData></SOAPResult>'

@@ -55,7 +55,11 @@ module ProvisioningPortalv4
     defaultconfig["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] = "false"
     
     # allow the admin user to delete provisioning tasks (default: false)
-    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] = "false" 
+    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] = "false"
+    
+    # if set to true and async modus is false, aborts that may happen during synchronizeAll procedures will cause the whole synchronizeAll process to stop with a corresponding error message (good for debugging)
+    # in production, it should be set to false, since e.g. an unreachable target should not stop the whole process; instead the synchronization should continue on the other targets
+    defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"] = "false"
     
     # set default values for environment variables that are not yet set:
     defaultconfig.each do |key, value| 

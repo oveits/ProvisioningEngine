@@ -375,19 +375,34 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
     else
       being_individual = ""
     end
+    
+            #abort ENV["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"].inspect
+            #abort (!@async_all).inspect
+    if ENV["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"] == "true" || @async_all
+      # in case of asynchronous synchronization, we always allow to abort, since this will trigger delayed_job to retry
+      # in case of synchronous synchronization, we allow to abort only, if WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT is set to "true"
+      @abortOnAbort = true
+    else
+      # in case of synchronous synchronization and WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT is not set to "true", we proceed even after an abort (e.g. if a target is unreachable, other targets will still be synchronized)
+      @abortOnAbort = false
+    end
+            #abort @abortOnAbort.inspect
 
-
-    #@id = params[:id]
-    		#abort @id.inspect if @id != params[:id]
-
+    # note: @id needs to be set in the individual child classes (e.g. Customer/Site/User)
     if @id.nil?
+      #
       # PATCH /customers/synchronize
-      # synchronizeAll:
-      #Customer.synchronizeAll(@partentTargets, @async_all,  @recursive_all)
-      @myClass.synchronizeAll(@partentTargets, @async_all,  @recursive_all)
+      #
+      # if @id is nil, we assume that all Customers/Sites/Users needs to be synchronized:
+
+      @myClass.synchronizeAll(@partentTargets, @async_all,  @recursive_all, @abortOnAbort)
       redirect_to :back, notice: "All #{@myClass.name.pluralize} are #{being_all}synchronized."
     else
+      #
       # PATCH /customers/1/synchronize
+      #
+      # if @id is not nil, an individual Customer/Site/User with id==@id is synchronized:
+            
       @provisioningobject = @myClass.find(@id)
       @provisioningobject.synchronize(@async_individual, @recursive_individual)
       redirect_to :back, notice: "#{@provisioningobject.class.name} #{@provisioningobject.name} is #{being_individual}synchronized."

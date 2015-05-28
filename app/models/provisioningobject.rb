@@ -257,13 +257,15 @@ abort parents.inspect
     
   end
   
-  def self.synchronizeAll(parents = nil, async=true, recursive=false)
+  def self.synchronizeAll(parents = nil, async=true, recursive=false, abortOnAbort=false)
     # 
     # synchronizes all objects of the specific class to the local database
     # with recursive == true, also the child classes are synchronized
     # 
     # TODO: create rspec tests for recursive synchronizeAll, if not already present and test with recursive = true (also see controller)
-    
+
+#abort  abortOnAbort.inspect
+  
     abort "recursive mode of synchronizeAll is not yet supported" if recursive
 
     parents ||= parentClass.all_in
@@ -285,14 +287,12 @@ abort parents.inspect
 
       # perform synchronizeAllSynchronously(parents_of_this_target, recursive)
       if async
-        delay.synchronizeAllSynchronously(parents_of_this_target, recursive)
+        # delayed jobs automatically rescues on abort and retries the synchronization. If we do not want to retry on abort, we can set @abortOnAbort to false in the provisioningobjects controller
+        delay.synchronizeAllSynchronously(parents_of_this_target, recursive, abortOnAbort)
       else # if async
-        # there is a problem, if one of the parents is not reachable (abort). In order to synchronize other targets in this case, a rescue is needed.
-        begin
-          synchronizeAllSynchronously(parents_of_this_target, recursive)
-        rescue Exception
-          returnBody = "There were errors with synchronizeAllSynchronously"
-        end
+        # if @abortOnAbort is set to false in the provisioningobjects controller, we rescue the abort and continue with other targets, if a target synchronization fails:
+        # (in development mode, for troubleshooting, it is sometimes better not to rescue on abort, though)
+        synchronizeAllSynchronously(parents_of_this_target, recursive, abortOnAbort)          
       end # if async
 
     end # targetsArray.each do |target_i|
@@ -321,7 +321,21 @@ abort parents.inspect
     end
   end
   
-  def self.synchronizeAllSynchronously(parents, recursive=false)
+  def self.synchronizeAllSynchronously(parents, recursive=false, abortOnAbort=true)
+    
+    # if abortOnAbort is false, we wrap the whole function in a begin rescure block and only print the Exception message to the standard output:
+    unless abortOnAbort
+      begin
+        result = synchronizeAllSynchronously(parents, recursive, true)
+        return result
+      rescue Exception => e
+        p "#{self.name}.synchronizeAllSynchronously: #{e.message}"
+        return false
+      end
+    end
+    
+    #else the rest of the function is performed:
+    
     verbose = true
 		#abort parents.inspect
 
@@ -374,10 +388,14 @@ abort parents.inspect
               # did not find object in the DB, so we create it:
               thisObject = self.create_from_REXML_element(element, myparent)
                     #abort thisObject.inspect
+
+              # update status:
+              thisObject.update_attribute(:status, 'provisioned successfully (found on target and  thus created in the database)')
+
             when 1
               # found object in the DB:
               thisObject = thisObjects[0]
-              
+                            
               # 2) remove all found objects from list
               idsNotYetFound.delete(thisObject.id)             
             else
@@ -385,17 +403,19 @@ abort parents.inspect
               abort "too many matches"           
           end
           
-          thisObject.update_attribute(:status, 'provisioned successfully (found on target and  thus created in the database)')
 		#abort thisObject.status
   
       end # doc.root.elements["GetBGListData"].elements.each do |element|
       
       #3) update the status of the objects that are in the DB, but not configured on the target 
       idsNotFound = idsNotYetFound
+                #abort idsNotFound.inspect
       unless idsNotFound.empty?
         idsNotFound.each do |i|
           objectNotFound = self.find(i)
+                #abort objectNotFound.inspect
           objectNotFound.update_attribute(:status, 'not provisioned (seems to have been removed manually from target)') unless objectNotFound.status.match(/not provisioned/)
+                #abort objectNotFound.inspect if objectNotFound.name == "Customer3"
         end # idsNotFound.each do |i|
       end # unless idsNotFound.empty?
     end # parents.each do |target|
