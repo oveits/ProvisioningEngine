@@ -62,7 +62,7 @@ module ProvisioningPortalv4
     defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"] = "false"
     
     # for demo purposes in simulation mode: if "true", this will always add a customer named 'ManuallyAddedCust' with each synchronize all customers, if it does not exist on the database already:
-    defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ALWAYS_ADD_DEMO_MANUALLY_ADDED_CUSTOMER"] = "false"
+    defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ALWAYS_ADD_MANUALLY_ADDED_CUSTOMER"] = "false"
     
     # set default values for environment variables that are not yet set:
     defaultconfig.each do |key, value| 
