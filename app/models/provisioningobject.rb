@@ -511,7 +511,14 @@ abort parents.inspect
 
     # recursive creation of parents for Add (:create) functions
     if inputBody.include?("Add ") && !inputBody.include?("testMode")
-       self.parent.provision(:create, async) unless self.parent.nil?
+#      readList = self.parent.provision(:read, false)
+#            abort readList.inspect
+
+      # confusing "exists already" error in the Provisioning Tasks list, in case a parent is provisioned already, but I still try to provision it:
+#      self.parent.provision(:create, async) unless self.parent.nil?
+      # get rid of the "exists already" error. Drawback: if the parent is not provisioned, but out local database does not know that it is provisioned, we will get an error.
+      # TODO: update provisioned? status via readList = self.parent.provision(:read, false). Own method?
+      self.parent.provision(:create, async) unless self.parent.provisioned?
     end 
     
     inputBody = inputBody + ', ' + actionAppend unless actionAppend.nil?

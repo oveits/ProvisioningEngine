@@ -77,7 +77,6 @@ class ProvisioningsController < ApplicationController
     # convert to Array:
     @provisionings = @provisionings.order('id DESC').map { |i| i }
     @provisionings = [] if @provisionings.nil?
-    #@provisionings = @provisionings.reverse
 
     # convert to paginatable Array:
     @provisionings = Kaminari.paginate_array(@provisionings).page(params[:page]).per(20)
