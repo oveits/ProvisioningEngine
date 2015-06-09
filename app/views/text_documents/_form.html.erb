@@ -1,0 +1,27 @@
+<%= form_for(@text_document) do |f| %>
+  <% if @text_document.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@text_document.errors.count, "error") %> prohibited this text_document from being saved:</h2>
+
+      <ul>
+      <% @text_document.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :identifieryaml %><br>
+    <%= f.text_area :identifieryaml %>
+    <% #abort @text_document.identifierhash.inspect 
+    %>
+  </div>
+  <div class="field">
+    <%= f.label :content %><br>
+    <%= f.text_area :content %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

@@ -1,0 +1,27 @@
+<h1>Listing text_documents</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Identifierhash</th>
+      <th>Content</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @text_documents.each do |text_document| %>
+      <tr>
+        <td><%= text_document.identifierhash %></td>
+        <td><%= text_document.content %></td>
+        <td><%= link_to 'Show', text_document %></td>
+        <td><%= link_to 'Edit', edit_text_document_path(text_document) %></td>
+        <td><%= link_to 'Destroy', text_document, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Text document', new_text_document_path %>

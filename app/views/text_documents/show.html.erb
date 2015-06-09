@@ -1,0 +1,14 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Identifierhash:</strong>
+  <%= @text_document.identifierhash %>
+</p>
+
+<p>
+  <strong>Content:</strong>
+  <%= @text_document.content %>
+</p>
+
+<%= link_to 'Edit', edit_text_document_path(@text_document) %> |
+<%= link_to 'Back', text_documents_path %>

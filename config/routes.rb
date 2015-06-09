@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   
+  resources :text_documents
+
   #root 'welcome#index'
   #root 'customers#index'
     # OV added. See http://stackoverflow.com/questions/13303695/rails-assets-path-incorrect-in-a-scoped-production-application
@@ -151,3 +153,4 @@ scope(path: baseURL) do
   #   end
 end # scope(path: baseURL) do
 end # Rails.application.routes.draw do
+
