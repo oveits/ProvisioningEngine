@@ -1,6 +1,11 @@
 class TextDocumentsController < ApplicationController
   before_action :set_text_document, only: [:show, :edit, :update, :destroy]
-  skip_before_filter :verify_authenticity_token
+  #skip_before_filter :verify_authenticity_token, if: :json?
+  
+  skip_before_filter :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
+  # replaced by (see http://stackoverflow.com/questions/9362910/rails-warning-cant-verify-csrf-token-authenticity-for-json-devise-requests)
+#  protect_from_forgery with: :null_session, if: Proc.new { |c| c.request.format == 'application/json' }
+  
 
   # GET /text_documents
   # GET /text_documents.json
@@ -66,17 +71,18 @@ class TextDocumentsController < ApplicationController
   # POST /text_documents
   # POST /text_documents.json
   def create
-    #abort YAML::load(text_document_params[:identifierhash]).inspect
+          #abort request.format.inspect
+          #abort Proc.new { |c| c.request.format == 'application/json'}.inspect
+          #abort YAML::load(text_document_params[:identifierhash]).inspect
     # convert identifierhash text to hash:
     #new_text_document_params = {}
     new_text_document_params = text_document_params
     new_text_document_params[:identifierhash] = YAML::load(text_document_params[:identifieryaml])
     #text_document_params[:identifierhash] = YAML::load(text_document_params[:identifieryaml])
     
-    #abort YAML::load(text_document_params[:identifierhash]).class.name
-    #abort new_text_document_params[:identifierhash].class.name
-    #abort new_text_document_params[:identifierhash].inspect
-    #@text_document = TextDocument.new(new_text_document_params)
+          #abort YAML::load(text_document_params[:identifierhash]).class.name
+          #abort new_text_document_params[:identifierhash].class.name
+          #abort new_text_document_params[:identifierhash].inspect
     @text_document = TextDocument.new(new_text_document_params)
 
     respond_to do |format|
