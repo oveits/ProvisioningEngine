@@ -5,12 +5,14 @@ class ProvisioningobjectsController < ApplicationController
   #before_action :set_provisioningobjects, only: [:index] #, :removeAll]
   before_action :set_async_mode, :remove_target_id_if_needed
 
-  skip_before_filter :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
+  #skip_before_filter :verify_authenticity_token, if: :json_request?
+#  skip_before_filter :verify_authenticity_token, if: Proc.new { |c| c.request.format == 'application/json' }
   # replaced by (see http://stackoverflow.com/questions/9362910/rails-warning-cant-verify-csrf-token-authenticity-for-json-devise-requests)
 #  protect_from_forgery with: :null_session, if: Proc.new { |c| c.request.format == 'application/json' }
+  protect_from_forgery with: :null_session, if: :json_request?
   
   
-  
+  def 
 
 
   def ro
@@ -434,6 +436,12 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
       end # if
     end # do
   end # def provision
+  
+protected
+
+  def json_request?
+    request.format.json?
+  end
 
 private
   def myClass

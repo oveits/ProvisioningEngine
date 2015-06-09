@@ -2,10 +2,10 @@ class TextDocumentsController < ApplicationController
   before_action :set_text_document, only: [:show, :edit, :update, :destroy]
   #skip_before_filter :verify_authenticity_token, if: :json?
   
-  skip_before_filter :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
+  #skip_before_filter :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
   # replaced by (see http://stackoverflow.com/questions/9362910/rails-warning-cant-verify-csrf-token-authenticity-for-json-devise-requests)
 #  protect_from_forgery with: :null_session, if: Proc.new { |c| c.request.format == 'application/json' }
-  
+  protect_from_forgery with: :null_session, if: :json_request?
 
   # GET /text_documents
   # GET /text_documents.json
@@ -125,15 +125,22 @@ class TextDocumentsController < ApplicationController
       format.json { head :no_content }
     end
   end
+  
+protected
 
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_text_document
-      @text_document = TextDocument.find(params[:id])
-    end
+  def json_request?
+    request.format.json?
+  end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def text_document_params
-      params.require(:text_document).permit(:identifierhash, :identifieryaml, :content)
-    end
+
+private
+  # Use callbacks to share common setup or constraints between actions.
+  def set_text_document
+    @text_document = TextDocument.find(params[:id])
+  end
+
+  # Never trust parameters from the scary internet, only allow the white list through.
+  def text_document_params
+    params.require(:text_document).permit(:identifierhash, :identifieryaml, :content)
+  end
 end
