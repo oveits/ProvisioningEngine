@@ -1,3 +1,13 @@
+class ValidateTargetExists < ActiveModel::Validator
+  def validate(record)
+      if Customer.parentClass.exists? id: record.target_id
+        return true
+      else
+        record.errors[:target_id] << "id=#{record.target_id} does not exist in the database!"
+      end
+  end
+end
+
 class ValidateLanguage < ActiveModel::Validator
   def validate(record)
     #abort record.inspect
@@ -224,6 +234,7 @@ end
                      length: { in: 3..20  }
     validates_format_of :name, :with => /\A[A-Z,a-z,0-9,_]{0,100}\Z/, message: "needs to consist of 3 to 20 characters: A-Z, a-z, 0-9 and/or _"
     validates :target_id, presence: true
+    validates_with ValidateTargetExists
     
 #    validates_with ValidateWithProvisioningEngine
 #    validates_with ValidateLanguage

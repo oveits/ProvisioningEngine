@@ -3,16 +3,7 @@ class ProvisioningobjectsController < ApplicationController
   before_action :set_parent, only: [:new, :create, :show, :edit, :update, :destroy, :deprovision, :provision]
   
   #before_action :set_provisioningobjects, only: [:index] #, :removeAll]
-  before_action :set_async_mode, :remove_target_id_if_needed
-
-  #skip_before_filter :verify_authenticity_token, if: :json_request?
-#  skip_before_filter :verify_authenticity_token, if: Proc.new { |c| c.request.format == 'application/json' }
-  # replaced by (see http://stackoverflow.com/questions/9362910/rails-warning-cant-verify-csrf-token-authenticity-for-json-devise-requests)
-#  protect_from_forgery with: :null_session, if: Proc.new { |c| c.request.format == 'application/json' }
-  protect_from_forgery with: :null_session, if: :json_request?
-  
-  
-  def 
+  before_action :set_async_mode, :remove_target_id_if_needed 
 
 
   def ro
@@ -22,19 +13,19 @@ class ProvisioningobjectsController < ApplicationController
   def rw
     'readwrite'
   end
-
-# from http://blog.laaz.org/tech/2012/12/27/rails-redirect_back_or_default/
-def store_location
-  session[:return_to] = if request.get?
-    request.request_uri
-  else
-    request.referer
+  
+  # from http://blog.laaz.org/tech/2012/12/27/rails-redirect_back_or_default/
+  def store_location
+    session[:return_to] = if request.get?
+      request.request_uri
+    else
+      request.referer
+    end
   end
-end
-
-def redirect_back_or_default(default = root_url, options)
-  redirect_to(session.delete(:return_to) || request.referer || default, options)
-end
+  
+  def redirect_back_or_default(default = root_url, options)
+    redirect_to(session.delete(:return_to) || request.referer || default, options)
+  end
 
 
   # e.g. GET /customers
@@ -89,68 +80,6 @@ end
     @filteredvia = ancestor unless ancestor.nil?
   end
 
-  def indexOld
-    unless @ancestor.nil?
-
-        # if ancestor is the grandpa or grandgrandpa..., no such column is availsble. Instead, we read all items form the database and do the filtering afterwards:
-        all_children_of_ancestor = [@ancestor]
-        currentClass = @ancestor.class
-        while currentClass != myClass
-          all_children_of_ancestor = @ancestor.children
-          currentClass = currentClass.childClass
-        end # if @ancestor.class == myClass.parentClass
-        # now all_children_of_ancestor is a list or parents, that matches the anchestor
-        parent_list = all_children_of_ancestor
-
-#abort myClass.where(parent_id_sym => 579).map {|i| i }.inspect
-#abort myClass.all.inspect
-#abort parent_list.inspect
-
-        @provisioningobjects = []
-        parent_list.each do |parent|
-#abort ([].concat []).inspect
-          provisioningobjects_of_this_parent = myClass.where(parent_id_sym => parent.id).map {|i| i } 
-#abort provisioningobjects_of_this_parent.inspect if provisioningobjects_of_this_parent.count > 0
-#abort provisioningobjects_of_this_parent.class.name if provisioningobjects_of_this_parent.count > 0
-          @provisioningobjects = @provisioningobjects.concat provisioningobjects_of_this_parent if provisioningobjects_of_this_parent.count > 0
-#abort @provisioningobjects.inspect if provisioningobjects_of_this_parent.count > 0
-#abort provisioningobjects_of_this_parent.inspect
-
-abort @provisioningobjects.inspect
-abort all_children_of_ancestor.inspect
-abort currentClass.inspect
-        all_provisioningobjects = myClass.all.map {|i| i }
-abort all_provisioningobjects.first.send("target").inspect
-abort all_provisioningobjects.inspect
-        @provisioningobjects = all_provisioningobjects.select { |i|  i.send(ancestorMethodString)  }
-      end # else # @ancestor.class == myClass.parentClass
-      # ancestor not found, e.g. in case the link was called as GET /customers/
-
-      # e.g. @target = @parent
-# not needed?
-#      instance_variable_set("@#{ancestorClass.name.downcase}", @ancestor)
-      
-      # e.g. @these = Customer.where(target_id: params[:target_id])
-      #@provisioningobjects = myClass.where(ancestor_id_sym => params[ancestor_id_sym])
-abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).inspect
-      @provisioningobjects = myClass.where(ancestor_id_sym => params[ancestor_id_sym])
-
-    else # @parent == nil; i.e. the index waa called plainly with path GET /customers/ (as an example)
-
-      # @these = Customer.all
-      @provisioningobjects = myClass.all.map {|i| i }      
-
-    end
-    
-    # e.g. @customers = @these
-    instance_variable_set("@#{myClass.name.downcase.pluralize}", @provisioningobjects)
-
-    # at this point, both, @provisioningobjects and @customers are set to the ActiveRecords relation (list)
-    
-    		#abort @customers.inspect
-    		abort @provisioningobjects.inspect
-  end
-
   # GET /customers/new  
   def new
         #abort params.inspect
@@ -163,16 +92,8 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
   # POST /customers.json
   def create
           #abort params.inspect
-          params.delete :target_id if params[:target_id].to_s == ""          #params[:target_id] = params[:customer][:target_id] unless params[:customer][:target_id].nil?
+    params.delete :target_id if params[:target_id].to_s == ""          
           #abort params.inspect
-    # in the individual object's controller, the following needs to be done (here the example of a customers_controller:
-    ## TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
-    #@myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
-#
-    #@provisioningobject = Customer.new(customer_params)
-    #@customer = @provisioningobject
-    #@className = @provisioningobject.class.to_s
-#abort @provisioningobject.inspect
 
     respond_to do |format|         
       if @provisioningobject.save        
@@ -204,17 +125,8 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
   # PATCH/PUT /customers/1.json
   def update
               #abort params.inspect
-          params.delete :target_id if params[:target_id].to_s == ""          #params[:target_id] = params[:customer][:target_id] unless params[:customer][:target_id].nil?
+    params.delete :target_id if params[:target_id].to_s == "" 
           #abort params.inspect
-    # in the individual object's controller, the following needs to be done (here the example of a customers_controller:
-    ## TODO: the next 2 lines are still needed. Is this the right place to control, whether a param is ro or rw?
-    #@myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
-#
-    #@provisioningobject = Customer.new(customer_params)
-    #@customer = @provisioningobject
-    #@className = @provisioningobject.class.to_s
-#abort @provisioningobject.inspect
-#abort @provisioningobject.provisioned?.inspect
 
     respond_to do |format|         
       if !@provisioningobject.provisioned? && @provisioningobject.update(provisioningobject_params)       
@@ -243,6 +155,7 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
       end
     end
   end
+  
   def updateOld
     # individual settings are done e.g. in customers_controller.rb#update
     respond_to do |format|
@@ -361,13 +274,11 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
   # -> find all customers of all known target (i.e. targets found in the local database), and synchronize them to the local database
   def synchronize
 
-#abort @async.inspect
     # individual settings are done e.g. in customers_controller.rb#deprovision
     @partentTargets = nil if @partentTargets.nil? 
 
     @async_all = true if @async && @async_all.nil?
     @async_individual = true if @async && @async_individual.nil?
-		#abort @async_all.inspect
 
     @recursive_all = false if @recursive_all.nil?
     @recursive_individual = true if @recursive_individual.nil?
@@ -437,11 +348,6 @@ abort all_provisioningobjects.where(ancestor_id_sym => params[ancestor_id_sym]).
     end # do
   end # def provision
   
-protected
-
-  def json_request?
-    request.format.json?
-  end
 
 private
   def myClass
@@ -479,12 +385,23 @@ private
         #abort params[:site][:customer_id].inspect
         #abort myClass.parentClass.find(params[this_sym][parent_id_sym]).inspect
 
+        #abort params[this_sym].nil?.inspect
+        #abort params[this_sym][parent_id_sym].to_s
+        #abort (!params[this_sym].nil? && params[this_sym][parent_id_sym].to_s != "").inspect
     if(!params[parent_id_sym].nil?) # this is the format needed for all controllers but #create (e.g. #new in case of /customers/5/sites/new or /sites/new?customer_id=5)
       @parent = myClass.parentClass.find(params[parent_id_sym])
-    elsif( !params[this_sym].nil? && params[this_sym][parent_id_sym].to_s != "")  # this is the format needed for #create
+    elsif( params[this_sym].is_a?(Hash) && params[this_sym][parent_id_sym].to_s != "")  # this is the format needed for #create
+            #abort this_sym.inspect
+            #abort params[this_sym].inspect
+            #abort (params[this_sym][parent_id_sym].to_s != "").inspect
             #abort params.inspect
             #abort params[this_sym][parent_id_sym].inspect
-      @parent = myClass.parentClass.find(params[this_sym][parent_id_sym])
+      if myClass.parentClass.exists? id: params[this_sym][parent_id_sym]
+        @parent = myClass.parentClass.find(params[this_sym][parent_id_sym])
+      else
+        @parent = nil
+      end
+      
     elsif !params[:id].nil?
       # read parent from existing object
       @parent = myClass.find(params[:id]).parent

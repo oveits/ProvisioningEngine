@@ -1,3 +1,13 @@
+class ValidateSiteExists < ActiveModel::Validator
+  def validate(record)
+      if User.parentClass.exists? id: record.site_id
+        return true
+      else
+        record.errors[:site_id] << "id=#{record.site_id} does not exist in the database!"
+      end
+  end
+end
+
 class Validate_ExtensionLength < ActiveModel::Validator
   def validate(record)
     
@@ -17,10 +27,21 @@ end
 class Validate_DisplayLength < ActiveModel::Validator
   def validate(record)
     
-    if record.givenname.length.to_i + record.givenname.length.to_i > 29
-      record.errors[:givenname] << "too long. Sum length of #{:givenname.to_s} and #{:familyname.to_s} must not exceed 29"      
+    givennamelength = record.givenname.nil? ? 0 : record.givenname.length.to_i
+        #abort givennamelength.inspect
+    familynamelength = record.familyname.nil? ? 0 : record.familyname.length.to_i
+    
+    maxlength = 29
+    errormessage = "too long (#{givennamelength + familynamelength}). Sum length of #{:givenname.to_s} (#{givennamelength.to_s}) and #{:familyname.to_s} (#{familynamelength.to_s}) must not exceed #{maxlength}"
+     
+    errortargetsymbol = givennamelength > familynamelength ? :givenname : :familyname
+    errortargetsymbol = :givenname_or_familyname
+    
+    
+    if givennamelength + familynamelength > 29
+      record.errors[errortargetsymbol] << errormessage      
       #record.errors[:familyname] << "too long. Sum length of #{:givenname.to_s} and #{:familyname.to_s} must not exceed 29"      
-    end
+    end 
        
   end # def
 end
@@ -243,7 +264,7 @@ class User < Provisioningobject #< ActiveRecord::Base
   #
   belongs_to :site
   
-  validates :site, presence: true
+  validates :site_id, presence: true
   
   validates :name,  #presence: true,
                     #length: { in: 3..20  }

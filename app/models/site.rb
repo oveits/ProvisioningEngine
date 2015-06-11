@@ -1,3 +1,13 @@
+class ValidateCustomerExists < ActiveModel::Validator
+  def validate(record)
+      if Site.parentClass.exists? id: record.customer_id
+        return true
+      else
+        record.errors[:customer_id] << "id=#{record.customer_id} does not exist in the database!"
+      end
+  end
+end
+
 class Validate_Sitecode < ActiveModel::Validator
   def validate(record)
 
@@ -30,7 +40,8 @@ class Validate_Sitecode_V7R1 < ActiveModel::Validator
   def validate(record)
     # for OSV V7R1, empty sitecodes are not supported
     if record.sitecode.nil? || record.sitecode == ""
-      targetName = Customer.find(record.customer_id).target.name unless record.customer_id.nil?
+          #abort Customer.exists?(record.customer_id).inspect
+      targetName = Customer.find(record.customer_id).target.name unless record.customer_id.nil? || !Customer.exists?(record.customer_id)
       if record.customer_id.nil? || /V7R1/.match(targetName)
         record.errors[:sitecode] << "must not be empty for V7R1 targets"
       end 
@@ -220,7 +231,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
   validRFC952HostnameRegex = /\A(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])\Z/
   
   belongs_to :customer
-  validates :customer, presence: true 
+  validates :customer_id, presence: true 
   has_many :users, dependent: :destroy
   validates :name,  presence: true,
                     uniqueness: { scope: :customer, message: "is already taken for this customer" },
@@ -243,6 +254,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
   validates :sitecode, unique_on_target: true 
   validates :mainextension, unique_on_target: {:scope => [:countrycode, :areacode, :localofficecode]} 
   validates :gatewayIP, unique_on_target: true 
+  validates_with ValidateCustomerExists
 
   # does not work:
   #validates :gatewayIP, uniqueness: { scope: :target, message: "is already taken for this target" }

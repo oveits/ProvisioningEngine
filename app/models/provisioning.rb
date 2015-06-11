@@ -97,7 +97,19 @@ class Provisioning < ActiveRecord::Base
     returnHash
   end
   
-  def deliver(uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=600, httpopentimeout=6)
+  def deliver(uriStringCSV=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=600, httpopentimeout=6)
+
+    uriStringArray = uriStringCSV.split(',')
+    
+    if defined?(@@nextUri) && uriStringCSV.match(/#{@@nextUri}/)
+      # keep @@nextUri
+    else
+      # (re-)set @@nextUri to the first element in the array
+      @@nextUri = uriStringArray[0]
+    end
+    
+    uriString = @@nextUri
+          #abort @@nextUri.inspect
 
     # workaround for the fact that List commands need to be sent to "http://192.168.113.104:80/show", while all other commands need to be sent to "http://192.168.113.104:80/ProvisioningEngine"
     # set uriString = "http://192.168.113.104:80/show" for List commands
@@ -168,25 +180,18 @@ class Provisioning < ActiveRecord::Base
           result['SSH user login'] = 'SSH access for user srx was already allowed from ProvisioningEngine' if /Web Portal already allowed/.match(resulttext)
           peScriptVersion = resulttext.match(/version of new ProvisioningScripts.*$/).to_s.gsub('version of new ProvisioningScripts = ([^ \n]*)', '\1') unless resulttext.nil?
           result['ProvisioningScripts Version'] = "ProvisioningScripts version = #{peScriptVersion.inspect}"
-##          case result
-#            when ...
-#              unless thisaction == 'reading'
-#                if thisaction == 'creation'
-                  targetobject.update_attribute(:status, result.inspect)
-#                else
-#                  targetobject.update_attribute(:status, thisaction + ' successful') unless targetobject.nil?
-#                end
-#                #abort targetobjects.inspect unless targetobject.nil?
-#              end
 
-#File.open("resulttext", "w") { |file| file.write resulttext }
-#abort result.inspect
-#abort resulttext
-#existingVersion = resulttext.match(/version of existing.*$/).inspect
-#newVersion = resulttext.match(/version of new.*$/).inspect
-#updated = false if /Existing ProvisioningScripts do not need to be upgraded/.match(resulttext)
-#abort newVersion.inspect
-#abort result.inspect
+          targetobject.update_attribute(:status, result.inspect)
+
+          # TODO: preparation is work in progress and not yet tested...
+                #File.open("resulttext", "w") { |file| file.write resulttext }
+                #abort result.inspect
+                #abort resulttext
+                #existingVersion = resulttext.match(/version of existing.*$/).inspect
+                #newVersion = resulttext.match(/version of new.*$/).inspect
+                #updated = false if /Existing ProvisioningScripts do not need to be upgraded/.match(resulttext)
+                #abort newVersion.inspect
+                #abort result.inspect
         else
           case resulttext 
             when nil 
@@ -195,6 +200,16 @@ class Provisioning < ActiveRecord::Base
               resulttext = "connection timout for #{uriString} at " + Time.now.to_s
               returnvalue = 8
               targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil? || thisaction == 'reading'
+              # toggle uri, so the other uri will be used next time:
+              if uriStringArray.count > 1
+                case @@nextUri
+                when uriStringArray[0]
+                  @@nextUri = uriStringArray[1]
+                when uriStringArray[1]
+                  @@nextUri = uriStringArray[0]           
+                end
+                      #abort @@nextUri.inspect
+              end
               abort 'provisioning.deliver: ' + resulttext
             #when /Warnings:0    Errors:0     Syntax Errors:0/ 
             when /Errors:0     Syntax Errors:0/ 
@@ -242,12 +257,8 @@ class Provisioning < ActiveRecord::Base
             # test mode
               returnvalue = 4
               resulttext = "finished with success (TEST MODE [#{returnvalue.to_s}])\"" + '" at ' + Time.now.to_s
-	    # do not change the status in case of a test mode query:
-    #          targetobjects.each do |targetobject|
-    #            targetobject.update_attribute(:status, thisaction + ' successful (test mode)') unless targetobject.nil?
-    #            break unless targetobject.nil? 
-    #          end
-              #provisioning.update_attributes!(:delayedjob => nil)
+	            # Note: we do not change the targetobject status in case of a test mode query:
+
             when /Script aborted.*$/
             # deletion script or ccc.sh script aborted
               returnvalue = 6
@@ -263,7 +274,6 @@ class Provisioning < ActiveRecord::Base
                 targetobject.update_attribute(:status, thisaction + ' failed (OSV export error)') unless targetobject.nil?
               end
               abort 'provisioning.deliver: OSV export error'
-            #when /ERROR.*Site Name .* exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
             when /ERROR.*Site.*exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
             # failure: object exists already
               returnvalue = 100
@@ -308,12 +318,12 @@ class Provisioning < ActiveRecord::Base
                 #targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/ERROR.*\Z/).to_s}") unless targetobject.nil?
                 if resulttext.match(/ERROR.*$/)
                   targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.gsub('<pre>','').gsub(/#+$\n/, '').match(/ERROR.*$/).to_s} ... (click here for more info)")
-			#abort resulttext
+			                     #abort resulttext
                 else
                   # first 4 lines, if ERROR does not match:
                   #targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/\A.*$.*$.*$.*$/).to_s}")
                   targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.split(/\r\n|\r|\n/)[1..3].join}")
-			#abort resulttext
+			                     #abort resulttext
                 end
               end
           end  # case resulttext
@@ -325,10 +335,6 @@ class Provisioning < ActiveRecord::Base
       p 'returnvalue = ' + returnvalue.to_s
       p '------------------resulttext------------------'
 
-#	  targetobjects.each do |targetobject|
-#            p "#{targetobject.inspect} <---------------------------------"  unless targetobject.nil?
-#            #break unless targetobject.nil?
-#          end unless thisaction == 'reading'
 
       return resulttext if returnvalue == 9 && thisaction == 'reading'
       update_attribute(:status, resulttext) unless thisaction == 'reading'

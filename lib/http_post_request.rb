@@ -86,7 +86,7 @@ class HttpPostRequest
         {target: myheaderHash["OSVIP"]} #.match(/OSVIP.*[,&]/)
       end
       
-#abort target.inspect
+              #abort target.inspect
       
       # return {target: "myTargetNyme", customer: "myCustomerName"}
       def customerID(myheaderHash = @headerHash)
@@ -269,16 +269,9 @@ class HttpPostRequest
       
       syncMyUsersFromDB unless userID.nil?
       #abort userID.inspect
-      
-      
-      
       #abort @@provisioned.inspect
-      
       #abort myCustomers.inspect
       
-
-      #@@provisioned[customerID] = myCustomer.provisioned? unless myCustomer.nil?
-
       if verbose
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
@@ -767,7 +760,7 @@ finished execution of batch file batchFile-93733174.sh
       begin
         response = http.request(request)
         responseBody = response.body
-      rescue
+      rescue       
         responseBody = nil
       end
     end # else # if simulationMode
