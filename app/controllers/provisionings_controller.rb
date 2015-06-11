@@ -57,12 +57,6 @@ class ProvisioningsController < ApplicationController
 #abort @provisionings.inspect    
     #abort @provisionings.count.to_s + "params[:customer_id] = " + params[:customer_id].to_s
     
-    # debugging:
-    Provisioning.all.each do |provisioning|
-      p '##############################################'
-      p provisioning.customer.to_s
-    end
-    
     # show only active provisioning jobs:
     if @active
       @activeProvisionings= []
