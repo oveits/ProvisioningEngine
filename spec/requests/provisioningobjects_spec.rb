@@ -319,19 +319,9 @@ def initObj(paramsHash)
   shall_exist_on_db = true if shall_exist_on_db.nil?
   shall_exist_on_target = true if shall_exist_on_target.nil?
   paramsSet = defaultParams(obj, 0) if paramsSet.nil?
-  
+
       #abort paramsSet.inspect unless paramsHash[:paramsSet].nil?
   
-#  initObj(obj, paramsHash[:shall_exist_on_db], paramsHash[:shall_exist_on_target], paramsHash[:paramsSet])
-#
-#end
-#
-#def initObj(obj, shall_exist_on_db = true, shall_exist_on_target = true, params = nil)
-#  # initializes the object
-#  if  paramsSet.nil?
-#    paramsSet = defaultParams(obj, 0)
-#  end
-
   myObj = createObjDB(obj, paramsSet)
   
         #abort myObj.inspect unless paramsHash[:paramsSet].nil?
@@ -343,10 +333,7 @@ def initObj(paramsHash)
     # provision
     myObj.provision(:create, false) unless myObj.class.name == "Target" # since not supported yet on Target
   else
-    # deprovision recursively. For that, the children need to be created on the database, if not yet present:
-    #initObj(obj: child(obj), true, false) unless child(obj).nil?
-    
-    # recursive deprovisioning only for paramsSet 0:
+    # recursive deprovisioning of children only for paramsSet 0:
     if paramsSet == defaultParams(obj, 0)
       initObj(obj: child(obj), shall_exist_on_db: true, shall_exist_on_target: false) unless child(obj).nil?
     end
@@ -378,23 +365,25 @@ def createObjDB(obj, paramsSet = nil)
 
   if obj.constantize.where(paramsSet).count == 0 
     # create parent, if it does not exist and add the parent id to the paramsSet:
-    paramsSet = paramsSet.merge!("#{parent(obj).downcase}_id".to_sym => createObjDB(parent(obj)).id) unless parent(obj).nil?
+    # clone paramsSet, since we do now want to change input parameters
+    paramsSetWithParent = paramsSet.clone
+    paramsSetWithParent = paramsSetWithParent.merge!("#{parent(obj).downcase}_id".to_sym => createObjDB(parent(obj)).id) unless parent(obj).nil?
     # create the object:
     myObj = obj.constantize.new(
-      paramsSet
+      paramsSetWithParent
     )
-          #abort paramsSet.inspect
+          #abort paramsSetWithParent.inspect
     myObj.save!
   end
 
-  if obj.constantize.where(paramsSet).count == 1
-    myObj = obj.constantize.where(paramsSet).last
+  if obj.constantize.where(paramsSetWithParent).count == 1
+    myObj = obj.constantize.where(paramsSetWithParent).last
   else
-    abort "More than one #{obj} found matching the parameters=#{paramsSet.inspect}"
+    abort "More than one #{obj} found matching the parameters=#{paramsSetWithParent.inspect}"
   end
 
   return myObj
-end
+end # def createObjDB(obj, paramsSet = nil)
 
 def sync(syncObj)
 	#abort "sync(#{syncObj.inspect})"
@@ -861,6 +850,7 @@ objectList.each do |obj|
         @myobj.destroy!
         
         # test: should create an object
+		#p "expect{ initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: false) }.to change(Object.const_get(obj), :count).by(1)"
         #expect{ initObj( obj, true, false ) }.to change(Object.const_get(obj), :count).by(1)
         expect{ initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: false) }.to change(Object.const_get(obj), :count).by(1)
         
@@ -873,6 +863,7 @@ objectList.each do |obj|
 
         # test: should have de-provisioned the object
         	#p @myobj.provision(:read, false).inspect 
+		#p 'expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"'
         expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"
         expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
 

@@ -119,7 +119,7 @@ class User < Provisioningobject #< ActiveRecord::Base
   end
   
   def self.xmlElements(xml_data)
-    trace = true
+    trace = false
     
     doc = REXML::Document.new(xml_data)
     
