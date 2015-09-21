@@ -1,2 +1,2 @@
 #wget --no-check-certificate --no-proxy --spider -r -l 2 --header='User-Agent: Mozilla/5.0' https://localhost/dev/ 2>&1 | grep -B 2 '404'
-wget --no-check-certificate --no-proxy --spider -r -l 2 --header='User-Agent: Mozilla/5.0' https://localhost/dev/ 2>&1 | grep -B 2 '500'
+wget --no-check-certificate --no-proxy --spider -r -l 2 --header='User-Agent: Mozilla/5.0' https://localhost/ 2>&1 | grep -B 2 '500'
