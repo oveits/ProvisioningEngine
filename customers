@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ProvisioningPortalv4</title>
+  <link href="/assets/main.css?body=1" media="screen" rel="stylesheet" />
+  <link data-turbolinks-track="true" href="/assets/custom.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/customers.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/provisionings.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/scaffolds.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/simple-sidebar.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/sites.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/targets.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/users.css?body=1" media="all" rel="stylesheet" />
+<link data-turbolinks-track="true" href="/assets/application.css?body=1" media="all" rel="stylesheet" />
+  <script data-turbolinks-track="true" src="/assets/jquery.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/jquery.turbolinks.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/jquery_ujs.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/turbolinks.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/affix.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/alert.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/button.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/carousel.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/collapse.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/dropdown.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/tab.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/transition.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/scrollspy.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/modal.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/tooltip.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap/popover.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/bootstrap-sprockets.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/page-content_reload.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/page_reload.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/provisionings.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/sites.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/status.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/targets.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/users.js?body=1"></script>
+<script data-turbolinks-track="true" src="/assets/application.js?body=1"></script>
+  <meta content="authenticity_token" name="csrf-param" />
+<meta content="OdGvh8/j1IpK6IWpclTYBL1DLVT5dxa9kXoJ18tvG1E=" name="csrf-token" />
+  <!--[if lt IE 9]>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/r29/html5.min.js">
+  </script>
+  <![endif]-->
+  <!-- needed for browser lt IE 9: -->
+  <script src="/assets/respond.js?body=1"></script>
+  
+</head>
+
+<!-- on unload trick found on http://stackoverflow.com/questions/158319/cross-browser-onload-event-and-the-back-button, but it does not seem to work for chrome (still using the local cache upon back/forward button)  -->
+<body onunload="">
+
+
+
+<header class="navbar navbar-fixed-top navbar-inverse">
+      <div class="container">
+      <div style="height: 40px; margin=50px">
+      <img alt="ProvisioningEngine" height="40" id="logo" src="/assets/ProvisioningEngine_Harmony_Sans_white_and_green_transparent_365x50.gif" title="ProvisioningEngine" width="292" />
+        
+      </div>
+        <nav>
+          <ul class="nav navbar-nav navbar-right">
+            <span id="flash">
+            <p id="notice" style="background-color: white;"></p>
+            <p id="alert" style="background-color: white;"></p>
+            <p id="error" style="background-color: white;"></p>
+            <p id="success" style="background-color: white;"></p>
+            </span>
+          </ul>
+          <ul class="nav navbar-nav navbar-left">
+            <li><a href="/customers">Customers</a></li>
+            <li><a href="/sites">Sites</a></li>
+            <li><a href="/users">Users</a></li>
+            <li><a href="/provisionings">Provisioning Tasks</a></li>
+            <li><a href="/targets">Targets</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://github.com/oveits/ProvisioningEngine/tree/simulation_improvements#readme" target="_blank">About</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <div id="main-container" class="container-fluid">
+      <div class="row">
+ <div id="wrapper">
+
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper" >
+            <ul class="sidebar-nav">
+
+                                <li class="sidebar-brand">
+                        Customer Functions
+                </li>
+                <li><a href="/customers/new">New Customer</a></li>
+                <li><a data-confirm="Are you sure?" data-method="patch" href="/customers/synchronize" rel="nofollow">Synchronize Customers</a></li>
+
+
+
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+<!--
+                      <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+--> 
+                        <h4 style="color:blue; background-color:white; opacity: 0.6; position:fixed; top:90px; left: 50%;"> **simulation mode**</h4>
+                        <h4 style="color:green; background-color:white; opacity: 0.6; position:fixed; top:90px; right:20px;"> **foreground mode** </h4>
+
+
+                      <h1>Customers</h1>
+
+</div>
+<div class="container-fluid">
+ <div class="row">
+  <nav>
+   <ul class="nav navbar-nav navbar-right">
+      <li> filtered via target</li>
+      <li>
+         <form accept-charset="UTF-8" action="/customers" method="get"><div style="display:none"><input name="utf8" type="hidden" value="&#x2713;" /></div>
+           <select id="target_id" name="target_id" onchange="this.form.submit()"><option selected="selected" value="none">none</option></select>
+</form>      </li>
+      <li><a class="btn btn-xs btn-default" data-method="get" href="/customers">Refresh</a></li>
+
+    </ul>
+  </nav>
+  </div>
+</div>
+
+
+<br />
+<div>
+	
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Target</th>
+      <th>Status</th>
+      <th colspan="10"></th>
+    </tr>
+  </thead>
+  <tbody>
+
+  </tbody>
+</table>
+</div>
+
+<div>
+
+</div>
+
+
+                      
+                      <!--[if lt IE 9]>
+  <h4 style="color:red; background-color:lightgrey; position:fixed; padding:20px; bottom:0px;"> This page does not display correctly on Internet Explorer 8 or below! Recommended: Firefox or Chrome (best tested) </h1>
+  
+  <![endif]-->
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+    </div>
+    <!-- /#wrapper -->
+<!--
+        <div id="sidebar" class="col-xs-2">
+sidebar content
+        </div>
+        <div id="main-content" class="col-xs-9">
+main content
+        </div>
+-->
+
+    <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
+
+      </div>
+    </div>
+
+
+<span id="noscriptmessage" onload="document.getElementById('noscriptmessage').hide();">
+<div style="color:red; margin-top:10px; background-color:lightgrey; position:fixed; top: 50%; left: 270px;" >
+   <h4>This site requires javascript enabled! Please enable javascript and disable any script blocker for this site!</h4>
+</div>
+</span>
+
+<script>
+// remvove the mynoscript alert, if javascript is enabled
+// <noscript> ALERT! </noscript> does not work in case of a script blocker like scriptSafe.
+// the deployed method works also in case of a script blocker
+document.getElementById("noscriptmessage").innerHTML="";
+</script>
+
+
+</body>
+</html>
