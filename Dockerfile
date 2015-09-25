@@ -1,17 +1,22 @@
 FROM rails
 
+# update the operating system:
 RUN apt-get update 
 
-# if you need vi and less for easier troubleshooting later on:
+# if you need "vi" and "less" for easier troubleshooting later on:
 RUN apt-get install -y vim; apt-get install -y less
 
+# copy the ProvisioningEngine app to the container:
 ADD . /ProvisioningEngine
 
-# Define working directory.
+# Define working directory:
 WORKDIR /ProvisioningEngine
 
-RUN bundle install
+# Install the Rails Gems and prepare the database:
+RUN bundle install; bundle exec rake db:migrate RAILS_ENV=development
 
-EXPOSE 3000
+# expose tcp port 80
+EXPOSE 80
 
-CMD ["rails", "s"]
+# default command: run the web server on port 80:
+CMD ["rails", "server", "-p", "80"]
