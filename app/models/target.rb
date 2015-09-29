@@ -89,7 +89,12 @@ class Target < Provisioningobject #ActiveRecord::Base
   end
 
   #belongs_to :customer
-  has_many :customers
+
+  #has_many :customers
+  # replaced by:
+  # we need to destroy all customers, if a target is destroyed (otherwise we get a "target does not exist" error in the site/new and user/new view):
+  has_many :customers, dependent: :destroy
+
   validates :name, presence: true, uniqueness: true
 # TODO: does not work yet for valid target configurations. Therefore commented out.
   #validates_with Validate_Variable_Value_Pairs
