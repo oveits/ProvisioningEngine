@@ -211,6 +211,29 @@ class Provisioning < ActiveRecord::Base
                       #abort @@nextUri.inspect
               end
               abort 'provisioning.deliver: ' + resulttext
+            when /Too many open files/
+#abort uriStringArray.count.inspect
+#abort uriStringCSV
+            #when /-----Too many open files/
+            # error: Apache Camel has a resource problem.
+              resulttext = "resource problems on #{uriString} at " + Time.now.to_s
+              returnvalue = 11
+              # toggle uri, so the other uri will be used next time:
+              if uriStringArray.count > 1
+                # other Apache Camel connector available
+                case @@nextUri
+                when uriStringArray[0]
+                  @@nextUri = uriStringArray[1]
+                when uriStringArray[1]
+                  @@nextUri = uriStringArray[0]           
+                end
+                      #abort @@nextUri.inspect
+                targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine resource problem; trying again on other Apache Camel connector') unless targetobject.nil? || thisaction == 'reading'
+                abort 'provisioning.deliver: ' + resulttext + ": trying again on other Apache Camel connector: #{@@nextUri}"
+              else
+                # no other Apache Camel connector available
+                targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine resource problem.') unless targetobject.nil? || thisaction == 'reading'
+              end
             #when /Warnings:0    Errors:0     Syntax Errors:0/ 
             when /Errors:0     Syntax Errors:0/ 
             # success
@@ -234,6 +257,7 @@ class Provisioning < ActiveRecord::Base
               unless thisaction == 'reading'
                 targetobject.update_attribute(:status, thisaction + ' failed: target system has reported a missing file in ~srx/ProvisioningScripts/ccc_config.txt') unless targetobject.nil?
               end unless thisaction == 'reading'
+	      
             when /org.apache.camel.CamelExchangeException: Cannot execute command/
             # timeout
               returnvalue = 3        

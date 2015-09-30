@@ -842,9 +842,25 @@ objectList.each do |obj|
         expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
         # create children:
         expect{ @mychildobj = createObjDB(child(obj)) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
+#abort child(obj).inspect
+#abort createObjDB(child(obj),3).inspect
+
+        # Create "Site3" in the database and deprovision it: 
+        # i.e. workaround for non-existent synchronization before recursive deletion within the rspec above
+        expect{ @mychildobj2 = createObjDB(child(obj), 3) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil? if obj=="Customer"
+        # workaround part 2: de-provision Site3 
+        @mychildobj2.provision(:create, false) unless child(obj).nil? if obj=="Customer"
+        @mychildobj2.provision(:destroy, false) unless child(obj).nil? if obj=="Customer"
+
+        # de-provision the object recursively?
         @myobj.provision(:destroy, false)
+#abort Site.all.inspect
         @myobj.provision(:create, false)
+        
+        # provision children:
         @mychildobj.provision(:create, false) unless child(obj).nil?
+        #@mychildobj2.provision(:create, false) unless child(obj).nil? if obj=="Customer"
+#abort Site.all.inspect
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.name}</) unless obj == "User"
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
         @myobj.destroy!
@@ -882,6 +898,14 @@ objectList.each do |obj|
         expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
         # create children:
         expect{ @mychildobj = createObjDB(child(obj)) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
+
+        # Create "Site3" in the database and deprovision it: 
+        # i.e. workaround for non-existent synchronization before recursive deletion within the rspec above
+        expect{ @mychildobj2 = createObjDB(child(obj), 3) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil? if obj=="Customer"
+        # workaround part 2: de-provision Site3 
+        @mychildobj2.provision(:create, false) unless child(obj).nil? if obj=="Customer"
+        @mychildobj2.provision(:destroy, false) unless child(obj).nil? if obj=="Customer"
+
         # recursively deprovision:
         @myobj.provision(:destroy, false)
         expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"
