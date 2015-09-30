@@ -139,7 +139,9 @@ class Provisioning < ActiveRecord::Base
       
       #resulttext = provisioningRequest.perform("customerName=#{targetobject.customer.name}, action = Show Sites, SiteName=#{targetobject.name}", "http://localhost/CloudWebPortal", provisioningRequestTimeout)
   
-      
+      # shorter timeouts for read requests:
+      httpreadtimeout = 15 if thisaction=='reading' 
+
       if attempts.nil?
         update_attribute(:attempts, 1)
       else
@@ -169,6 +171,7 @@ class Provisioning < ActiveRecord::Base
 	# 	if both, the user and site are nil and the customer is defined, then the customer status is updated
       targetobject.update_attribute(:status, thisaction + ' in progress') unless targetobject.nil? || thisaction == 'reading'
 
+#abort httpreadtimeout.inspect
       resulttext = provisioningRequest.perform(action, uriString, httpreadtimeout, httpopentimeout)
       
       case thisaction
@@ -200,6 +203,7 @@ class Provisioning < ActiveRecord::Base
               resulttext = "connection timout for #{uriString} at " + Time.now.to_s
               returnvalue = 8
               targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine connection timeout; trying again') unless targetobject.nil? || thisaction == 'reading'
+              targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine connection timeout') unless targetobject.nil? if thisaction == 'reading'
               # toggle uri, so the other uri will be used next time:
               if uriStringArray.count > 1
                 case @@nextUri
@@ -210,7 +214,7 @@ class Provisioning < ActiveRecord::Base
                 end
                       #abort @@nextUri.inspect
               end
-              abort 'provisioning.deliver: ' + resulttext
+              abort ('provisioning.deliver: ' + resulttext) unless thisaction == 'reading'
             when /Too many open files/
 #abort uriStringArray.count.inspect
 #abort uriStringCSV

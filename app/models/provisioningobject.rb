@@ -214,6 +214,9 @@ abort "djköshgoöesrhriogörwheögwiöho"
       #returnBody = updateDB.delay.perform(self)
       # or:
       returnBody = delay.synchronizeSynchronously(recursive)
+      #returnBody = synchronizeSynchronously(recursive)
+#abort Delayed::Worker.delay_jobs.inspect
+#abort returnBody.inspect
     else
       #returnBody = updateDB.perform(self)
       # or:

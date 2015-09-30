@@ -16,6 +16,8 @@ class UpdateDB
       case responseBody
         when 101
           responseBody = "ERROR: #{targetobject.class.name} does not exist"
+        when 8
+          responseBody = "ERROR: connection timeout: target does not answer" 
       end
     end
 
@@ -34,6 +36,7 @@ class UpdateDB
 
       
     unless responseBody[/ERROR.*$/].nil?
+#abort responseBody[/ERROR.*$/]
       return responseBody[/ERROR.*$/]
     end if responseBody.is_a?(String)
 
@@ -78,6 +81,8 @@ class UpdateDB
         found = false
         doc.root.elements["GetBGListData"].elements.each do |element|
           if element.text == targetobject.name
+#abort element.inspect
+#abort "verified existence"
             targetobject.update_attribute('status', 'provisioning successful (verified existence)') unless targetobject.id.nil? # do not save an unsaved object here
             found = true
             break
