@@ -1,10 +1,12 @@
 export HTTP_PROXY=
 export http_proxy=
 
+DIR=$( cd `dirname $0` && pwd )
+
 # always same order, with description for documentation:
 #bundle exec rspec -f d spec/requests/provisioningobjects_spec_private.rb "$@"
 #bundle exec rspec -f d spec/requests/provisioningobjects_spec_private2.rb "$@"
-bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
+bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@" | tee $DIR/log/lasttest.log
 
 # randomized, but without description:
 #bundle exec rspec spec/requests/provisioningobjects_spec.rb "$@"
