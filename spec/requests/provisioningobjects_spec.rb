@@ -84,13 +84,14 @@ if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
   
 else
    
-#  targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
-#  targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
-#  targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
-  targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-#  targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
-#  targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
-#  targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
+#targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
+targetsolutionList = Array["CSL8", "CSL9_V7R1"]
+#targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
+#targetsolutionList = Array["CSL8"]  # OSV V8R0, Thomas Otto
+#targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
+#targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+#targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
+#targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
  
 end # if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
 
@@ -226,6 +227,9 @@ def defaultParams(obj, i = 0)
           end
         when 1
           paramsSet = {
+              # must have the same name as paramsSet 0, since it is used 
+	      # to change all attributes but name in the DB, and check that 
+              # the attributes are correct again after a sync with the target
               name: "ExampleSite",
               countrycode: "1",
               areacode: "2",
@@ -297,7 +301,7 @@ def defaultParams(obj, i = 0)
     else
       abort "obj=#{obj} not supported for function defaultParams(obj)"
   end
-  abort "Could not find defaultParams for i=#{i}" if paramsSet.nil?
+  #abort "Could not find defaultParams for i=#{i}" if paramsSet.nil?
   paramsSet
 end
 
@@ -945,7 +949,11 @@ objectList.each do |obj|
         # make sure the provisioningobject is destroyed on the target (so, we can test, whether init will provision the provisioningobject)
         expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
         # create children:
-        expect{ @mychildobj = createObjDB(child(obj)) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
+        expect{ @mychildobj = createObjDB(child(obj), 0) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil? || defaultParams(child(obj), 0).nil?
+        expect{ @mychildobj = createObjDB(child(obj), 1) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil? || defaultParams(child(obj), 1).nil? || child(obj) == "Site" # for sites, paramsSet 1 is a duplicate name to paramsSet2 for testing sync. Therefore, it will never be provisioned on the target
+        expect{ @mychildobj = createObjDB(child(obj), 2) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil? || defaultParams(child(obj), 2).nil?
+        expect{ @mychildobj = createObjDB(child(obj), 3) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil? || defaultParams(child(obj), 3).nil?
+        #expect{ @mychildobj = createObjDB(child(obj), 2) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
         # recursively deprovision:
         @myobj.provision(:destroy, false)
         expect( @myobj.provision(:read, false) ).not_to match(/>#{@myobj.name}</) unless obj == "User"
