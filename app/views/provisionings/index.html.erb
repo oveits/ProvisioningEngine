@@ -33,7 +33,7 @@
       <tr>
         <td><%= provisioning.id %></td>
         <td><%= provisioning.action.to_s.gsub(/(assw[^=\n]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
-        <td style="max-width: 500px;"><pre><%= provisioning.status.to_s.gsub(/(assw[^=\n]*=[ ]*)([^\r]*).*$/, '\1*******').match(/\A[^\n]*(\n[^\n]*){0,2}/) %></pre><span style="text-decoration: underline;"><%= link_to 'more...', provisioning %></span></td>
+        <td style="max-width: 500px;"><pre><%= provisioning.status.to_s.gsub(/(assw[^=\n]*=[ ]*)([^\r]*).*$/, '\1*******').match(/\A[^\n]*(\n[^\n]*){0,#{ENV["WEBPORTAL_PROVISIONINGTASKS_NUMBER_OF_VISIBLE_STATUS_LINES_MINUS_ONE"]}}/) %></pre><span style="text-decoration: underline;"><%= link_to 'more...', provisioning %></span></td>
 <% if false %>
         <td><%= errortest.status.gsub(/(assw[^=]*=[ ]*)([^\r]*).*$/, '\1*******') %></td>
 <% end %>

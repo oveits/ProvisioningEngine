@@ -6,7 +6,7 @@
                         Functions
                 </li>
                 <li><%= link_to 'New User', new_user_path(@params) %></li>
-                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" && ENV["WEBPORTAL_SYNCHRONIZEALLBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize Users', synchronize_users_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
 <% if ENV["WEBPORTAL_REMOVEALL_LINK_VISIBLE"] == "true" %>
