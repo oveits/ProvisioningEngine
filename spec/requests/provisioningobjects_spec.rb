@@ -87,8 +87,8 @@ else
 #  targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
 #  targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #  targetsolutionList = Array["CSL8"]  # ODV V8R0, Thomas Otto
-#  targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-  targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+  targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
+#  targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #  targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #  targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
  
@@ -262,6 +262,8 @@ def defaultParams(obj, i = 0)
               }
            if /V7R1/.match($targetname)
             paramsSet[:sitecode] = "446677"
+	    #  for this version, only CC=49 is supported:
+	    paramsSet[:countrycode] = "49"
           end
       end
       
@@ -1127,6 +1129,7 @@ objectList.each do |obj|
           
           # create an object that is already on the database with the right provisioning status:
           provisionedObjectAlreadyOnDB = initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: true, paramsSet: defaultParams(obj, 3))
+			#abort provisionedObjectAlreadyOnDB.inspect
           expect( provisionedObjectAlreadyOnDB.provisioned? ).to be(true)
           # status should not change, if possible, so let us remember the status, so we can compare later
           status_before_provisionedObjectAlreadyOnDB = provisionedObjectAlreadyOnDB.status    
