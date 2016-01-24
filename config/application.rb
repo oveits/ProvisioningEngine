@@ -61,7 +61,7 @@ module ProvisioningPortalv4
     defaultconfig["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] = "false"
     
     # control, how many lines are shown in the status of the provisioning tasks (default: 3, i.e. 4 lines are shown)
-    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_NUMBER_OF_VISIBLE_STATUS_LINES_MINUS_ONE"] = 3
+    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_NUMBER_OF_VISIBLE_STATUS_LINES_MINUS_ONE"] = "3"
     
     # for synchronizeAll jobs, this variable controls, whether an abort of a single synchronize job will lead to an abort of all synchronize jobs.
     # Should be set to false in productive environments, since an an unreachable target should not stop the whole process (default: false)
