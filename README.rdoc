@@ -1,3 +1,6 @@
+[![Build Status: master branch](https://travis-ci.org/oveits/ProvisioningEngine.svg?branch=master)](https://travis-ci.org/oveits/ProvisioningEngine)
+[![Build Status: development branch](https://travis-ci.org/oveits/ProvisioningEngine.svg?branch=development)](https://travis-ci.org/oveits/ProvisioningEngine)
+
 == README
 This README documents describes the purpose of the software and describes the steps are necessary to get the Provisioning Portal up and running.
 
