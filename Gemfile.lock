@@ -14,9 +14,15 @@ GEM
       activesupport (= 4.1.4)
       builder (~> 3.1)
       erubis (~> 2.7.0)
+    activejob (0)
+      activemodel-globalid
+      activesupport (>= 4.1.0)
     activemodel (4.1.4)
       activesupport (= 4.1.4)
       builder (~> 3.1)
+    activemodel-globalid (0.1.1)
+      activemodel (>= 4.1.0)
+      activesupport (>= 4.1.0)
     activerecord (4.1.4)
       activemodel (= 4.1.4)
       activesupport (= 4.1.4)
@@ -214,6 +220,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activejob
+  activemodel-globalid
   activesupport
   bootstrap-sass
   capybara (= 2.1.0)
