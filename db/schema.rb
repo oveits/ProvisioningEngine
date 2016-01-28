@@ -13,7 +13,7 @@
 
 ActiveRecord::Schema.define(version: 20150607172131) do
 
-  create_table "customers", force: true do |t|
+  create_table "customers", force: :cascade do |t|
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 20150607172131) do
 
   add_index "customers", ["target_id"], name: "index_customers_on_target_id"
 
-  create_table "delayed_jobs", force: true do |t|
+  create_table "delayed_jobs", force: :cascade do |t|
     t.integer  "priority",   default: 0, null: false
     t.integer  "attempts",   default: 0, null: false
     t.text     "handler",                null: false
@@ -40,8 +40,8 @@ ActiveRecord::Schema.define(version: 20150607172131) do
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
-  create_table "provisionings", force: true do |t|
-    t.text     "action",                  limit: 255
+  create_table "provisionings", force: :cascade do |t|
+    t.text     "action"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "status"
@@ -59,7 +59,7 @@ ActiveRecord::Schema.define(version: 20150607172131) do
   add_index "provisionings", ["site_id"], name: "index_provisionings_on_site_id"
   add_index "provisionings", ["user_id"], name: "index_provisionings_on_user_id"
 
-  create_table "sites", force: true do |t|
+  create_table "sites", force: :cascade do |t|
     t.string   "name"
     t.integer  "customer_id"
     t.datetime "created_at"
@@ -76,7 +76,7 @@ ActiveRecord::Schema.define(version: 20150607172131) do
 
   add_index "sites", ["customer_id"], name: "index_sites_on_customer_id"
 
-  create_table "targets", force: true do |t|
+  create_table "targets", force: :cascade do |t|
     t.string   "name"
     t.text     "configuration"
     t.datetime "created_at"
@@ -84,14 +84,14 @@ ActiveRecord::Schema.define(version: 20150607172131) do
     t.text     "status"
   end
 
-  create_table "text_documents", force: true do |t|
+  create_table "text_documents", force: :cascade do |t|
     t.text     "identifierhash"
     t.text     "content"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "users", force: true do |t|
+  create_table "users", force: :cascade do |t|
     t.string   "name"
     t.integer  "site_id"
     t.string   "extension"
