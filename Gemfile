@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.1.4'
+gem 'rails', '~> 4.2.4'
 gem 'bootstrap-sass'
 group :development, :test do
   # Use sqlite3 as the database for Active Record
@@ -87,8 +87,10 @@ gem 'seed_dump'
 group :test do
   gem 'selenium-webdriver', '2.35.1'
   gem 'capybara', '2.1.0'
-  # OV to get rid of a warining during running 
+  # OV to get rid of a warning during running 
   gem "minitest"
+  # OV was needed after upgrade to ruby v2.2.4 (see https://github.com/rspec/rspec-rails/issues/1273 or https://github.com/rails/rails/issues/18572):
+  gem 'test-unit'
 end
 
 # OV for speeding up rspec test startup:

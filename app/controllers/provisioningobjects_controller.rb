@@ -34,8 +34,17 @@ class ProvisioningobjectsController < ApplicationController
     # return all items, but may be filtered. E.g. /targets/3/sites will return only sites of the specific target chosen.
     
     # needed for page refresh:
-    @params = params
-          #abort @params.inspect
+    #@params = params
+    # however, this leads to DEPRECATED warning and failed tests. Therefore we need to convert the params (
+    #@params = {"per_page"=>"all", "controller"=>"customers", "action"=>"index", "target_id"=>nil}
+    @params = {}
+    params.each do |key,value|
+      # see also: http://stackoverflow.com/questions/2004491/convert-string-to-symbol-able-in-ruby
+      @params[key.parameterize.underscore.to_sym] = value
+    end
+    # result: something like @params = {per_page: params[:per_page], controller: params[:controller], action: params[:action], target_id: params[:target_id]}
+		#abort @params.class.name
+		#abort @params.inspect
 
     # find the closets relative upwards that is specified
     # e.g. if called with GET /targets/3/sites, the closest upward relative is Target with id==3
