@@ -124,10 +124,14 @@ In production, an Apache Camel based connector (private; not published here) is 
         * for your heroku app, perform:
           heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
           (exchange salty-peak-4964 by your app name)
-        * git add .
-        * git commit -am "added automatic db:migrate support via buildpack"
-        * git push
-        * git push heroku
+        * if the .buildpack was already present (i.e. no change made to any file): 
+          * git push heroku master
+        * else
+          * git add .
+          * git commit -am "added automatic db:migrate support via buildpack"
+          * git push
+          * git push heroku
+        * end
   * If you need background jobs (i.e. if you have specified WEBPORTAL_ASYNC_MODE: "true" in (app-root)/config/application.yml:
     * heroku run rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
   * heroku open # this will open a browser with the correct link
