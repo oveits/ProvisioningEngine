@@ -24,7 +24,7 @@ Rails.application.configure do
 # OV changed to true; see http://stackoverflow.com/questions/21969549/rails-application-css-asset-not-found-in-production-mode
   #config.serve_static_assets = true
   #config.config.serve_static_files = false
-  config.config.serve_static_assets = false
+  config.serve_static_assets = false
 
   # Compress JavaScripts and CSS.
   config.assets.js_compressor = :uglifier
