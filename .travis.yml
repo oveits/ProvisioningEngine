@@ -1,6 +1,7 @@
 language: ruby
 rvm:
   - 2.0.0
+  - 2.2.4
 env:
   - WEBPORTAL_SIMULATION_MODE=true WEBPORTAL_ASYNC_MODE=true
   - WEBPORTAL_SIMULATION_MODE=true WEBPORTAL_ASYNC_MODE=false

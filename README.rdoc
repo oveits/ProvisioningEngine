@@ -118,14 +118,17 @@ In production, an Apache Camel based connector (private; not published here) is 
     * (optional: Installation process for automatic migrations on Heroku:
       Note: on heroku app salty-peak-4964, I have installed multi-buildpacks that automatically migrates at each deploy (see http://gunpowderlabs.com/blog/automatically-run-migrations-when-deploying-to-heroku/)
       * installation process (one time per app):
+        (obsolete:)
         * create .buildpacks in root directory of your app with following content (do not use comments in the file, this has caused the build processes to fail):
           https://github.com/heroku/heroku-buildpack-ruby
           https://github.com/gunpowderlabs/buildpack-ruby-db-migrate.git
         * # (deprecated) for your heroku app, perform:
           # heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
           # (exchange salty-peak-4964 by your app name)
-        * (replaced by)
+        (replaced by)
+        * define buildpacks:
           heroku buildpacks:set heroku/ruby
+          # needed for automatic db:migrate:
           heroku buildpacks:add https://github.com/gunpowderlabs/buildpack-ruby-rake-deploy-tasks
         * if the .buildpack was already present (i.e. no change made to any file): 
           * git push heroku

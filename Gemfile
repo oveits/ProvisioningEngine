@@ -1,7 +1,10 @@
 source 'https://rubygems.org'
 #ruby '2.1.3'
+# >= is not supported in tis context:
 #ruby ENV['CUSTOM_RUBY_VERSION'] || '>= 2.0.0'
-ruby ENV['CUSTOM_RUBY_VERSION'] || '2.0.0'
+# commented out again and we set the ruby version externally, e.g. in .travis.yml etc.
+#ruby ENV['CUSTOM_RUBY_VERSION'] || '2.0.0'
+#ruby ENV['CUSTOM_RUBY_VERSION'] || '2.2.4'
 
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
