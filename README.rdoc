@@ -121,11 +121,13 @@ In production, an Apache Camel based connector (private; not published here) is 
         * create .buildpacks in root directory of your app with following content (do not use comments in the file, this has caused the build processes to fail):
           https://github.com/heroku/heroku-buildpack-ruby
           https://github.com/gunpowderlabs/buildpack-ruby-db-migrate.git
-        * for your heroku app, perform:
-          heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
-          (exchange salty-peak-4964 by your app name)
+        * # (deprecated) for your heroku app, perform:
+          # heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
+          # (exchange salty-peak-4964 by your app name)
+        * (replaced by)
+          heroku buildpacks:add https://github.com/gunpowderlabs/buildpack-rake-deploy-tasks.git
         * if the .buildpack was already present (i.e. no change made to any file): 
-          * git push heroku master
+          * git push heroku
         * else
           * git add .
           * git commit -am "added automatic db:migrate support via buildpack"
