@@ -53,7 +53,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin]
 
 # OV added:
 gem 'activemodel-globalid'
-gem 'activejob'
+#gem 'activejob'
 gem 'delayed_job_active_record'
 #gem 'delayed_job_active_record', '~> 4.0.6'
 #gem 'delayed_job_active_record','4.0.6' #, '4.0.6' #, '4.1.1'

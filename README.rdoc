@@ -125,6 +125,7 @@ In production, an Apache Camel based connector (private; not published here) is 
           # heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
           # (exchange salty-peak-4964 by your app name)
         * (replaced by)
+          heroku buildpacks:set heroku/ruby
           heroku buildpacks:add https://github.com/gunpowderlabs/buildpack-ruby-rake-deploy-tasks
         * if the .buildpack was already present (i.e. no change made to any file): 
           * git push heroku
