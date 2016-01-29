@@ -95,5 +95,8 @@ module ProvisioningPortalv4
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de   
+    
+    # OV specify, which queueing backend AvtiveJob will use:
+    config.active_job.queue_adapter = :delayed_job
   end
 end
