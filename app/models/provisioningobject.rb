@@ -215,12 +215,14 @@ abort "djköshgoöesrhriogörwheögwiöho"
       # or:
       #returnBody = delay.synchronizeSynchronously(recursive)
       # replaced by:
-      returnBody = GeneralJob.perform_later(self, "synchronizeSynchronously")
-      #abort "GeneralJob Test"
+      job = GeneralJob.perform_later(self, "synchronizeSynchronously")
+      #abort GeneralJob.all.inspect
+      # for testing the cancel function: should raise an abort with message "true", if sleep is commented out. Else it should raise an abort with message "false"
+      # sleep 10.seconds
+      #abort job.cancel.inspect
+       
       
       #returnBody = synchronizeSynchronously(recursive)
-#abort Delayed::Worker.delay_jobs.inspect
-#abort returnBody.inspect
     else
       #returnBody = updateDB.perform(self)
       # or:
