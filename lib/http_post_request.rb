@@ -168,16 +168,24 @@ class HttpPostRequest
       #abort myTargets.inspect
       #abort @@provisioned.inspect
       
-      def syncMyCustomersFromDB        
+      
+      def syncMyCustomersFromDB 
+        debug = true
         myTargets.each do |target|
           myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
           myCustomers.each do |customer|
             #abort @@provisioned[customerID].inspect
+            puts "---- before syncMyCustomersFromDB ----" if debug
+            puts "@@provisioned = #{@@provisioned.inspect}" if debug
+            puts "--------------------------------------" if debug
             #abort customer.provisioned?.inspect
             if @@provisioned[customerID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[customerID] is nil)                         
               @@provisioned[customerID] = customer.provisioned? if @@provisioned[customerID].nil?
               @@provisioned[customerID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(customer.status)
             end
+            puts "---- before syncMyCustomersFromDB ----" if debug
+            puts "@@provisioned = #{@@provisioned.inspect}" if debug
+            puts "--------------------------------------" if debug
           end
         end
       end
@@ -285,6 +293,10 @@ class HttpPostRequest
       sleep 100.seconds / 1000
       case headerHash["action"]
         when /Add Customer/
+                debug = true
+          puts "---- before Add Customer ----" if debug
+          puts "@@provisioned = #{@@provisioned.inspect}" if debug
+          puts "-----------------------------" if debug
           if @@provisioned[customerID].nil? || !@@provisioned[customerID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
             @@provisioned[customerID] = true #unless customerID.nil?
@@ -294,6 +306,9 @@ class HttpPostRequest
             @@provisioned[customerID] = true #unless customerID.nil?
             responseBody = 'ERROR: java.lang.Exception: Cannot Create customer ExampleCustomerV8: Customer exists already!'
           end
+          puts "---- after Add Customer ----" if debug
+          puts "@@provisioned = #{@@provisioned.inspect}" if debug
+          puts "----------------------------" if debug
         when /Add Site/
           if @@provisioned[siteID].nil? || !@@provisioned[siteID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
