@@ -1,6 +1,10 @@
 require 'spec_helper'
+require 'rspec/its'
 
-RSpec.configure do |c|
+RSpec.configure do |config|
+  # see http://stackoverflow.com/questions/9475857/rspec-and-named-routes
+  config.include Rails.application.routes.url_helpers
+  
   # run all test cases, but not the broken ones:
   myFilter = {broken: true}
   if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
@@ -13,14 +17,14 @@ RSpec.configure do |c|
   
   myFilter[:obsolete] = true
   
-  c.filter_run_excluding(myFilter)
+  config.filter_run_excluding(myFilter)
   
   # stop on first failure, if set to true:
-#  c.fail_fast = false
-  c.fail_fast = true
+#  config.fail_fast = false
+  config.fail_fast = true
 
   # TODO: this filter does not work: run only broken test cases
-  #c.filter_run_excluding broken: false #, provisioning: true #, untested: true
+  #config.filter_run_excluding broken: false #, provisioning: true #, untested: true
 end
 
 def expectedProvisionStatus
@@ -1492,13 +1496,15 @@ objectList.each do |obj|
             click_button submit, match: :first
             # find last Add Provisioning task
             createdProvisioningTask = Provisioning.where('action LIKE ?', "%action=Add #{obj}%").last
-            begin
-              createdProvisioningTask.status.should match(/finished successfully/)
-            rescue
-                createdProvisioningTask.status.should match(/#{obj} exists already/) if obj == "Customer"
-                createdProvisioningTask.status.should match(/exists already/) if obj == "Site"
-                createdProvisioningTask.status.should match(/phone number is in use already/) if obj == "User"
-            end
+#            begin
+              createdProvisioningTask.status.should match(/finished successfully|#{obj}/) if obj == "Customer"
+              createdProvisioningTask.status.should match(/finished successfully|exists already/) if obj == "Site"
+              createdProvisioningTask.status.should match(/finished successfully|phone number is in use already/) if obj == "User"
+#            rescue
+#                createdProvisioningTask.status.should match(/#{obj} exists already/) if obj == "Customer"
+#                createdProvisioningTask.status.should match(/exists already/) if obj == "Site"
+#                createdProvisioningTask.status.should match(/phone number is in use already/) if obj == "User"
+#            end
           end  
 
           it "should save a #{obj} with status '#{expectedProvisionStatus}'" do

@@ -13,7 +13,9 @@ gem 'bootstrap-sass'
 group :development, :test do
   # Use sqlite3 as the database for Active Record
   gem 'sqlite3'
+  #gem 'rspec-core'
   gem 'rspec-rails', '>= 2.13.1'
+  gem 'rspec-its'
   gem 'byebug'
 end
 
