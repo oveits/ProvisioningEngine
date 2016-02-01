@@ -5,6 +5,12 @@ RSpec.configure do |config|
   # see http://stackoverflow.com/questions/9475857/rspec-and-named-routes
   config.include Rails.application.routes.url_helpers
   
+  # OV: to get rid of a deprecation warning "Using `should` from rspec-expectations' old `:should` syntax without explicitly enabling the syntax is deprecated."
+  #     and allow for "should" directives in rspec (better use expect ... in future)
+  #config.expect_with(:rspec) { |c| c.syntax = :should }
+  # commented out, because it cannot be set without replacing all 'expect' directives to 'should' directives. This does not make sense. 
+  # Better accept the deprecation warning for now and replace 'should' with 'expect' later, if needed
+  
   # run all test cases, but not the broken ones:
   myFilter = {broken: true}
   if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
@@ -1363,11 +1369,11 @@ objectList.each do |obj|
         # TODO: also make it available for obj="Site" and obj="User"
         if obj == "Customer"
           it "has a valid factory" do
-            FactoryGirl.create(:target).should be_valid if obj == "Customer"  # only test once: for obj = "Customer"
-            FactoryGirl.create(:customer).should be_valid
+            expect( FactoryGirl.create(:target) ).to be_valid if obj == "Customer"  # only test once: for obj = "Customer"
+            expect( FactoryGirl.create(:customer) ).to be_valid
             # TODO: not yet available:
-            # FactoryGirl.create(:site).should be_valid if obj == "Site"
-            # FactoryGirl.create(:user).should be_valid if obj == "User"
+            # expect( FactoryGirl.create(:site) ).to be_valid if obj == "Site"
+            # expect( FactoryGirl.create(:user) ).to be_valid if obj == "User"
           end
 
           it "should add a #{obj} to the database (FactoryGirlTest)" do
@@ -1443,7 +1449,7 @@ objectList.each do |obj|
             visit provisioningobject_path(myObjects[0])
             # for debugging:
             #p page.html.gsub(/[\n\t]/, '')
-            page.html.gsub(/[\n\t]/, '').should match(/provisioning success/)                    
+            expect( page.html.gsub(/[\n\t]/, '')).to match(/provisioning success/)                    
           end
           
           it "should create one or more provisioning tasks" do
@@ -1466,27 +1472,29 @@ objectList.each do |obj|
               end
 	    end
             expect( foundAction ).not_to be( nil )
-            foundAction.should match(/action=Add #{obj}/)
+            # should is deprecated, if not enabled explicitly:
+            #expect( foundAction ).to match(/action=Add #{obj}/)
+            expect( foundAction ).to match(/action=Add #{obj}/)
             case obj
               when /Customer/
-                foundAction.should match(/customerName=#{$customerName}/)
+                expect( foundAction ).to match(/customerName=#{$customerName}/)
               when /Site/
-                foundAction.should match(/customerName=#{$customerName}/)
-                foundAction.should match(/SiteName=ExampleSite/)
-                #foundAction.should match(/SC=99821/)
-                foundAction.should match(/CC=49/)
-                foundAction.should match(/AC=99/)
-                foundAction.should match(/LOC=7007/)
-                foundAction.should match(/XLen=5/)
-                foundAction.should match(/EndpointDefaultHomeDnXtension=10000/)
+                expect( foundAction ).to match(/customerName=#{$customerName}/)
+                expect( foundAction ).to match(/SiteName=ExampleSite/)
+                #expect( foundAction ).to match(/SC=99821/)
+                expect( foundAction ).to match(/CC=49/)
+                expect( foundAction ).to match(/AC=99/)
+                expect( foundAction ).to match(/LOC=7007/)
+                expect( foundAction ).to match(/XLen=5/)
+                expect( foundAction ).to match(/EndpointDefaultHomeDnXtension=10000/)
               when /User/
-                foundAction.should match(/customerName=#{$customerName}/)
-                foundAction.should match(/SiteName=ExampleSite/)
-                foundAction.should match(/X=30800/)
-                foundAction.should match(/givenName=Oliver/)
-                foundAction.should match(/familyName=Veits/)
-                foundAction.should match(/assignedEmail=oliver.veits@company.com/)
-                foundAction.should match(/imAddress=oliver.veits@company.com/)
+                expect( foundAction ).to match(/customerName=#{$customerName}/)
+                expect( foundAction ).to match(/SiteName=ExampleSite/)
+                expect( foundAction ).to match(/X=30800/)
+                expect( foundAction ).to match(/givenName=Oliver/)
+                expect( foundAction ).to match(/familyName=Veits/)
+                expect( foundAction ).to match(/assignedEmail=oliver.veits@company.com/)
+                expect( foundAction ).to match(/imAddress=oliver.veits@company.com/)
             end
           end
           
@@ -1497,13 +1505,13 @@ objectList.each do |obj|
             # find last Add Provisioning task
             createdProvisioningTask = Provisioning.where('action LIKE ?', "%action=Add #{obj}%").last
 #            begin
-              createdProvisioningTask.status.should match(/finished successfully|#{obj}/) if obj == "Customer"
-              createdProvisioningTask.status.should match(/finished successfully|exists already/) if obj == "Site"
-              createdProvisioningTask.status.should match(/finished successfully|phone number is in use already/) if obj == "User"
+              expect( createdProvisioningTask.status ).to match(/finished successfully|#{obj}/) if obj == "Customer"
+              expect( createdProvisioningTask.status ).to match(/finished successfully|exists already/) if obj == "Site"
+              expect( createdProvisioningTask.status ).to match(/finished successfully|phone number is in use already/) if obj == "User"
 #            rescue
-#                createdProvisioningTask.status.should match(/#{obj} exists already/) if obj == "Customer"
-#                createdProvisioningTask.status.should match(/exists already/) if obj == "Site"
-#                createdProvisioningTask.status.should match(/phone number is in use already/) if obj == "User"
+#                expect( createdProvisioningTask.status ).to match(/#{obj} exists already/) if obj == "Customer"
+#                expect( createdProvisioningTask.status ).to match(/exists already/) if obj == "Site"
+#                expect( createdProvisioningTask.status ).to match(/phone number is in use already/) if obj == "User"
 #            end
           end  
 
@@ -1731,7 +1739,7 @@ objectList.each do |obj|
           visit provisioningobject_path(myObjects[0])
           # for debugging:
           #p page.html.gsub(/[\n\t]/, '')
-          page.html.gsub(/[\n\t]/, '').should match(/deletion success/)      
+          expect( page.html.gsub(/[\n\t]/, '') ).to match(/deletion success/)      
         end
         it "using De-Provision Button in the side bar, should de-provision a #{obj} with status 'deletion success'" do
           # synchronous operation, so we will get deterministic test results:
@@ -1750,7 +1758,7 @@ objectList.each do |obj|
           visit provisioningobject_path(myObjects[0])
           # for debugging:
           #p page.html.gsub(/[\n\t]/, '')
-          page.html.gsub(/[\n\t]/, '').should match(/deletion success/)
+          expect( page.html.gsub(/[\n\t]/, '') ).to match(/deletion success/)
         end
 
       end # of describe "De-Provision Customer" do
