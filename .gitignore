@@ -24,6 +24,9 @@ doc/
 .DS_Store
 *.orig
 *.orig/
+*.bak
+*.bak[0-9]*
+
 
 # Ignore application configuration
 config/application.yml
