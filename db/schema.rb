@@ -14,26 +14,26 @@
 ActiveRecord::Schema.define(version: 20150607172131) do
 
   create_table "customers", force: :cascade do |t|
-    t.string   "name"
+    t.string   "name",       limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "status"
+    t.string   "status",     limit: 255
     t.integer  "target_id"
-    t.string   "language"
+    t.string   "language",   limit: 255
   end
 
   add_index "customers", ["target_id"], name: "index_customers_on_target_id"
 
   create_table "delayed_jobs", force: :cascade do |t|
-    t.integer  "priority",   default: 0, null: false
-    t.integer  "attempts",   default: 0, null: false
-    t.text     "handler",                null: false
+    t.integer  "priority",               default: 0, null: false
+    t.integer  "attempts",               default: 0, null: false
+    t.text     "handler",                            null: false
     t.text     "last_error"
     t.datetime "run_at"
     t.datetime "locked_at"
     t.datetime "failed_at"
-    t.string   "locked_by"
-    t.string   "queue"
+    t.string   "locked_by",  limit: 255
+    t.string   "queue",      limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -41,17 +41,18 @@ ActiveRecord::Schema.define(version: 20150607172131) do
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
   create_table "provisionings", force: :cascade do |t|
-    t.text     "action"
+    t.text     "action",                  limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "status"
+    t.string   "status",                  limit: 255
     t.integer  "customer_id"
     t.integer  "site_id"
     t.integer  "delayedjob_id"
     t.integer  "attempts"
     t.integer  "user_id"
     t.integer  "provisioningobject_id"
-    t.string   "provisioningobject_type"
+    t.string   "provisioningobject_type", limit: 255
+    t.string   "job_id"
   end
 
   add_index "provisionings", ["customer_id"], name: "index_provisionings_on_customer_id"
@@ -60,24 +61,24 @@ ActiveRecord::Schema.define(version: 20150607172131) do
   add_index "provisionings", ["user_id"], name: "index_provisionings_on_user_id"
 
   create_table "sites", force: :cascade do |t|
-    t.string   "name"
+    t.string   "name",            limit: 255
     t.integer  "customer_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "status"
-    t.string   "sitecode"
-    t.string   "countrycode"
-    t.string   "areacode"
-    t.string   "localofficecode"
-    t.string   "extensionlength"
-    t.string   "mainextension"
-    t.string   "gatewayIP"
+    t.string   "status",          limit: 255
+    t.string   "sitecode",        limit: 255
+    t.string   "countrycode",     limit: 255
+    t.string   "areacode",        limit: 255
+    t.string   "localofficecode", limit: 255
+    t.string   "extensionlength", limit: 255
+    t.string   "mainextension",   limit: 255
+    t.string   "gatewayIP",       limit: 255
   end
 
   add_index "sites", ["customer_id"], name: "index_sites_on_customer_id"
 
   create_table "targets", force: :cascade do |t|
-    t.string   "name"
+    t.string   "name",          limit: 255
     t.text     "configuration"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -92,15 +93,15 @@ ActiveRecord::Schema.define(version: 20150607172131) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "name"
+    t.string   "name",       limit: 255
     t.integer  "site_id"
-    t.string   "extension"
-    t.string   "givenname"
-    t.string   "familyname"
-    t.string   "email"
+    t.string   "extension",  limit: 255
+    t.string   "givenname",  limit: 255
+    t.string   "familyname", limit: 255
+    t.string   "email",      limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "status"
+    t.string   "status",     limit: 255
   end
 
   add_index "users", ["site_id"], name: "index_users_on_site_id"
