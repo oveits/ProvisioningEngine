@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   
+  devise_for :admin_users, ActiveAdmin::Devise.config
+  ActiveAdmin.routes(self)
   resources :text_documents
 
   #root 'welcome#index'
@@ -153,4 +155,3 @@ scope(path: baseURL) do
   #   end
 end # scope(path: baseURL) do
 end # Rails.application.routes.draw do
-
