@@ -6,6 +6,8 @@ source 'https://rubygems.org'
 #ruby ENV['CUSTOM_RUBY_VERSION'] || '2.0.0'
 #ruby ENV['CUSTOM_RUBY_VERSION'] || '2.2.4'
 
+gem 'devise'
+gem 'activeadmin', '1.0.0.pre2'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 4.2.4'
@@ -13,7 +15,10 @@ gem 'bootstrap-sass'
 group :development, :test do
   # Use sqlite3 as the database for Active Record
   gem 'sqlite3'
-  gem 'rspec-rails', '2.13.1'
+  #gem 'rspec-core'
+  gem 'rspec-rails', '>= 2.13.1'
+  gem 'rspec-its'
+  gem 'byebug'
 end
 
 # Use SCSS for stylesheets
@@ -91,7 +96,7 @@ gem 'seed_dump'
 
 group :test do
   gem 'selenium-webdriver', '2.35.1'
-  gem 'capybara', '2.1.0'
+  gem 'capybara' #, '~> 2.1.0'
   # OV to get rid of a warning during running 
   gem "minitest"
   # OV was needed after upgrade to ruby v2.2.4 (see https://github.com/rspec/rspec-rails/issues/1273 or https://github.com/rails/rails/issues/18572):
