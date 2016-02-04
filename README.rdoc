@@ -141,6 +141,13 @@ In production, an Apache Camel based connector (private; not published here) is 
   * If you need background jobs (i.e. if you have specified WEBPORTAL_ASYNC_MODE: "true" in (app-root)/config/application.yml:
     * heroku run rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
   * heroku open # this will open a browser with the correct link
+  * Active Admin
+    * is currently used for manipulation of system wide variables only.
+    * For initialization, perform the following step on the Linux shell: in the app's root folder, type:
+      * rake db:seed
+        this will create the default Active Admin user admin@example.com with password=password.
+      * add your own Admin user and password using the Active Admin console on https://localhost:3000/admin/admin_users (adapt URL name and port, if needed)
+      * remove the admin@example.com user
 
 === Developers Info: Commit & Production
 * first time use of git:

@@ -28,7 +28,12 @@ class Config < ActiveRecord::Base
             abort "Oups, this looks like a bug: Config.variable with name #{environment_variable} found more than once in the database."
         else
             # error handling: variable not found:
-            abort "#{environment_variable} not found: neither in the database nor as system environment variable"
+            message = "#{environment_variable} not found: neither in the database nor as system environment variable." +
+                      " As administrator, please create a Config variable with name #{environment_variable} " +
+                      " and the proper value (in most situations: 'true' or 'false') on the Active Admin Console on https://localhost:3000/admin/configs " +
+                      "(please adapt the host and port to your environment). Alternatively, restart the server. " +
+                      "This should reset the environment variable to its default value and the Config variable will be auto-created."
+            abort message
         end # if foundlist.count == 1
     end # def self.method_missing(*args)
     
