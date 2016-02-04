@@ -7,11 +7,7 @@ class HttpPostRequest
     #verbose = true
     verbose = false
     
-    if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
-      simulationMode = true
-    else 
-      simulationMode = false
-    end
+    simulationMode = Config.webportal_simulation_mode
 
     require "net/http"
     require "uri"
