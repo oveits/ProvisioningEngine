@@ -19,7 +19,8 @@ class Config < ActiveRecord::Base
             value = ENV[environment_variable]
             
             # If found, auto-create a database entry
-            Config.new(name: environment_variable, value: value, value_type: :boolean).save!
+            @@autocreate = true unless defined?(@@autocreate)
+            Config.new(name: environment_variable, value: value, value_type: :boolean).save! unless @@autocreate == false
             
             # return its value as boolean
             value == "true"
@@ -38,8 +39,8 @@ class Config < ActiveRecord::Base
     end # def self.method_missing(*args)
     
     def destroy
-        # if we destroy a database entry, we need to remove the environment variable first in order to prevent it from being auto-created immediately.
-        ENV[self.name] = nil
+        # if we destroy a database entry, we do not want it to be auto-created again:
+        @@autocreate = false
         
         # call normal destroy prodecures:
         super
