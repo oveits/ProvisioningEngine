@@ -19,8 +19,9 @@ class Config < ActiveRecord::Base
             value = ENV[environment_variable]
             
             # If found, auto-create a database entry
-            @@autocreate = true unless defined?(@@autocreate)
-            Config.new(name: environment_variable, value: value, value_type: :boolean).save! unless @@autocreate == false
+            @@autocreate = {} unless defined?(@@autocreate)
+            @@autocreate[environment_variable] = true if @@autocreate[environment_variable].nil?
+            Config.new(name: environment_variable, value: value, value_type: :boolean).save! if @@autocreate[environment_variable]
             
             # return its value as boolean
             value == "true"
@@ -40,7 +41,8 @@ class Config < ActiveRecord::Base
     
     def destroy
         # if we destroy a database entry, we do not want it to be auto-created again:
-        @@autocreate = false
+        @@autocreate = {} unless defined?(@@autocreate)
+        @@autocreate[name] = false
         
         # call normal destroy prodecures:
         super
