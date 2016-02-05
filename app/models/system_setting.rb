@@ -8,10 +8,20 @@ class SystemSetting < ActiveRecord::Base
         environment_variable = args[0].to_s.upcase
         
         # look for database entries matching the method name, but with all capitals:
-        foundlist =  self.where(name: environment_variable)
+        begin
+            # we need to perform the database lookup in a begin-rescue block, because rake db:migrate does not work, 
+            # if the table is not yet created, but the variable is used in a spe/factories file (it seems like spec/factories is read before the actual db migration)
+            foundlist =  self.where(name: environment_variable)
+        rescue # e.g. ActiveRecord::StatementInvalid: Could not find table 'system_settings'
+            foundlist = nil
+        end
         
         # return value, if non-ambiguous entry was found; else return environment variable, if it exists:
-        if foundlist.count == 1
+        if foundlist.nil?
+            # foundlist is nil, if the table does not exist in the database yet (e.g. not migrated yet)
+            # return the environment variable, if it exists and is "true":
+            ENV[environment_variable] == "true"
+        elsif foundlist.count == 1
             # found in the database: return its value as boolean
             foundlist[0].value == "true"
         elsif foundlist.count == 0 && !ENV[environment_variable].nil?
