@@ -13,7 +13,7 @@ RSpec.configure do |config|
   
   # run all test cases, but not the broken ones:
   myFilter = {broken: true}
-  if Config.webportal_simulation_mode
+  if SystemSetting.webportal_simulation_mode
     myFilter[:simulationbroken] =  true
   end
   
@@ -86,7 +86,7 @@ objectList = Array["Customer", "Site", "User"]
 
 objectList2 = Array["Provisioning", "Target"]
 
-if Config.webportal_simulation_mode
+if SystemSetting.webportal_simulation_mode
   
   targetsolutionList = Array["Environment1_V8", "Environment2_V7R1"]
 #  targetsolutionList = Array["Environment1"]
@@ -103,7 +103,7 @@ targetsolutionList = Array["CSL8", "CSL9_V7R1"]
 #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
  
-end # if Config.webportal_simulation_mode
+end # if SystemSetting.webportal_simulation_mode
 
 
 def parent(obj)

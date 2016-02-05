@@ -7,7 +7,7 @@ class HttpPostRequest
     #verbose = true
     verbose = false
     
-    simulationMode = Config.webportal_simulation_mode
+    simulationMode = SystemSetting.webportal_simulation_mode
 
     require "net/http"
     require "uri"

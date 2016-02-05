@@ -1,10 +1,10 @@
-ActiveAdmin.register Config do
+ActiveAdmin.register SystemSetting do
 
 # See permitted parameters documentation:
 # https://github.com/activeadmin/activeadmin/blob/master/docs/2-resource-customization.md#setting-up-strong-parameters
 #
 # permit_params :list, :of, :attributes, :on, :model
-permit_params :name, :value_type, :value, :default_value, :short_description, :description
+permit_params :name, :value_type, :value_default, :value, :short_description, :description ## add this line
 #
 # or
 #

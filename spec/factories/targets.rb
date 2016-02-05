@@ -1,6 +1,6 @@
 # spec/factories/customers.rb
 # spec/factories/targets_private.rb
-if Config.webportal_simulation_mode
+if SystemSetting.webportal_simulation_mode
   FactoryGirl.define do
     factory :target do 
       name "testtarget"
@@ -15,5 +15,5 @@ if Config.webportal_simulation_mode
       end
     end # factory :target do 
   end # FactoryGirl.define do
-end # if Config.webportal_simulation_mode
+end # if SystemSetting.webportal_simulation_mode
 
