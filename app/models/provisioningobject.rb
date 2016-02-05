@@ -215,7 +215,8 @@ abort "djköshgoöesrhriogörwheögwiöho"
       # or:
       #returnBody = delay.synchronizeSynchronously(recursive)
       # replaced by:
-      job = GeneralJob.perform_later(self, "synchronizeSynchronously")
+      #job = 
+      GeneralJob.perform_later(self, "synchronizeSynchronously")
       #abort GeneralJob.all.inspect
       # for testing the cancel function: should raise an abort with message "true", if sleep is commented out. Else it should raise an abort with message "false"
       # sleep 10.seconds
@@ -226,7 +227,8 @@ abort "djköshgoöesrhriogörwheögwiöho"
     else
       #returnBody = updateDB.perform(self)
       # or:
-      returnBody = synchronizeSynchronously(recursive)
+      #returnBody = 
+      synchronizeSynchronously(recursive)
     end
   end
 
