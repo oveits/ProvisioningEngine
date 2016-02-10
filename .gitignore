@@ -10,6 +10,7 @@
 # Ignore the default SQLite database.
 db/*
 !db/seeds.rb
+!db/migrate
 
 # Ignore all logfiles and tempfiles.
 /log/*.log*
