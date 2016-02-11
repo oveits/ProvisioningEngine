@@ -73,6 +73,7 @@
             <li><%= link_to "Targets", :targets %></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
+            <li><%= link_to "Admin Console",   admin_root_path %></li>
             <li><%= link_to "About",   "https://github.com/oveits/ProvisioningEngine/#readme", :target => "_blank" %></li>
           </ul>
         </nav>
@@ -99,7 +100,7 @@
 <!--
                       <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
 --> 
-                      <% if ENV["WEBPORTAL_SIMULATION_MODE"] == "true" %>
+                      <% if SystemSetting.webportal_simulation_mode %>
                         <h4 style="color:blue; background-color:white; opacity: 0.6; position:fixed; top:90px; left: 50%;"> **simulation mode**</h4>
                       <% end %>
                       <% unless @async %>

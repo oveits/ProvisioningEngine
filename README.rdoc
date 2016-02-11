@@ -118,19 +118,36 @@ In production, an Apache Camel based connector (private; not published here) is 
     * (optional: Installation process for automatic migrations on Heroku:
       Note: on heroku app salty-peak-4964, I have installed multi-buildpacks that automatically migrates at each deploy (see http://gunpowderlabs.com/blog/automatically-run-migrations-when-deploying-to-heroku/)
       * installation process (one time per app):
+        (obsolete:)
         * create .buildpacks in root directory of your app with following content (do not use comments in the file, this has caused the build processes to fail):
           https://github.com/heroku/heroku-buildpack-ruby
           https://github.com/gunpowderlabs/buildpack-ruby-db-migrate.git
-        * for your heroku app, perform:
-          heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
-          (exchange salty-peak-4964 by your app name)
-        * git add .
-        * git commit -am "added automatic db:migrate support via buildpack"
-        * git push
-        * git push heroku
+        * # (deprecated) for your heroku app, perform:
+          # heroku buildpacks:set https://github.com/ddollar/heroku-buildpack-multi.git --app salty-peak-4964
+          # (exchange salty-peak-4964 by your app name)
+        (replaced by)
+        * define buildpacks:
+          heroku buildpacks:set heroku/ruby
+          # needed for automatic db:migrate:
+          heroku buildpacks:add https://github.com/gunpowderlabs/buildpack-ruby-rake-deploy-tasks
+        * if the .buildpack was already present (i.e. no change made to any file): 
+          * git push heroku
+        * else
+          * git add .
+          * git commit -am "added automatic db:migrate support via buildpack"
+          * git push
+          * git push heroku
+        * end
   * If you need background jobs (i.e. if you have specified WEBPORTAL_ASYNC_MODE: "true" in (app-root)/config/application.yml:
     * heroku run rake jobs:work # this will block the CMD/terminal window, so for the next command, you will need a new CMD/terminal window:
   * heroku open # this will open a browser with the correct link
+  * Active Admin
+    * is currently used for manipulation of system wide variables only.
+    * For initialization, perform the following step on the Linux shell: in the app's root folder, type:
+      * rake db:seed
+        this will create the default Active Admin user admin@example.com with password=password.
+      * add your own Admin user and password using the Active Admin console on https://localhost:3000/admin/admin_users (adapt URL name and port, if needed)
+      * remove the admin@example.com user
 
 === Developers Info: Commit & Production
 * first time use of git:

@@ -272,10 +272,10 @@ class Provisioning < ActiveRecord::Base
                 #abort resulttext
               #abort 'provisioning.deliver: connection timout of one or more target systems'
 
-            when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/
+            when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$|ERROR.*The OUT message was not received within.*$/
             # timeout
               returnvalue = 3        
-              resulttext = "last unsuccessful attempt with ERROR[#{returnvalue.to_s}]=\""  + resulttext[/ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$/] + '" at ' + Time.now.to_s
+              resulttext = "last unsuccessful attempt with ERROR[#{returnvalue.to_s}]=\""  + resulttext[/ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$|ERROR.*The OUT message was not received within.*$/] + '" at ' + Time.now.to_s
               unless thisaction == 'reading'
                 targetobject.update_attribute(:status, thisaction + ' failed (timed out); trying again') unless targetobject.nil?
               end unless thisaction == 'reading'

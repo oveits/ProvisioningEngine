@@ -6,7 +6,20 @@ DIR=$( cd `dirname $0` && pwd )
 # always same order, with description for documentation:
 #bundle exec rspec -f d spec/requests/provisioningobjects_spec_private.rb "$@"
 #bundle exec rspec -f d spec/requests/provisioningobjects_spec_private2.rb "$@"
-bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@" | tee $DIR/log/lasttest.log
 
+perform_tests(){
+  echo "Datetime: `date`"
+  echo ""
+  echo "git info:"
+  git branch
+  git log -n 1
+  echo ""
+
+  bundle exec rspec -f d spec/requests/system_settings_spec.rb "$@" && 
+  bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
+}
+
+#rake db:migrate RAILS_ENV=test
+perform_tests "$@" | tee $DIR/log/lasttest.log
 # randomized, but without description:
 #bundle exec rspec spec/requests/provisioningobjects_spec.rb "$@"

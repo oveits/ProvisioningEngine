@@ -7,11 +7,8 @@ class HttpPostRequest
     #verbose = true
     verbose = false
     
-    if ENV["WEBPORTAL_SIMULATION_MODE"] == "true"
-      simulationMode = true
-    else 
-      simulationMode = false
-    end
+    simulationMode = SystemSetting.webportal_simulation_mode
+#abort simulationMode.inspect
 
     require "net/http"
     require "uri"
@@ -68,9 +65,11 @@ class HttpPostRequest
     end
 
 
-    p "------------- HttpPostRequest POST Data to #{uriString} #{simulationLogString}-----------------"
-    p headerHash.inspect
-    p '----------------------------------------------------------'
+    if SystemSetting.debug_http_post_request
+      p "------------- HttpPostRequest POST Data to #{uriString} #{simulationLogString}-----------------"
+      p headerHash.inspect
+      p '----------------------------------------------------------'
+    end
 
     request.set_form_data(headerHash)
 
@@ -168,16 +167,24 @@ class HttpPostRequest
       #abort myTargets.inspect
       #abort @@provisioned.inspect
       
-      def syncMyCustomersFromDB        
+      
+      def syncMyCustomersFromDB 
+        debug = true
         myTargets.each do |target|
           myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
           myCustomers.each do |customer|
             #abort @@provisioned[customerID].inspect
+            puts "---- before syncMyCustomersFromDB ----" if debug
+            puts "@@provisioned = #{@@provisioned.inspect}" if debug
+            puts "--------------------------------------" if debug
             #abort customer.provisioned?.inspect
             if @@provisioned[customerID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[customerID] is nil)                         
               @@provisioned[customerID] = customer.provisioned? if @@provisioned[customerID].nil?
               @@provisioned[customerID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(customer.status)
             end
+            puts "---- before syncMyCustomersFromDB ----" if debug
+            puts "@@provisioned = #{@@provisioned.inspect}" if debug
+            puts "--------------------------------------" if debug
           end
         end
       end
@@ -232,18 +239,22 @@ class HttpPostRequest
               myUsers.each do |user|
                 #abort user.inspect
                 #abort @@provisioned[userID].inspect
-                p @@provisioned[userID].inspect
-                p user.inspect
-                p user.provisioned?.inspect
+                if SystemSetting.debug_http_post_request
+                  p @@provisioned[userID].inspect
+                  p user.inspect
+                  p user.provisioned?.inspect
+                end 
                 if @@provisioned[userID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[userID] is nil)
                   @@provisioned[userID] = user.provisioned? if 
                   # override: is still provisioned in the following cases:
                   @@provisioned[userID] = true if @@provisioned[userID].nil? && /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(user.status)
                 end
                 #abort @@provisioned[userID].inspect
-                p @@provisioned[userID].inspect
-                p user.inspect
-                p user.provisioned?.inspect
+                if SystemSetting.debug_http_post_request
+                  p @@provisioned[userID].inspect
+                  p user.inspect
+                  p user.provisioned?.inspect
+                end
               end unless myUsers.nil?
               
               myUsers = nil
@@ -253,7 +264,7 @@ class HttpPostRequest
         end
       end
       
-      if verbose
+      if SystemSetting.debug_http_post_request
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"
@@ -272,7 +283,7 @@ class HttpPostRequest
       #abort @@provisioned.inspect
       #abort myCustomers.inspect
       
-      if verbose
+      if SystemSetting.debug_http_post_request
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"
@@ -285,6 +296,10 @@ class HttpPostRequest
       sleep 100.seconds / 1000
       case headerHash["action"]
         when /Add Customer/
+                debug = true
+          puts "---- before Add Customer ----" if debug
+          puts "@@provisioned = #{@@provisioned.inspect}" if debug
+          puts "-----------------------------" if debug
           if @@provisioned[customerID].nil? || !@@provisioned[customerID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
             @@provisioned[customerID] = true #unless customerID.nil?
@@ -294,6 +309,9 @@ class HttpPostRequest
             @@provisioned[customerID] = true #unless customerID.nil?
             responseBody = 'ERROR: java.lang.Exception: Cannot Create customer ExampleCustomerV8: Customer exists already!'
           end
+          puts "---- after Add Customer ----" if debug
+          puts "@@provisioned = #{@@provisioned.inspect}" if debug
+          puts "----------------------------" if debug
         when /Add Site/
           if @@provisioned[siteID].nil? || !@@provisioned[siteID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
@@ -745,7 +763,7 @@ finished execution of batch file batchFile-93733174.sh
           responseBody = "HttpPostRequest.perform: action=#{headerHash["action"]} not supported in simulation mode"
       end # case headerHash["action"]
 
-      if verbose
+      if SystemSetting.debug_http_post_request
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"
