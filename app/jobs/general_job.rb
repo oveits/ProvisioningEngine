@@ -63,7 +63,10 @@ class GeneralJob < ActiveJob::Base
     
     if provisioning.nil?
       object = job.arguments[0]
-      provisioning = Provisioning.new(action: "action=Synchronize Customer, CustomerName=#{Customer.name}", status: status, provisioningobject_type: object.class.name, provisioningobject_id: object.id, job_id: job_id)
+      method = job.arguments[1]
+      #provisioning = Provisioning.new(action: "action=Synchronize Customer, CustomerName=#{Customer.name}", status: status, provisioningobject_type: object.class.name, provisioningobject_id: object.id, job_id: job_id)
+      provisioning = Provisioning.new(action: "method=#{method}, object=#{object.inspect}", status: status, provisioningobject_type: object.class.name, provisioningobject_id: object.id, job_id: job_id)
+      #provisioning = Provisioning.new(action: job.inspect,  status: status, provisioningobject_type: object.class.name, provisioningobject_id: object.id, job_id: job_id)
       provisioning.save!
     else
       provisioning.update_attribute(:status, status)
