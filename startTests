@@ -15,7 +15,7 @@ perform_tests(){
   git log -n 1
   echo ""
 
-  bundle exec rspec -f d spec/requests/system_settings_spec.rb "$@"
+  bundle exec rspec -f d spec/requests/system_settings_spec.rb "$@" && 
   bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
 }
 

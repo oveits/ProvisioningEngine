@@ -86,6 +86,12 @@ objectList = Array["Customer", "Site", "User"]
 
 objectList2 = Array["Provisioning", "Target"]
 
+# init: we aqlways want to start with an empty SystemSetting database 
+# (causing the systemsettings to be controlled by config/application.*):
+SystemSetting.all.each do |system_setting|
+  system_setting.destroy!
+end
+
 if SystemSetting.webportal_simulation_mode
   
   targetsolutionList = Array["Environment1_V8", "Environment2_V7R1"]
