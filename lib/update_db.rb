@@ -200,8 +200,10 @@ class UpdateDB
       end # if targetobject.id.nil?
     end
 
-    p 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU    lib/update_db.rb.perform: responseBody    UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU'
-    p responseBody.inspect
+    if SystemSetting.debug_synchronize
+      p 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU    lib/update_db.rb.perform: responseBody    UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU'
+      p responseBody.inspect
+    end
     
     return responseBody[0,400]
   end # def perform

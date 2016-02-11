@@ -359,10 +359,12 @@ class Provisioning < ActiveRecord::Base
           
       end # case thisaction
 
-      p '------------------resulttext------------------'
-      p 'resulttext = ' + resulttext
-      p 'returnvalue = ' + returnvalue.to_s
-      p '------------------resulttext------------------'
+      if SystemSetting.debug_http_post_request
+        p '------------------resulttext------------------'
+        p 'resulttext = ' + resulttext
+        p 'returnvalue = ' + returnvalue.to_s
+        p '------------------resulttext------------------'
+      end
 
 
       return resulttext if returnvalue == 9 && thisaction == 'reading'

@@ -170,11 +170,19 @@ In production, an Apache Camel based connector (private; not published here) is 
 * commit the changes in case the review was OK:
   * bundle exec rake assets:precompile # needed in production and/or heroku, if assets like css have changed.
   * git add .
-  * git commit -am "description of the change"
+  * git commit -m "description of the change"
+    # or only 'git commit' and edit longer description (recommended)
   * git push
   * optional: 
     * git push heroku 
-    in case your service runs on Heroku, is not configured to automatically deploy, and and your local repository is attached to Heroku (see below)
+      * only needed, in case your service runs on Heroku, and the Heroku project is not configured to automatically deploy from GitHub. 
+      * Prerequisite of manual deploy: and and your local repository is attached to Heroku (see below)
+* git tagging:
+  * only in case the automated tests (e.g. via travisCI) were successful; e.g.:
+    * git tag -a v0.5.18 -m "tested in simulation mode"
+    or
+    * git tag -a v0.5.19 -m "tested in pre-production"
+  * then: git push --tags
 * in case another local repository has changed the remote git repository: synchronize local git with remote git repository:
   * git pull
     
