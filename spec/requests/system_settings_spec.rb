@@ -12,13 +12,23 @@ describe Admin::SystemSettingsController do
 
   before(:each) do
     # log in as admin
-    visit :admin
-    @admin = FactoryGirl.create(:admin_user)
-    fill_in :admin_user_email,         with: @admin.email
-    fill_in :admin_user_password,         with: @admin.password
-    click_button 'Login', match: :first
+#    visit :admin
+#    @admin = FactoryGirl.create(:admin_user)
+#    @admin = FactoryGirl.create(:admin_user)
+#    fill_in :admin_user_email,         with: @admin.email
+#    fill_in :admin_user_password,         with: @admin.password
+#    click_button 'Login', match: :first
   end
 
+  describe "FactoryGirl" do 
+    it "should create admin user, if it does not exist and not raise an error, if the user exists already" do
+      expect { 
+        @admin = FactoryGirl.create(:admin_user)
+#abort @admin.inspect
+        @admin = FactoryGirl.create(:admin_user)
+      }.not_to raise_error
+    end
+  end
 
   describe "System Settings links" do
     describe "dashboard" do

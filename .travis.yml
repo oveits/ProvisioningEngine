@@ -8,5 +8,6 @@ env:
 before_script:
   - bundle exec rake db:migrate RAILS_ENV=test
 script: 
-  - bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
-  - bundle exec rspec -f d spec/requests/system_settings_spec.rb
+#  - bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
+#  - bundle exec rspec -f d spec/requests/system_settings_spec.rb
+   - ./startTests -e "should create admin user"
