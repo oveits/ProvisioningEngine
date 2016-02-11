@@ -33,8 +33,8 @@ module ProvisioningPortalv4
     
     defaultconfig = {}
 
-    # control, where the HTTP POST provisioning requests are sent if not in simulation mode:
-    defaultconfig["PROVISIONINGENGINE_CAMEL_URL"] = "http://1.1.1.1/ProvisioningEngine"
+    # base URL of the portal. This allows to run the portal on a different URL base, e.g. /developmentsystem/customers instead of /customers /default: /)
+    defaultconfig["WEBPORTAL_BASEURL"] = "/"
     
     # run the webportal in simulation mode. In this mode, no Apache Camel ProvisioningEngine module is needed (default: true)
     defaultconfig["WEBPORTAL_SIMULATION_MODE"] = "true"
@@ -42,14 +42,17 @@ module ProvisioningPortalv4
     # run the webportal in async mode. In this case, a task "bundle exec rake jobs:work" must be started (default: false)
     defaultconfig["WEBPORTAL_ASYNC_MODE"] = "false"
     
-    # control, whether the user can see the synchronization button (default: true)
+    # control, where the HTTP POST provisioning requests are sent if not in simulation mode:
+    defaultconfig["PROVISIONINGENGINE_CAMEL_URL"] = "http://1.1.1.1/ProvisioningEngine"
+    
+    # control, whether the user can see the synchronization buttons (default: true)
     defaultconfig["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] = "true"
+    
+    # control, whether the user can see the "synchronize all" buttons (default: true)
+    defaultconfig["WEBPORTAL_SYNCHRONIZEALLBUTTON_VISIBLE"] = "true"
     
     # hide all buttons that are not active (default: true)
     defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] = "true"
-    
-    # base URL of the portal. This allows to run the portal on a different URL base, e.g. /developmentsystem/customers instead of /customers /default: /)
-    defaultconfig["WEBPORTAL_BASEURL"] = "/"
     
     # allow the admin user to edit provisioning tasks (default: false)
     defaultconfig["WEBPORTAL_PROVISIONINGTASKS_EDIT_VISIBLE"] = "false"
@@ -57,11 +60,23 @@ module ProvisioningPortalv4
     # allow the admin user to delete provisioning tasks (default: false)
     defaultconfig["WEBPORTAL_PROVISIONINGTASKS_DESTROY_VISIBLE"] = "false"
     
-    # if set to true and async modus is false, aborts that may happen during synchronizeAll procedures will cause the whole synchronizeAll process to stop with a corresponding error message (good for debugging)
-    # in production, it should be set to false, since e.g. an unreachable target should not stop the whole process; instead the synchronization should continue on the other targets
-    defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"] = "false"
+    # control, how many lines are shown in the status of the provisioning tasks (default: 3, i.e. 4 lines are shown)
+    defaultconfig["WEBPORTAL_PROVISIONINGTASKS_NUMBER_OF_VISIBLE_STATUS_LINES_MINUS_ONE"] = "3"
     
-    # for demo purposes in simulation mode: if "true", this will always add a customer named 'ManuallyAddedCust' with each synchronize all customers, if it does not exist on the database already:
+    # for synchronizeAll jobs, this variable controls, whether an abort of a single synchronize job will lead to an abort of all synchronize jobs.
+    # Should be set to false in productive environments, since an an unreachable target should not stop the whole process (default: false)
+    defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"] = "false"
+
+    # controls, whether the destroy button allows to destroy a database object, even if the object is still provisioned on a target system.
+    # Should be set to "false" in production. (default: false)
+    # TODO: note that of today, the controller always allows to destroy an object. The variable influences the button visibility only. To be changed in future?
+    defaultconfig["WEBPORTAL_PROVISIONINGOBJECTS_DESTROY_WO_DEPROVISION"] = "false"
+
+    # controls, whether the count of objects is visible on the sidebar. However, this is only implemented partially. Therefore, default is false.
+    defaultconfig["WEBPORTAL_SIDEBAR_RELATED_COUNT_VISIBLE"] = "false"
+    
+    # for demo purposes in simulation mode: if "true", this will always add a customer named 'ManuallyAddedCust' with each synchronizeAll customers,
+    # if it does not exist on the database already (default: false)
     defaultconfig["WEBPORTAL_SYNCHRONIZE_ALL_ALWAYS_ADD_MANUALLY_ADDED_CUSTOMER"] = "false"
     
     # set default values for environment variables that are not yet set:
@@ -80,5 +95,8 @@ module ProvisioningPortalv4
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de   
+    
+    # OV specify, which queueing backend AvtiveJob will use:
+    config.active_job.queue_adapter = :delayed_job
   end
 end

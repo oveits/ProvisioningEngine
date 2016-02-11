@@ -10,7 +10,7 @@
                 <% else %>
                 <li><%= link_to 'New Site', new_customer_site_path(@customer) %></li>
                 <% end %>
-                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" %>
+                <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" && ENV["WEBPORTAL_SYNCHRONIZEALLBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize Sites', synchronize_sites_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>
 <% if ENV["WEBPORTAL_REMOVEALL_LINK_VISIBLE"] == "true" %>

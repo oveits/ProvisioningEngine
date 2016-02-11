@@ -12,7 +12,7 @@ class Validate_ExtensionLength < ActiveModel::Validator
   def validate(record)
     
     if !record.site.nil?
-      @site = Site.find(record.site)
+      @site = Site.find(record.site.id)
     end
     
     if !@site.nil?

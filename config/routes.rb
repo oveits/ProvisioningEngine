@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
   
-  resources :text_documents
-
   #root 'welcome#index'
   #root 'customers#index'
     # OV added. See http://stackoverflow.com/questions/13303695/rails-assets-path-incorrect-in-a-scoped-production-application
@@ -17,6 +15,12 @@ end
 scope(path: baseURL) do
   
   root 'application#root'
+
+  devise_for :admin_users, ActiveAdmin::Devise.config
+  ActiveAdmin.routes(self)
+
+  resources :text_documents
+
   
   # allow for a possibility to remove all provisionins using a single button press:
   # see http://stackoverflow.com/questions/21489528/unable-to-delete-all-records-in-rails-4-through-link-to
@@ -153,4 +157,3 @@ scope(path: baseURL) do
   #   end
 end # scope(path: baseURL) do
 end # Rails.application.routes.draw do
-

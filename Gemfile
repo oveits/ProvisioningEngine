@@ -1,14 +1,24 @@
 source 'https://rubygems.org'
 #ruby '2.1.3'
+# >= is not supported in tis context:
+#ruby ENV['CUSTOM_RUBY_VERSION'] || '>= 2.0.0'
+# commented out again and we set the ruby version externally, e.g. in .travis.yml etc.
+#ruby ENV['CUSTOM_RUBY_VERSION'] || '2.0.0'
+#ruby ENV['CUSTOM_RUBY_VERSION'] || '2.2.4'
 
+gem 'devise'
+gem 'activeadmin', '1.0.0.pre2'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.1.4'
+gem 'rails', '~> 4.2.4'
 gem 'bootstrap-sass'
 group :development, :test do
   # Use sqlite3 as the database for Active Record
   gem 'sqlite3'
-  gem 'rspec-rails', '2.13.1'
+  #gem 'rspec-core'
+  gem 'rspec-rails', '>= 2.13.1'
+  gem 'rspec-its'
+  gem 'byebug'
 end
 
 # Use SCSS for stylesheets
@@ -51,7 +61,11 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin]
 #gem 'ruby-debug-ide'
 
 # OV added:
+gem 'activemodel-globalid'
+#gem 'activejob'
 gem 'delayed_job_active_record'
+#gem 'delayed_job_active_record', '~> 4.0.6'
+#gem 'delayed_job_active_record','4.0.6' #, '4.0.6' #, '4.1.1'
 
 gem "delayed_job_web", '1.2.5'
 
@@ -82,9 +96,11 @@ gem 'seed_dump'
 
 group :test do
   gem 'selenium-webdriver', '2.35.1'
-  gem 'capybara', '2.1.0'
-  # OV to get rid of a warining during running 
+  gem 'capybara' #, '~> 2.1.0'
+  # OV to get rid of a warning during running 
   gem "minitest"
+  # OV was needed after upgrade to ruby v2.2.4 (see https://github.com/rspec/rspec-rails/issues/1273 or https://github.com/rails/rails/issues/18572):
+  gem 'test-unit'
 end
 
 # OV for speeding up rspec test startup:

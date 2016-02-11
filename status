@@ -1,6 +1,6 @@
 myWebPortalPid3000=`ps -ef | grep "rails s" | grep "3000" | grep -v grep | grep -v shims | awk '{print $2}'`
 myWebPortalPid3001=`ps -ef | grep "rails s" | grep "3001" | grep -v grep | grep -v shims | awk '{print $2}'`
-[ "_$myWebPortalPid3000" == "_" ] && echo "Web Portal (productive on port 3000):   not running" ||  echo "Web Portal (productive):   running (PID=$myWebPortalPid3000) on port 3000"
-[ "_$myWebPortalPid3001" == "_" ] && echo "Web Portal (development on port 3001):   not running" ||  echo "Web Portal (development):   running (PID=$myWebPortalPid3001) on port 3001"
+[ "_$myWebPortalPid3000" == "_" ] && echo "Web Portal (productive on port 3000):   stopped" ||  echo "Web Portal (productive):   running (PID=$myWebPortalPid3000) on port 3000"
+[ "_$myWebPortalPid3001" == "_" ] && echo "Web Portal (development on port 3001):   stopped" ||  echo "Web Portal (development):   running (PID=$myWebPortalPid3001) on port 3001"
 myDelayedJobsPid=`ps -ef | grep "rake jobs:work" | grep -v grep | grep -v shims | awk '{print $2}'`
-[ "_$myDelayedJobsPid" == "_" ] && echo "Delayed Jobs: not running" || echo "Delayed Jobs: running (PID=$myDelayedJobsPid)"
+[ "_$myDelayedJobsPid" == "_" ] && echo "Delayed Jobs: stopped" || echo "Delayed Jobs: running (PID=$myDelayedJobsPid)"

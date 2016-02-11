@@ -213,14 +213,22 @@ abort "djköshgoöesrhriogörwheögwiöho"
 
       #returnBody = updateDB.delay.perform(self)
       # or:
-      returnBody = delay.synchronizeSynchronously(recursive)
+      #returnBody = delay.synchronizeSynchronously(recursive)
+      # replaced by:
+      #job = 
+      GeneralJob.perform_later(self, "synchronizeSynchronously")
+      #abort GeneralJob.all.inspect
+      # for testing the cancel function: should raise an abort with message "true", if sleep is commented out. Else it should raise an abort with message "false"
+      # sleep 10.seconds
+      #abort job.cancel.inspect
+       
+      
       #returnBody = synchronizeSynchronously(recursive)
-#abort Delayed::Worker.delay_jobs.inspect
-#abort returnBody.inspect
     else
       #returnBody = updateDB.perform(self)
       # or:
-      returnBody = synchronizeSynchronously(recursive)
+      #returnBody = 
+      synchronizeSynchronously(recursive)
     end
   end
 
@@ -358,7 +366,8 @@ abort parents.inspect
       p responseBody.inspect if verbose
         
       # abort, if it is still a Fixnum:
-      abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
+      return "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
+      #abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
       # business logic error:
       #abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
       next unless responseBody[/ERROR.*$/].nil?
