@@ -8,6 +8,7 @@ class HttpPostRequest
     verbose = false
     
     simulationMode = SystemSetting.webportal_simulation_mode
+#abort simulationMode.inspect
 
     require "net/http"
     require "uri"
@@ -64,9 +65,11 @@ class HttpPostRequest
     end
 
 
-    p "------------- HttpPostRequest POST Data to #{uriString} #{simulationLogString}-----------------"
-    p headerHash.inspect
-    p '----------------------------------------------------------'
+    if SystemSetting.debug_http_post_request
+      p "------------- HttpPostRequest POST Data to #{uriString} #{simulationLogString}-----------------"
+      p headerHash.inspect
+      p '----------------------------------------------------------'
+    end
 
     request.set_form_data(headerHash)
 
@@ -236,18 +239,22 @@ class HttpPostRequest
               myUsers.each do |user|
                 #abort user.inspect
                 #abort @@provisioned[userID].inspect
-                p @@provisioned[userID].inspect
-                p user.inspect
-                p user.provisioned?.inspect
+                if SystemSetting.debug_http_post_request
+                  p @@provisioned[userID].inspect
+                  p user.inspect
+                  p user.provisioned?.inspect
+                end 
                 if @@provisioned[userID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[userID] is nil)
                   @@provisioned[userID] = user.provisioned? if 
                   # override: is still provisioned in the following cases:
                   @@provisioned[userID] = true if @@provisioned[userID].nil? && /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(user.status)
                 end
                 #abort @@provisioned[userID].inspect
-                p @@provisioned[userID].inspect
-                p user.inspect
-                p user.provisioned?.inspect
+                if SystemSetting.debug_http_post_request
+                  p @@provisioned[userID].inspect
+                  p user.inspect
+                  p user.provisioned?.inspect
+                end
               end unless myUsers.nil?
               
               myUsers = nil
@@ -257,7 +264,7 @@ class HttpPostRequest
         end
       end
       
-      if verbose
+      if SystemSetting.debug_http_post_request
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"
@@ -276,7 +283,7 @@ class HttpPostRequest
       #abort @@provisioned.inspect
       #abort myCustomers.inspect
       
-      if verbose
+      if SystemSetting.debug_http_post_request
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"
@@ -756,7 +763,7 @@ finished execution of batch file batchFile-93733174.sh
           responseBody = "HttpPostRequest.perform: action=#{headerHash["action"]} not supported in simulation mode"
       end # case headerHash["action"]
 
-      if verbose
+      if SystemSetting.debug_http_post_request
         p "customerID = #{customerID}"
         p "siteID = #{siteID}"
         p "myUserID = #{myUserID.inspect}"

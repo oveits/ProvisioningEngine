@@ -15,6 +15,9 @@ class SystemSetting < ActiveRecord::Base
         rescue # e.g. ActiveRecord::StatementInvalid: Could not find table 'system_settings'
             foundlist = nil
         end
+
+#abort environment_variable
+#abort foundlist.inspect
         
         # return value, if non-ambiguous entry was found; else return environment variable, if it exists:
         if foundlist.nil?
@@ -45,7 +48,9 @@ class SystemSetting < ActiveRecord::Base
                       " and the proper value (in most situations: 'true' or 'false') on the Active Admin Console on https://localhost:3000/admin/system_settings " +
                       "(please adapt the host and port to your environment). Alternatively, restart the server. " +
                       "This should reset the environment variable to its default value and the SystemSetting variable will be auto-created."
-            abort message
+            p "WARNING: " + message + "\nAuto-creating variable #{environment_variable}=\"false\""
+            ENV[environment_variable]="false"
+            false
         end # if foundlist.count == 1
     end # def self.method_missing(*args)
     

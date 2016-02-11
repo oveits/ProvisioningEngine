@@ -31,8 +31,12 @@ describe Admin::SystemSettingsController do
     describe "System Settings index" do
       it "should have link to New System Setting" do
         # system settings index page:
-        visit admin_system_settings_path
-        #puts page.html.gsub(/[\n\t]/, '').inspect
+        expect { visit admin_system_settings_path }.not_to raise_error
+
+        # debug: 
+	# puts page.html.gsub(/[\n\t]/, '').inspect
+
+        # check for "New System Setting" link:
         expect( page ).to have_link( "New System Setting", href: new_admin_system_setting_path  )
       end
     end # describe "System Settings index" do
