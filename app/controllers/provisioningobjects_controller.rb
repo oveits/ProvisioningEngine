@@ -419,7 +419,7 @@ private
   end
   
   def set_async_mode
-    if ENV["WEBPORTAL_ASYNC_MODE"] == "true"
+    if SystemSetting.webportal_async_mode
       @async = true
     else 
       @async = false  

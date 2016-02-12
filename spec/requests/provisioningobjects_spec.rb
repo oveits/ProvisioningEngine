@@ -17,7 +17,7 @@ RSpec.configure do |config|
     myFilter[:simulationbroken] =  true
   end
   
-  unless ENV["WEBPORTAL_ASYNC_MODE"] == "true"
+  unless SystemSetting.webportal_async_mode
     myFilter[:syncmodebroken] =  true
   end
   
@@ -34,8 +34,8 @@ RSpec.configure do |config|
 end
 
 def expectedProvisionStatus
-  case ENV["WEBPORTAL_ASYNC_MODE"]
-  when "true"
+  case SystemSetting.webportal_async_mode
+  when true
     "waiting for provisioning"
   else
     "is provisioned"
@@ -43,8 +43,8 @@ def expectedProvisionStatus
 end
 
 def expectedProvisionFlash
-  case ENV["WEBPORTAL_ASYNC_MODE"]
-  when "true"
+  case SystemSetting.webportal_async_mode
+  when true
     "is being created|is being provisioned"
   else
     "is provisioned"
@@ -52,8 +52,8 @@ def expectedProvisionFlash
 end
 
 def expectedDeprovisionStatus
-  case ENV["WEBPORTAL_ASYNC_MODE"]
-  when "true"
+  case SystemSetting.webportal_async_mode
+  when true
     "waiting for de-provisioning"
   else
     "is de-provisioned"
