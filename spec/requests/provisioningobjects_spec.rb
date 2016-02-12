@@ -1127,8 +1127,8 @@ objectList.each do |obj|
 		#abort obj.constantize.all.inspect
         # 2) test whether the synced object has the expected parameters
         # 2.1 Sites should match exactly
-                p ">>>>>>>>>>>>>>>>>>>>>>" + paramsSet.inspect + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-                p ">>>>>>>>>>>>>>>>>>>>>>" +  obj.constantize.all.inspect  + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                #p ">>>>>>>>>>>>>>>>>>>>>>" + paramsSet.inspect + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                #p ">>>>>>>>>>>>>>>>>>>>>>" +  obj.constantize.all.inspect  + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
         expect( obj.constantize.where( paramsSet ).count).to be(1) if obj == "Site"
 		#abort obj.constantize.where( paramsSet ).inspect
         # 2.2 non-Sites should not match yet, since they are not fully synchronized yet:
@@ -1734,7 +1734,7 @@ objectList.each do |obj|
         
 	it "should update the status of #{obj} to 'waiting for deletion'" do
           Delayed::Worker.delay_jobs = true
-      		p page.html.gsub(/[\n\t]/, '')
+      		#p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
           #click_link 'De-Provision', match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/De-Provision #{obj}/)

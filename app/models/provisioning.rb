@@ -310,7 +310,7 @@ class Provisioning < ActiveRecord::Base
               # TODO: update Site Data as seen from OSV
               unless thisaction == 'reading'
                 targetobject.update_attribute(:status, thisaction + ' success: was already provisioned') unless targetobject.nil?
-                p targetobject.status unless targetobject.nil?
+                #p targetobject.status unless targetobject.nil?
                 unless targetobject.nil?
                   updateDB = UpdateDB.new
                   updateDB.perform(targetobject) 
