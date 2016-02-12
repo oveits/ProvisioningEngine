@@ -105,7 +105,7 @@ targetsolutionList = Array["CSL8", "CSL9_V7R1"]
 #targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #targetsolutionList = Array["CSL8"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-#targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
  
@@ -407,11 +407,11 @@ def createObjDB(obj, paramsSet = nil)
   return myObj
 end # def createObjDB(obj, paramsSet = nil)
 
-def sync(syncObj)
+def sync(syncObj, async=false)
 	#abort "sync(#{syncObj.inspect})"
 #  updateDB = UpdateDB.new
 #  returnBody = updateDB.perform(syncObj)
-  syncObj.synchronize(false)
+  syncObj.synchronize(async)
 	#abort returnBody
 end
 
@@ -1006,62 +1006,80 @@ objectList.each do |obj|
         #@myobj.provision(:destroy)
       end
 
-      it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
-        # init
-		#@@customerprovisioned = nil
-		#@@siteprovisioned = nil
-		#@@userprovisioned = nil
-        @myobj.destroy!
-        @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, paramsSet = nil, i = 1 )
-        @myobj.provision(:destroy, false)
-        @myobj.provision(:create, false)
-        # make sure the object has been created with data set i=0
-        if obj == "Site"
-          defaultParams(obj, 0).each do |key, value|
-            	#p "0-----------------------------" + key.inspect
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-            expect( @myobj.send(key) ).to eq( value )
+      [true, false].each do |async|
+      describe "in async=#{async} mode" do
+        it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+          # init
+		  #@@customerprovisioned = nil
+		  #@@siteprovisioned = nil
+		  #@@userprovisioned = nil
+          @myobj.destroy!
+          @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, paramsSet = nil, i = 1 )
+          @myobj.provision(:destroy, false)
+          @myobj.provision(:create, false)
+          # make sure the object has been created with data set i=0
+          if obj == "Site"
+            defaultParams(obj, 0).each do |key, value|
+            	  #p "0-----------------------------" + key.inspect
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+              expect( @myobj.send(key) ).to eq( value )
+            end
           end
-        end
-        @myobj.update_attribute(:status, "bla blub")
-        @myobj.update_attributes(defaultParams(obj, 1)) if obj == "Site"
-        expect( @myobj.status ).to match(/bla blub/) 
-        if obj == "Site"
-          # make sure the object has been updated with data set i=1
-          defaultParams(obj, 1).each do |key, value|
-            	#p "1-----------------------------" + key.inspect
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-            expect( @myobj.send(key) ).to eq( value ) unless key == :name # name must be the same
-          end  
-          # and that it differs from the original values (apart from the name, which must be the same):
-          defaultParams(obj, 0).each do |key, value|
-                #p "2-----------------------------" + key.inspect
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-            expect( @myobj.send(key) ).not_to eq( value ) unless key == :name # name may be the same in the two data sets
+          @myobj.update_attribute(:status, "bla blub")
+          @myobj.update_attributes(defaultParams(obj, 1)) if obj == "Site"
+          
+          # make sure that @myobj is not out of sync with the database:
+          @myobj = @myobj.class.find(@myobj.id)
+
+          expect( @myobj.status ).to match(/bla blub/) 
+          if obj == "Site"
+            # make sure the object has been updated with data set i=1
+            defaultParams(obj, 1).each do |key, value|
+            	  #p "1-----------------------------" + key.inspect
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+              expect( @myobj.send(key) ).to eq( value ) unless key == :name # name must be the same
+            end  
+            # and that it differs from the original values (apart from the name, which must be the same):
+            defaultParams(obj, 0).each do |key, value|
+                  #p "2-----------------------------" + key.inspect
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+              expect( @myobj.send(key) ).not_to eq( value ) unless key == :name # name may be the same in the two data sets
+            end
           end
-        end
-        expect( @myobj.status ).to match(/bla blub/) 
 
-	#p "@@customerprovisioned = " + @@customerprovisioned.inspect
-	#p "@@siteprovisioned = " + @@siteprovisioned.inspect
-	#p "@@userprovisioned = " + @@userprovisioned.inspect
-        # test
+          # make sure that @myobj is not out of sync with the database:
+          @myobj = @myobj.class.find(@myobj.id)
 
-	#Delayed::Worker.delay_jobs = false
-        sync(@myobj)
-		#p defaultParams(obj).inspect
-        defaultParams(obj).each do |key, value|
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-          expect( @myobj.send(key) ).to eq( value)
-        end
-        expect( @myobj.status ).to match(/provisioning successful \(synchronized\)|provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/) 
-        
+          expect( @myobj.status ).to match(/bla blub/) 
+  
+	  #p "@@customerprovisioned = " + @@customerprovisioned.inspect
+	  #p "@@siteprovisioned = " + @@siteprovisioned.inspect
+	  #p "@@userprovisioned = " + @@userprovisioned.inspect
+          # test
+  
+          byebug
+	  Delayed::Worker.delay_jobs = false
+          sync(@myobj, async)
+          #sleep 60.seconds
+		  #p defaultParams(obj).inspect
 
-      end # it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+          # make sure that @myobj is not out of sync with the database:
+          @myobj = @myobj.class.find(@myobj.id)
+
+          defaultParams(obj).each do |key, value|
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+            expect( @myobj.send(key) ).to eq( value)
+          end
+          expect( @myobj.status ).to match(/provisioning successful \(synchronized\)|provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/) 
+          
+  
+        end # it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+      end # describe "in async=#{async} mode" do
+      end # [true, false].each do |async|
 
      if obj == "Site" || obj == "User" || obj == "Customer"
       it "should synchronize the index with the objects found on the target system, if called with a specially named dummy object", obsolete: true do
