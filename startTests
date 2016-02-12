@@ -17,8 +17,6 @@ perform_tests(){
 
   bundle exec rspec -f d spec/requests/system_settings_spec.rb "$@" && 
   bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
-  exitvalue="$?"
-  exit $exitvalue
 }
 
 #rake db:migrate RAILS_ENV=test
