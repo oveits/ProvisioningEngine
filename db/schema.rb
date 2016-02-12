@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160211102316) do
+ActiveRecord::Schema.define(version: 20160212135435) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string   "namespace"
@@ -72,6 +72,13 @@ ActiveRecord::Schema.define(version: 20160211102316) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
+
+  create_table "persistent_hashes", force: :cascade do |t|
+    t.string   "name"
+    t.text     "value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "provisionings", force: :cascade do |t|
     t.text     "action",                  limit: 255
