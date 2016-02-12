@@ -1060,9 +1060,17 @@ objectList.each do |obj|
 	  #p "@@userprovisioned = " + @@userprovisioned.inspect
           # test
   
-          byebug
-	  Delayed::Worker.delay_jobs = false
+          #byebug
+	  Delayed::Worker.delay_jobs = true
+
+          # simulate that HttpPostRequest.provisioned is running in the background with its own memory space:
+          #HttpPostRequest.provisioned={} if async
+          HttpPostRequest.remove_class_variables if async
+
           sync(@myobj, async)
+
+          # run Delayed Jobs
+          expect( Delayed::Worker.new.work_off ).to eq [1, 0] if async
           #sleep 60.seconds
 		  #p defaultParams(obj).inspect
 

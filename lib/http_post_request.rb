@@ -1,4 +1,25 @@
 class HttpPostRequest
+
+  # needed for rspecs: for simulating the class HttpPostRequest to run in its own memory space like in real world Delayed::Jobs situations,
+  # we need the possibility to reset all class variables (currently only @@provisioned): 
+  def self.remove_class_variables
+    # undefine @@provisioned (or other class variables, if they exist in future):
+    class_variables.each do |var|
+      remove_class_variable(var)
+    end
+  end
+
+  # getter
+  def self.provisioned
+    @@provisioned = {} unless defined?(@@provisioned)
+    @@provisioned
+  end
+
+  # setter
+  def self.provisioned=provisionedinput
+    @@provisioned = provisionedinput
+  end
+    
   def perform(headerInput, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     #
     # renders headerInput="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
@@ -6,7 +27,7 @@ class HttpPostRequest
     
     #verbose = true
     verbose = false
-    
+
     simulationMode = SystemSetting.webportal_simulation_mode
 #abort simulationMode.inspect
 
