@@ -130,6 +130,7 @@ In production, an Apache Camel based connector (private; not published here) is 
           heroku buildpacks:set heroku/ruby
           # needed for automatic db:migrate:
           heroku buildpacks:add https://github.com/gunpowderlabs/buildpack-ruby-rake-deploy-tasks
+          heroku config:set DEPLOY_TASKS='db:migrate cache:clear'
         * if the .buildpack was already present (i.e. no change made to any file): 
           * git push heroku
         * else
