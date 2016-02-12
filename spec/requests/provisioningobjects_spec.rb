@@ -1013,6 +1013,10 @@ objectList.each do |obj|
 		  #@@customerprovisioned = nil
 		  #@@siteprovisioned = nil
 		  #@@userprovisioned = nil
+          # reset @@probisined in HttpPostRequest
+          persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
+          persistent_hashes[0].destroy! if persistent_hashes.count == 1
+
           @myobj.destroy!
           @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, paramsSet = nil, i = 1 )
           @myobj.provision(:destroy, false)
@@ -1060,7 +1064,6 @@ objectList.each do |obj|
 	  #p "@@userprovisioned = " + @@userprovisioned.inspect
           # test
   
-          #byebug
 	  Delayed::Worker.delay_jobs = true
 
           # simulate that HttpPostRequest.provisioned is running in the background with its own memory space:
