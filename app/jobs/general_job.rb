@@ -84,7 +84,7 @@ class GeneralJob < ActiveJob::Base
     # Do something before perform
     setjobstatus("work in progress")
     
-    debug = true
+    debug = false
     
     if debug
       puts "PPPPPPPPPPP before perform PPPPPPPPPPPPPP"

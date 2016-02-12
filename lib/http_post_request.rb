@@ -9,16 +9,17 @@ class HttpPostRequest
     end
   end
 
-  # getter
-  def self.provisioned
-    @@provisioned = {} unless defined?(@@provisioned)
-    @@provisioned
-  end
-
-  # setter
-  def self.provisioned=provisionedinput
-    @@provisioned = provisionedinput
-  end
+   # not used today, so I have commented it out:
+#  # getter
+#  def self.provisioned
+#    @@provisioned = {} unless defined?(@@provisioned)
+#    @@provisioned
+#  end
+#
+#  # setter
+#  def self.provisioned=provisionedinput
+#    @@provisioned = provisionedinput
+#  end
     
   def perform(headerInput, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     #
@@ -175,7 +176,10 @@ class HttpPostRequest
       myUserID = userID
       myUserID = {:user => "4999700730800"} if myUserID.nil?
   
+      persistent_hash = PersistentHash.find_by(name: "#{self.class.name}.provisioned")
+      @@provisioned = persistent_hash.value unless persistent_hash.nil?
       @@provisioned = {} unless defined?(@@provisioned)
+      @@provisioned = {} if @@provisioned.nil?
       
       # if the Web server was newly started, it might have forgotten the status of the customer.
       def myTargets
@@ -190,7 +194,7 @@ class HttpPostRequest
       
       
       def syncMyCustomersFromDB 
-        debug = true
+        debug = false
         myTargets.each do |target|
           myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
           myCustomers.each do |customer|
@@ -317,7 +321,7 @@ class HttpPostRequest
       sleep 100.seconds / 1000
       case headerHash["action"]
         when /Add Customer/
-                debug = true
+                debug = false
           puts "---- before Add Customer ----" if debug
           puts "@@provisioned = #{@@provisioned.inspect}" if debug
           puts "-----------------------------" if debug
@@ -795,6 +799,9 @@ finished execution of batch file batchFile-93733174.sh
       end    
                   #abort myUserID.inspect
                   #abort @@provisioned[myUserID].inspect    
+      # save any changes made to @@provisioned on the database:
+      persistent_hash = PersistentHash.first_or_create(name: "#{self.class.name}.provisioned")
+      persistent_hash.update_attributes(value: @@provisioned)
     else # if simulationMode   
       begin
         response = http.request(request)
