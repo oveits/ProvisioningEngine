@@ -16,6 +16,8 @@ class UpdateDB
       case responseBody
         when 101
           responseBody = "ERROR: #{targetobject.class.name} does not exist"
+        when 113
+          responseBody = "ERROR: Connection refused (wrong proxy?)"
         when 8
           responseBody = "ERROR: connection timeout: target does not answer" 
       end
