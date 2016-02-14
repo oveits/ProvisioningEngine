@@ -213,6 +213,39 @@ class HttpPostRequest
           end
         end
       end
+
+      def camelResponse(object)
+         if object.instance_of?(Site)
+           site = object
+'<?xml version="1.0" encoding="utf-8" standalone="yes"?>' + "
+<Result>
+    <ResultCode>0</ResultCode>
+    <ResultText>Success</ResultText>
+    <Sites>
+        <Site>
+            <SiteName>ExampleCustomerV8</SiteName>
+            <NumberingPlanName>CNP_ExampleCustomerV8_00013</NumberingPlanName>
+            <GatewayIP></GatewayIP>
+            <MainNumber></MainNumber>
+        </Site>
+        <Site>
+            <CustomerName>#{site.customer.name if site.customer.nil?}</CustomerName>
+            <SiteName>#{site.name}</SiteName>
+            <NumberingPlanName>NP_#{site.name}_00008</NumberingPlanName>
+            <GatewayIP>#{site.gatewayIP}</GatewayIP>
+            <SiteCode>#{site.sitecode}</SiteCode>
+            <CountryCode>#{site.countrycode}</CountryCode>
+            <AreaCode>#{site.areacode}</AreaCode>
+            <LocalOfficeCode>#{site.localofficecode}</LocalOfficeCode>
+            <ExtensionLength>#{site.extensionlength}</ExtensionLength>
+            <MainNumber>#{site.countrycode + site.areacode + site.localofficecode + site.mainextension if !site.mainextension.nil?}</MainNumber>
+        </Site>
+    </Sites>
+</Result>"
+         else
+           abort "camelResponse is not supported for this object of class #{object.class.name}"
+         end
+      end
       
       def syncMySitesFromDB        
         myTargets.each do |target|
@@ -221,8 +254,11 @@ class HttpPostRequest
             mySites = Site.where(name: siteID[:site])
             mySites.each do |site|
               if @@provisioned[siteID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[siteID] is nil)             
-                @@provisioned[siteID] = site.provisioned? if @@provisioned[siteID].nil?
-                @@provisioned[siteID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
+                if site.provisioned? || /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
+                  @@provisioned[siteID] = camelResponse(site)
+                else
+                  @@provisioned[siteID] = nil
+                end
               end
             end
           end
@@ -340,9 +376,8 @@ class HttpPostRequest
         when /Add Site/
           if @@provisioned[siteID].nil? || !@@provisioned[siteID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@provisioned[siteID] = true
+            @@provisioned[siteID] = camelResponse(Site.where(name: headerHash["SiteName"], customer_id: Customer.where(name: headerHash["customerName"]).first.id).first)
           else
-            @@provisioned[siteID] = true
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" exists already in the data base (Numbering Plan = NP_Site1_00010)!'
           end
         when /Add User/
@@ -366,12 +401,12 @@ class HttpPostRequest
             @@provisioned[customerID] = false
           end
         when /Delete Site/
-          if @@provisioned[siteID]
+          if !@@provisioned[siteID].nil?
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@provisioned[siteID] = false
+            @@provisioned[siteID] = nil
           else
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" does not exist in the data base!'
-            @@provisioned[siteID] = false
+            #@@provisioned[siteID] = nil
           end
         when /Delete User/
           #abort @@provisioned[myUserID].inspect
@@ -398,34 +433,8 @@ class HttpPostRequest
                   #p "5555555555555555555555555 siteID[:customer] = " + mySiteID[:customer].inspect if verbose
                   #p "6666666666666666666666666 siteID[:site] = " + mySiteID[:customer].inspect if verbose
 
-          if @@provisioned[mySiteID] == true
-            responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Result>
-    <ResultCode>0</ResultCode>
-    <ResultText>Success</ResultText>
-    <Sites>
-        <Site>
-            <CustomerName>' + mySiteID[:customer] + '</CustomerName>
-            <SiteName>' + mySiteID[:customer] + '</SiteName>
-            <NumberingPlanName>CNP_ExampleCustomerV8_00007</NumberingPlanName>
-            <GatewayIP></GatewayIP>
-            <MainNumber></MainNumber>
-        </Site>
-        <Site>
-            <CustomerName>' + mySiteID[:customer] + '</CustomerName>
-            <SiteName>' + mySiteID[:site] + '</SiteName>
-            <NumberingPlanName>NP_' + mySiteID[:site] + '_00008</NumberingPlanName>
-            <GatewayIP>47.68.190.57</GatewayIP>
-            <SiteCode>99821</SiteCode>
-            <CountryCode>49</CountryCode>
-            <AreaCode>99</AreaCode>
-            <LocalOfficeCode>7007</LocalOfficeCode>
-            <ExtensionLength>5</ExtensionLength>
-            <MainNumber>4999700710000</MainNumber>
-        </Site>
-    </Sites>
-</Result>'
-                  #p "7777777777777777777777777777777 responseBody = " + responseBody.inspect if verbose
+            if !@@provisioned[mySiteID].nil? && @@provisioned[mySiteID].is_a?(String)
+              responseBody = @@provisioned[mySiteID]
             else
               responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Result>
@@ -433,6 +442,7 @@ class HttpPostRequest
     <ResultText>Success</ResultText>
     <Sites>
         <Site>
+            <CustomerName>ExampleCustomerV8</CustomerName>
             <SiteName>ExampleCustomerV8</SiteName>
             <NumberingPlanName>CNP_ExampleCustomerV8_00013</NumberingPlanName>
             <GatewayIP></GatewayIP>

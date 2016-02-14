@@ -92,6 +92,7 @@ SystemSetting.all.each do |system_setting|
   system_setting.destroy!
 end
 
+
 if SystemSetting.webportal_simulation_mode
   
   targetsolutionList = Array["Environment1_V8", "Environment2_V7R1"]
@@ -105,7 +106,7 @@ targetsolutionList = Array["CSL8", "CSL9_V7R1"]
 #targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #targetsolutionList = Array["CSL8"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+#targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
  
