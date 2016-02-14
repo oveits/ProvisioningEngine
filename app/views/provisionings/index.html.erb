@@ -98,7 +98,9 @@
         		<% @job = Delayed::Job.find(provisioning.delayedjob) %>
         		<%= link_to 'Stop', stop_provisioning_path(provisioning), method: :delete, class: "btn btn-default", data: { confirm: 'Are you sure?' }%>
         	<% rescue %>
+<% if !/synchronize/.match(provisioning.action) %>
         		<%= link_to 'Retry', deliver_provisioning_path(provisioning), method: :put, class: "btn btn-default", data: { confirm: 'Are you sure?'} %>
+<% end %>
         	<% end %>
       </td>
       </tr>

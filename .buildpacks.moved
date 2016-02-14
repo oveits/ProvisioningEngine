@@ -1,4 +1,5 @@
 https://github.com/heroku/heroku-buildpack-ruby
-https://github.com/gunpowderlabs/buildpack-rake-deploy-tasks.git
+#https://github.com/gunpowderlabs/buildpack-rake-deploy-tasks.git
+https://github.com/gunpowderlabs/buildpack-ruby-rake-deploy-tasks
 # deprecated in favor of buildpack-rake-deploy-tasks:
 #https://github.com/gunpowderlabs/buildpack-ruby-db-migrate.git

@@ -21,5 +21,6 @@ perform_tests(){
 
 #rake db:migrate RAILS_ENV=test
 perform_tests "$@" | tee $DIR/log/lasttest.log
-# randomized, but without description:
-#bundle exec rspec spec/requests/provisioningobjects_spec.rb "$@"
+
+# return exitstatus of first command in the pipe:
+test ${PIPESTATUS[0]} -eq 0

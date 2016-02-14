@@ -210,8 +210,8 @@ if false
       
 		#abort newCustomer.inspect
   
-	p 'SSSSSSSSSSSSSSSSSSSSSSSSS    Customer.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS'
-        p responseBody.inspect
+	#p 'SSSSSSSSSSSSSSSSSSSSSSSSS    Customer.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS'
+        #p responseBody.inspect
       end # doc.root.elements["GetBGListData"].elements.each do |element|
     end # targets.each do |target|
   end
