@@ -8,7 +8,7 @@ This README documents describes the purpose of the software and describes the st
 === Purpose
 This ProvisioningEngine / ProvisioningPortal is a Proof of Concept that shows how to manage target systems (in our case VoIP & UC servers) and help administrators to provision Customers, Sites and Users on the target systems.
 
-Check out a running example on https://salty-peak-4964.herokuapp.com/ (the demo is running in simulated, synchronous mode).
+Check out a running example on https://provisioningengine.herokuapp.com/, a demo that is running with simulated target systems.
 
 For demo purposes, the SW can be run without the Apache Camel module (see below) in simulation mode. An in-built mock service will simulate the answers of the Apache Camel service. Both, synchronous (i.e. foreground mode) or asynchronous mode (i.e. background mode) are possible in simulation mode.
 
