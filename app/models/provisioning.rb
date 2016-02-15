@@ -281,6 +281,15 @@ class Provisioning < ActiveRecord::Base
               end unless thisaction == 'reading'
           	    #abort resulttext
               abort 'provisioning.deliver: connection timout of one or more target systems'
+            when /Connection refused/
+            # refused (proxy error)
+              returnvalue = 113
+              resulttext = "ERROR: Connection refused (wrong porxy?)"
+              #unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (connection refused: wrong HTTP proxy?); aborting') unless targetobject.nil?
+              #end #unless thisaction == 'reading'
+              # re-trying does not make sense, if the connection is refused (will be refused next time again). Therefore no abort that would lead to a retry
+              # abort 'provisioning.deliver: connection refused: wrong proxy?'
             when /TEST MODE.*$/
             # test mode
               returnvalue = 4
@@ -310,7 +319,7 @@ class Provisioning < ActiveRecord::Base
               # TODO: update Site Data as seen from OSV
               unless thisaction == 'reading'
                 targetobject.update_attribute(:status, thisaction + ' success: was already provisioned') unless targetobject.nil?
-                p targetobject.status unless targetobject.nil?
+                #p targetobject.status unless targetobject.nil?
                 unless targetobject.nil?
                   updateDB = UpdateDB.new
                   updateDB.perform(targetobject) 
@@ -359,10 +368,12 @@ class Provisioning < ActiveRecord::Base
           
       end # case thisaction
 
-      p '------------------resulttext------------------'
-      p 'resulttext = ' + resulttext
-      p 'returnvalue = ' + returnvalue.to_s
-      p '------------------resulttext------------------'
+      if SystemSetting.debug_http_post_request
+        p '------------------resulttext------------------'
+        p 'resulttext = ' + resulttext
+        p 'returnvalue = ' + returnvalue.to_s
+        p '------------------resulttext------------------'
+      end
 
 
       return resulttext if returnvalue == 9 && thisaction == 'reading'

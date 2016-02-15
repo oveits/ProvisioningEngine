@@ -17,7 +17,7 @@ RSpec.configure do |config|
     myFilter[:simulationbroken] =  true
   end
   
-  unless ENV["WEBPORTAL_ASYNC_MODE"] == "true"
+  unless SystemSetting.webportal_async_mode
     myFilter[:syncmodebroken] =  true
   end
   
@@ -34,8 +34,8 @@ RSpec.configure do |config|
 end
 
 def expectedProvisionStatus
-  case ENV["WEBPORTAL_ASYNC_MODE"]
-  when "true"
+  case SystemSetting.webportal_async_mode
+  when true
     "waiting for provisioning"
   else
     "is provisioned"
@@ -43,8 +43,8 @@ def expectedProvisionStatus
 end
 
 def expectedProvisionFlash
-  case ENV["WEBPORTAL_ASYNC_MODE"]
-  when "true"
+  case SystemSetting.webportal_async_mode
+  when true
     "is being created|is being provisioned"
   else
     "is provisioned"
@@ -52,8 +52,8 @@ def expectedProvisionFlash
 end
 
 def expectedDeprovisionStatus
-  case ENV["WEBPORTAL_ASYNC_MODE"]
-  when "true"
+  case SystemSetting.webportal_async_mode
+  when true
     "waiting for de-provisioning"
   else
     "is de-provisioned"
@@ -91,6 +91,7 @@ objectList2 = Array["Provisioning", "Target"]
 SystemSetting.all.each do |system_setting|
   system_setting.destroy!
 end
+
 
 if SystemSetting.webportal_simulation_mode
   
@@ -407,11 +408,11 @@ def createObjDB(obj, paramsSet = nil)
   return myObj
 end # def createObjDB(obj, paramsSet = nil)
 
-def sync(syncObj)
+def sync(syncObj, async=false)
 	#abort "sync(#{syncObj.inspect})"
 #  updateDB = UpdateDB.new
 #  returnBody = updateDB.perform(syncObj)
-  syncObj.synchronize(false)
+  syncObj.synchronize(async)
 	#abort returnBody
 end
 
@@ -765,6 +766,11 @@ targetsolutionList.each do |targetsolution|
       $targetname = Target.last.name #targetsolutionVars[targetsolution][:targetname]
       $target = Target.last.configuration + $FPAFOmit #targetsolutionVars[targetsolution][:target]
       Target.last.destroy!
+
+      # clean the simulation database:
+      persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
+      persistent_hashes[0].destroy! if persistent_hashes.count == 1
+      HttpPostRequest.remove_class_variables
     end
 
     describe "createObjDB('Target')" do
@@ -1006,62 +1012,91 @@ objectList.each do |obj|
         #@myobj.provision(:destroy)
       end
 
-      it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
-        # init
-		#@@customerprovisioned = nil
-		#@@siteprovisioned = nil
-		#@@userprovisioned = nil
-        @myobj.destroy!
-        @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, paramsSet = nil, i = 1 )
-        @myobj.provision(:destroy, false)
-        @myobj.provision(:create, false)
-        # make sure the object has been created with data set i=0
-        if obj == "Site"
-          defaultParams(obj, 0).each do |key, value|
-            	#p "0-----------------------------" + key.inspect
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-            expect( @myobj.send(key) ).to eq( value )
+      [true, false].each do |async|
+      describe "in async=#{async} mode" do
+        it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+          # init
+		  #@@customerprovisioned = nil
+		  #@@siteprovisioned = nil
+		  #@@userprovisioned = nil
+          # reset @@provisioned in HttpPostRequest
+          persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
+          persistent_hashes[0].destroy! if persistent_hashes.count == 1
+
+          @myobj.destroy!
+          @myobj = createObjDB(obj, defaultParams(obj, 0) ) #createObjDB(obj, paramsSet = nil, i = 1 )
+          @myobj.provision(:destroy, false)
+          @myobj.provision(:create, false)
+          # make sure the object has been created with data set i=0
+          if obj == "Site"
+            defaultParams(obj, 0).each do |key, value|
+            	  #p "0-----------------------------" + key.inspect
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+              expect( @myobj.send(key) ).to eq( value )
+            end
           end
-        end
-        @myobj.update_attribute(:status, "bla blub")
-        @myobj.update_attributes(defaultParams(obj, 1)) if obj == "Site"
-        expect( @myobj.status ).to match(/bla blub/) 
-        if obj == "Site"
-          # make sure the object has been updated with data set i=1
-          defaultParams(obj, 1).each do |key, value|
-            	#p "1-----------------------------" + key.inspect
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-            expect( @myobj.send(key) ).to eq( value ) unless key == :name # name must be the same
-          end  
-          # and that it differs from the original values (apart from the name, which must be the same):
-          defaultParams(obj, 0).each do |key, value|
-                #p "2-----------------------------" + key.inspect
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-            expect( @myobj.send(key) ).not_to eq( value ) unless key == :name # name may be the same in the two data sets
+          @myobj.update_attribute(:status, "bla blub")
+          @myobj.update_attributes(defaultParams(obj, 1)) if obj == "Site"
+          
+          # make sure that @myobj is not out of sync with the database:
+          @myobj = @myobj.class.find(@myobj.id)
+
+          expect( @myobj.status ).to match(/bla blub/) 
+          if obj == "Site"
+            # make sure the object has been updated with data set i=1
+            defaultParams(obj, 1).each do |key, value|
+            	  #p "1-----------------------------" + key.inspect
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+              expect( @myobj.send(key) ).to eq( value ) unless key == :name # name must be the same
+            end  
+            # and that it differs from the original values (apart from the name, which must be the same):
+            defaultParams(obj, 0).each do |key, value|
+                  #p "2-----------------------------" + key.inspect
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+              expect( @myobj.send(key) ).not_to eq( value ) unless key == :name # name may be the same in the two data sets
+            end
           end
-        end
-        expect( @myobj.status ).to match(/bla blub/) 
 
-	#p "@@customerprovisioned = " + @@customerprovisioned.inspect
-	#p "@@siteprovisioned = " + @@siteprovisioned.inspect
-	#p "@@userprovisioned = " + @@userprovisioned.inspect
-        # test
+          # make sure that @myobj is not out of sync with the database:
+          @myobj = @myobj.class.find(@myobj.id)
 
-	#Delayed::Worker.delay_jobs = false
-        sync(@myobj)
-		#p defaultParams(obj).inspect
-        defaultParams(obj).each do |key, value|
-          	#p "#{key} => #{value}"
-          	#p "key.class.name=#{key.class.name}"
-          expect( @myobj.send(key) ).to eq( value)
-        end
-        expect( @myobj.status ).to match(/provisioning successful \(synchronized\)|provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/) 
-        
+          expect( @myobj.status ).to match(/bla blub/) 
+  
+	  #p "@@customerprovisioned = " + @@customerprovisioned.inspect
+	  #p "@@siteprovisioned = " + @@siteprovisioned.inspect
+	  #p "@@userprovisioned = " + @@userprovisioned.inspect
+          # test
+  
+	  Delayed::Worker.delay_jobs = true
 
-      end # it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+          # simulate that HttpPostRequest.provisioned is running in the background with its own memory space:
+          #HttpPostRequest.provisioned={} if async
+          HttpPostRequest.remove_class_variables if async
+
+          sync(@myobj, async)
+
+          # run Delayed Jobs
+          expect( Delayed::Worker.new.work_off ).to eq [1, 0] if async
+          #sleep 60.seconds
+		  #p defaultParams(obj).inspect
+
+          # make sure that @myobj is not out of sync with the database:
+          @myobj = @myobj.class.find(@myobj.id)
+
+          defaultParams(obj).each do |key, value|
+          	  #p "#{key} => #{value}"
+          	  #p "key.class.name=#{key.class.name}"
+            expect( @myobj.send(key) ).to eq( value)
+          end
+          expect( @myobj.status ).to match(/provisioning successful \(synchronized\)|provisioning successful \(synchronized all parameters\)|provisioning successful \(verified existence\)/) 
+          
+  
+        end # it "should update the status of the object to 'provisioned' if it is provisioned on the target system already" do
+      end # describe "in async=#{async} mode" do
+      end # [true, false].each do |async|
 
      if obj == "Site" || obj == "User" || obj == "Customer"
       it "should synchronize the index with the objects found on the target system, if called with a specially named dummy object", obsolete: true do
@@ -1098,8 +1133,8 @@ objectList.each do |obj|
 		#abort obj.constantize.all.inspect
         # 2) test whether the synced object has the expected parameters
         # 2.1 Sites should match exactly
-                p ">>>>>>>>>>>>>>>>>>>>>>" + paramsSet.inspect + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-                p ">>>>>>>>>>>>>>>>>>>>>>" +  obj.constantize.all.inspect  + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                #p ">>>>>>>>>>>>>>>>>>>>>>" + paramsSet.inspect + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                #p ">>>>>>>>>>>>>>>>>>>>>>" +  obj.constantize.all.inspect  + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
         expect( obj.constantize.where( paramsSet ).count).to be(1) if obj == "Site"
 		#abort obj.constantize.where( paramsSet ).inspect
         # 2.2 non-Sites should not match yet, since they are not fully synchronized yet:
@@ -1125,6 +1160,12 @@ objectList.each do |obj|
       end # describe "synchronize individual #{obj} for testTarget == #{testTarget}" do
 
       describe "synchronize all #{obj.pluralize} for testTarget == #{testTarget}" do
+       before(:each) do
+         # clean the simulation database:
+         persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
+         persistent_hashes[0].destroy! if persistent_hashes.count == 1
+         HttpPostRequest.remove_class_variables
+       end
        if obj == "Customer" || obj == "Site" || obj == "User"
         it "should synchronize the index with the #{obj} objects found on the target system" do
           # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
@@ -1705,7 +1746,7 @@ objectList.each do |obj|
         
 	it "should update the status of #{obj} to 'waiting for deletion'" do
           Delayed::Worker.delay_jobs = true
-      		p page.html.gsub(/[\n\t]/, '')
+      		#p page.html.gsub(/[\n\t]/, '')
       #expect(page.html.gsub(/[\n\t]/, '')).to match(/Delete Site/)
           #click_link 'De-Provision', match: :first
           expect(page.html.gsub(/[\n\t]/, '')).to match(/De-Provision #{obj}/)

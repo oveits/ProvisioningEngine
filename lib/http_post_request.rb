@@ -1,4 +1,26 @@
 class HttpPostRequest
+
+  # needed for rspecs: for simulating the class HttpPostRequest to run in its own memory space like in real world Delayed::Jobs situations,
+  # we need the possibility to reset all class variables (currently only @@provisioned): 
+  def self.remove_class_variables
+    # undefine @@provisioned (or other class variables, if they exist in future):
+    class_variables.each do |var|
+      remove_class_variable(var)
+    end
+  end
+
+   # not used today, so I have commented it out:
+#  # getter
+#  def self.provisioned
+#    @@provisioned = {} unless defined?(@@provisioned)
+#    @@provisioned
+#  end
+#
+#  # setter
+#  def self.provisioned=provisionedinput
+#    @@provisioned = provisionedinput
+#  end
+    
   def perform(headerInput, uriString=ENV["PROVISIONINGENGINE_CAMEL_URL"], httpreadtimeout=4*3600, httpopentimeout=6)
     #
     # renders headerInput="param1=value1, param2=value2, ..." and sends a HTTP POST request to uriString (default: "http://localhost/CloudWebPortal")
@@ -6,7 +28,7 @@ class HttpPostRequest
     
     #verbose = true
     verbose = false
-    
+
     simulationMode = SystemSetting.webportal_simulation_mode
 #abort simulationMode.inspect
 
@@ -154,7 +176,10 @@ class HttpPostRequest
       myUserID = userID
       myUserID = {:user => "4999700730800"} if myUserID.nil?
   
+      persistent_hash = PersistentHash.find_by(name: "#{self.class.name}.provisioned")
+      @@provisioned = persistent_hash.value unless persistent_hash.nil?
       @@provisioned = {} unless defined?(@@provisioned)
+      @@provisioned = {} if @@provisioned.nil?
       
       # if the Web server was newly started, it might have forgotten the status of the customer.
       def myTargets
@@ -169,7 +194,7 @@ class HttpPostRequest
       
       
       def syncMyCustomersFromDB 
-        debug = true
+        debug = false
         myTargets.each do |target|
           myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
           myCustomers.each do |customer|
@@ -188,6 +213,39 @@ class HttpPostRequest
           end
         end
       end
+
+      def camelResponse(object)
+         if object.instance_of?(Site)
+           site = object
+'<?xml version="1.0" encoding="utf-8" standalone="yes"?>' + "
+<Result>
+    <ResultCode>0</ResultCode>
+    <ResultText>Success</ResultText>
+    <Sites>
+        <Site>
+            <SiteName>ExampleCustomerV8</SiteName>
+            <NumberingPlanName>CNP_ExampleCustomerV8_00013</NumberingPlanName>
+            <GatewayIP></GatewayIP>
+            <MainNumber></MainNumber>
+        </Site>
+        <Site>
+            <CustomerName>#{site.customer.name if site.customer.nil?}</CustomerName>
+            <SiteName>#{site.name}</SiteName>
+            <NumberingPlanName>NP_#{site.name}_00008</NumberingPlanName>
+            <GatewayIP>#{site.gatewayIP}</GatewayIP>
+            <SiteCode>#{site.sitecode}</SiteCode>
+            <CountryCode>#{site.countrycode}</CountryCode>
+            <AreaCode>#{site.areacode}</AreaCode>
+            <LocalOfficeCode>#{site.localofficecode}</LocalOfficeCode>
+            <ExtensionLength>#{site.extensionlength}</ExtensionLength>
+            <MainNumber>#{site.countrycode + site.areacode + site.localofficecode + site.mainextension if !site.mainextension.nil?}</MainNumber>
+        </Site>
+    </Sites>
+</Result>"
+         else
+           abort "camelResponse is not supported for this object of class #{object.class.name}"
+         end
+      end
       
       def syncMySitesFromDB        
         myTargets.each do |target|
@@ -195,9 +253,13 @@ class HttpPostRequest
           myCustomers.each do |customer|
             mySites = Site.where(name: siteID[:site])
             mySites.each do |site|
+              # commented out -> always initialize from DB (needed for rspec, when I want to start with a clean @@provisioned)
               if @@provisioned[siteID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[siteID] is nil)             
-                @@provisioned[siteID] = site.provisioned? if @@provisioned[siteID].nil?
-                @@provisioned[siteID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
+                if site.provisioned? || /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
+                  @@provisioned[siteID] = camelResponse(site)
+                else
+                  @@provisioned[siteID] = nil
+                end
               end
             end
           end
@@ -296,7 +358,7 @@ class HttpPostRequest
       sleep 100.seconds / 1000
       case headerHash["action"]
         when /Add Customer/
-                debug = true
+                debug = false
           puts "---- before Add Customer ----" if debug
           puts "@@provisioned = #{@@provisioned.inspect}" if debug
           puts "-----------------------------" if debug
@@ -315,9 +377,8 @@ class HttpPostRequest
         when /Add Site/
           if @@provisioned[siteID].nil? || !@@provisioned[siteID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@provisioned[siteID] = true
+            @@provisioned[siteID] = camelResponse(Site.where(name: headerHash["SiteName"], customer_id: Customer.where(name: headerHash["customerName"]).first.id).first)
           else
-            @@provisioned[siteID] = true
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" exists already in the data base (Numbering Plan = NP_Site1_00010)!'
           end
         when /Add User/
@@ -341,12 +402,12 @@ class HttpPostRequest
             @@provisioned[customerID] = false
           end
         when /Delete Site/
-          if @@provisioned[siteID]
+          if !@@provisioned[siteID].nil?
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
-            @@provisioned[siteID] = false
+            @@provisioned[siteID] = nil
           else
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" does not exist in the data base!'
-            @@provisioned[siteID] = false
+            #@@provisioned[siteID] = nil
           end
         when /Delete User/
           #abort @@provisioned[myUserID].inspect
@@ -373,34 +434,8 @@ class HttpPostRequest
                   #p "5555555555555555555555555 siteID[:customer] = " + mySiteID[:customer].inspect if verbose
                   #p "6666666666666666666666666 siteID[:site] = " + mySiteID[:customer].inspect if verbose
 
-          if @@provisioned[mySiteID] == true
-            responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Result>
-    <ResultCode>0</ResultCode>
-    <ResultText>Success</ResultText>
-    <Sites>
-        <Site>
-            <CustomerName>' + mySiteID[:customer] + '</CustomerName>
-            <SiteName>' + mySiteID[:customer] + '</SiteName>
-            <NumberingPlanName>CNP_ExampleCustomerV8_00007</NumberingPlanName>
-            <GatewayIP></GatewayIP>
-            <MainNumber></MainNumber>
-        </Site>
-        <Site>
-            <CustomerName>' + mySiteID[:customer] + '</CustomerName>
-            <SiteName>' + mySiteID[:site] + '</SiteName>
-            <NumberingPlanName>NP_' + mySiteID[:site] + '_00008</NumberingPlanName>
-            <GatewayIP>47.68.190.57</GatewayIP>
-            <SiteCode>99821</SiteCode>
-            <CountryCode>49</CountryCode>
-            <AreaCode>99</AreaCode>
-            <LocalOfficeCode>7007</LocalOfficeCode>
-            <ExtensionLength>5</ExtensionLength>
-            <MainNumber>4999700710000</MainNumber>
-        </Site>
-    </Sites>
-</Result>'
-                  #p "7777777777777777777777777777777 responseBody = " + responseBody.inspect if verbose
+            if !@@provisioned[mySiteID].nil? && @@provisioned[mySiteID].is_a?(String)
+              responseBody = @@provisioned[mySiteID]
             else
               responseBody = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Result>
@@ -408,6 +443,7 @@ class HttpPostRequest
     <ResultText>Success</ResultText>
     <Sites>
         <Site>
+            <CustomerName>ExampleCustomerV8</CustomerName>
             <SiteName>ExampleCustomerV8</SiteName>
             <NumberingPlanName>CNP_ExampleCustomerV8_00013</NumberingPlanName>
             <GatewayIP></GatewayIP>
@@ -774,6 +810,9 @@ finished execution of batch file batchFile-93733174.sh
       end    
                   #abort myUserID.inspect
                   #abort @@provisioned[myUserID].inspect    
+      # save any changes made to @@provisioned on the database:
+      persistent_hash = PersistentHash.first_or_create(name: "#{self.class.name}.provisioned")
+      persistent_hash.update_attributes(value: @@provisioned)
     else # if simulationMode   
       begin
         response = http.request(request)

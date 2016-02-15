@@ -340,14 +340,14 @@ abort parents.inspect
         result = synchronizeAllSynchronously(parents, recursive, true)
         return result
       rescue Exception => e
-        p "#{self.name}.synchronizeAllSynchronously: #{e.message}"
+        #p "#{self.name}.synchronizeAllSynchronously: #{e.message}"
         return false
       end
     end
     
     #else the rest of the function is performed:
     
-    verbose = true
+    verbose = false
 		#abort parents.inspect
 
     # For each parent, perform the synchronization of all childs of the corresponding parent:
@@ -362,7 +362,7 @@ abort parents.inspect
       responseBody = "synchronizeAllSynchronously: ERROR: #{self.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
 #abort "lerghoesrhgoerhgos"
 
-      p "SSSSSSSSSSSSSSSSSSSSSSSSS    #{self.name}.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS" if verbose
+      #p "SSSSSSSSSSSSSSSSSSSSSSSSS    #{self.name}.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS" if verbose
       p responseBody.inspect if verbose
         
       # abort, if it is still a Fixnum:

@@ -27,9 +27,10 @@ class SystemSetting < ActiveRecord::Base
         elsif foundlist.count == 1
             # found in the database: return its value as boolean
             foundlist[0].value == "true"
-        elsif foundlist.count == 0 && !ENV[environment_variable].nil?
+        elsif foundlist.count == 0 #&& !ENV[environment_variable].nil?
             # not found in the database: try to find corresponding environment variable as a fallback. 
             value = ENV[environment_variable]
+            value = false if value.nil?
             
             # If found, auto-create a database entry
             @@autocreate = {} unless defined?(@@autocreate)
@@ -42,15 +43,17 @@ class SystemSetting < ActiveRecord::Base
             # error handling: variable found more than once (should never happen with the right validation)
             abort "Oups, this looks like a bug: Configuration.variable with name #{environment_variable} found more than once in the database."
         else
-            # error handling: variable not found:
-            message = "#{environment_variable} not found: neither in the database nor as system environment variable." +
-                      " As administrator, please create a SystemSetting variable with name #{environment_variable} " +
-                      " and the proper value (in most situations: 'true' or 'false') on the Active Admin Console on https://localhost:3000/admin/system_settings " +
-                      "(please adapt the host and port to your environment). Alternatively, restart the server. " +
-                      "This should reset the environment variable to its default value and the SystemSetting variable will be auto-created."
-            p "WARNING: " + message + "\nAuto-creating variable #{environment_variable}=\"false\""
-            ENV[environment_variable]="false"
-            false
+            message = "SystemSetting: unknown error"
+	    abort message
+#            # error handling: variable not found:
+#            message = "#{environment_variable} not found: neither in the database nor as system environment variable." +
+#                      " As administrator, please create a SystemSetting variable with name #{environment_variable} " +
+#                      " and the proper value (in most situations: 'true' or 'false') on the Active Admin Console on https://localhost:3000/admin/system_settings " +
+#                      "(please adapt the host and port to your environment). Alternatively, restart the server. " +
+#                      "This should reset the environment variable to its default value and the SystemSetting variable will be auto-created."
+#            p "WARNING: " + message + "\nAuto-creating variable #{environment_variable}=\"false\""
+#            ENV[environment_variable]="false"
+#            false
         end # if foundlist.count == 1
     end # def self.method_missing(*args)
     

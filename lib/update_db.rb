@@ -16,6 +16,8 @@ class UpdateDB
       case responseBody
         when 101
           responseBody = "ERROR: #{targetobject.class.name} does not exist"
+        when 113
+          responseBody = "ERROR: Connection refused (wrong proxy?)"
         when 8
           responseBody = "ERROR: connection timeout: target does not answer" 
       end
@@ -139,9 +141,9 @@ class UpdateDB
 #            targetobject.update_attribute('extensionlength', element.elements["ExtensionLength"].text )
             # MainNumber is either nil (if there is no local gateway) or it is a full E.164 number, while mainextension is only an extension.
             # => we need to calculate the mainextension from the MainNumber to be the last extensionlength digits:
-            if !element.elements["MainNumber"].nil? && targetobject.extensionlength.to_i < element.elements["MainNumber"].text.length
+            if !element.elements["MainNumber"].nil? && !element.elements["MainNumber"].text.nil? && targetobject.extensionlength.to_i < element.elements["MainNumber"].text.length
               targetobject.update_attribute('mainextension', element.elements["MainNumber"].text[-targetobject.extensionlength.to_i..-1] )
-            elsif element.elements["MainNumber"].nil?
+            elsif element.elements["MainNumber"].nil? || element.elements["MainNumber"].text.nil?
               targetobject.update_attribute('mainextension', nil)
             end
             targetobject.update_attribute('status', 'provisioning successful (synchronized all parameters)')
@@ -200,8 +202,10 @@ class UpdateDB
       end # if targetobject.id.nil?
     end
 
-    p 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU    lib/update_db.rb.perform: responseBody    UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU'
-    p responseBody.inspect
+    if SystemSetting.debug_synchronize
+      p 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU    lib/update_db.rb.perform: responseBody    UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU'
+      p responseBody.inspect
+    end
     
     return responseBody[0,400]
   end # def perform
