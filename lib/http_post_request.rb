@@ -254,13 +254,13 @@ class HttpPostRequest
             mySites = Site.where(name: siteID[:site])
             mySites.each do |site|
               # commented out -> always initialize from DB (needed for rspec, when I want to start with a clean @@provisioned)
-              #if @@provisioned[siteID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[siteID] is nil)             
+              if @@provisioned[siteID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[siteID] is nil)             
                 if site.provisioned? || /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(site.status)
                   @@provisioned[siteID] = camelResponse(site)
                 else
                   @@provisioned[siteID] = nil
                 end
-              #end
+              end
             end
           end
         end

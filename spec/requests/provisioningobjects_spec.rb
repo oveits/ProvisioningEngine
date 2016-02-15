@@ -770,6 +770,7 @@ targetsolutionList.each do |targetsolution|
       # clean the simulation database:
       persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
       persistent_hashes[0].destroy! if persistent_hashes.count == 1
+      HttpPostRequest.remove_class_variables
     end
 
     describe "createObjDB('Target')" do
@@ -1163,6 +1164,7 @@ objectList.each do |obj|
          # clean the simulation database:
          persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
          persistent_hashes[0].destroy! if persistent_hashes.count == 1
+         HttpPostRequest.remove_class_variables
        end
        if obj == "Customer" || obj == "Site" || obj == "User"
         it "should synchronize the index with the #{obj} objects found on the target system" do
