@@ -766,6 +766,10 @@ targetsolutionList.each do |targetsolution|
       $targetname = Target.last.name #targetsolutionVars[targetsolution][:targetname]
       $target = Target.last.configuration + $FPAFOmit #targetsolutionVars[targetsolution][:target]
       Target.last.destroy!
+
+      # clean the simulation database:
+      persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
+      persistent_hashes[0].destroy! if persistent_hashes.count == 1
     end
 
     describe "createObjDB('Target')" do
@@ -1014,7 +1018,7 @@ objectList.each do |obj|
 		  #@@customerprovisioned = nil
 		  #@@siteprovisioned = nil
 		  #@@userprovisioned = nil
-          # reset @@probisined in HttpPostRequest
+          # reset @@provisioned in HttpPostRequest
           persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
           persistent_hashes[0].destroy! if persistent_hashes.count == 1
 
@@ -1155,6 +1159,11 @@ objectList.each do |obj|
       end # describe "synchronize individual #{obj} for testTarget == #{testTarget}" do
 
       describe "synchronize all #{obj.pluralize} for testTarget == #{testTarget}" do
+       before(:each) do
+         # clean the simulation database:
+         persistent_hashes = PersistentHash.where(name: "HttpPostRequest.provisioned")
+         persistent_hashes[0].destroy! if persistent_hashes.count == 1
+       end
        if obj == "Customer" || obj == "Site" || obj == "User"
         it "should synchronize the index with the #{obj} objects found on the target system" do
           # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
