@@ -30,7 +30,7 @@ class SystemSetting < ActiveRecord::Base
         elsif foundlist.count == 0 #&& !ENV[environment_variable].nil?
             # not found in the database: try to find corresponding environment variable as a fallback. 
             value = ENV[environment_variable]
-            value = false if value.nil?
+            value = "false" if value.nil?
             
             # If found, auto-create a database entry
             @@autocreate = {} unless defined?(@@autocreate)
