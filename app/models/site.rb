@@ -40,7 +40,7 @@ class Validate_Sitecode_V7R1 < ActiveModel::Validator
   def validate(record)
     # for OSV V7R1, empty sitecodes are not supported
     if record.sitecode.nil? || record.sitecode == ""
-          #abort Customer.exists?(record.customer_id).inspect
+          #raise Customer.exists?(record.customer_id).inspect
       targetName = Customer.find(record.customer_id).target.name unless record.customer_id.nil? || !Customer.exists?(record.customer_id)
       if record.customer_id.nil? || /V7R1/.match(targetName)
         record.errors[:sitecode] << "must not be empty for V7R1 targets"
@@ -122,13 +122,13 @@ class Site < Provisioningobject #< ActiveRecord::Base
   
   def self.provisioningAction(method, myparent)     
 
-    abort "Site.provisioningAction(method, myparent) called with invalid myparent" unless myparent.is_a?(Customer) && !myparent.name.nil?
+    raise "Site.provisioningAction(method, myparent) called with invalid myparent" unless myparent.is_a?(Customer) && !myparent.name.nil?
 
     case method
       when :read
         "action=Show Sites, customerName=#{myparent.name}"
       else
-        abort "unknown method for Site.provisioningAction(method)"
+        raise "unknown method for Site.provisioningAction(method)"
     end
   end
   
@@ -171,7 +171,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
   end
   
   def self.find_from_REXML_element(element, mytarget)
-		#abort element.elements["SiteName"].text
+		#raise element.elements["SiteName"].text
     self.where(name: element.elements["SiteName"].text, customer: mytarget)
   end
   
@@ -183,14 +183,14 @@ class Site < Provisioningobject #< ActiveRecord::Base
       params[key] = element.elements[value].text unless element.elements[value].nil?
     end
       params[:customer_id] = mytarget.id
-		#abort params.inspect
-		#abort element.elements["SiteName"].text
+		#raise params.inspect
+		#raise element.elements["SiteName"].text
 
     # create new object with the above parameters, save it and return it
     myObject = self.new(params)
     myObject.save!(validate: false)
     return myObject
-            	#abort self.new(name: element.elements["SiteName"].text, customer: mytarget).inspect
+            	#raise self.new(name: element.elements["SiteName"].text, customer: mytarget).inspect
   end
   
   def provisioningAction(method)
@@ -204,15 +204,15 @@ class Site < Provisioningobject #< ActiveRecord::Base
         return inputBody
       when :destroy
         if name.nil?
-          abort "cannot de-provision a site without name"
+          raise "cannot de-provision a site without name"
         end
         
         if customer.nil?
-          abort "cannot de-provision a site without customer"
+          raise "cannot de-provision a site without customer"
         end
         
         if customer.name.nil?
-          abort "cannot de-provision a site with a customer with no name"
+          raise "cannot de-provision a site with a customer with no name"
         end
 
         "action=Delete Site, SiteName=#{name}, customerName=#{customer.name}"
@@ -223,7 +223,7 @@ class Site < Provisioningobject #< ActiveRecord::Base
 	  "action=Show Sites, SiteName=#{name}, customerName=#{customer.name}"
         end
       else
-        abort "Unsupported provisioning method"
+        raise "Unsupported provisioning method"
     end
   end
 

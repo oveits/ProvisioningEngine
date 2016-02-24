@@ -30,7 +30,7 @@ class HttpPostRequest
     verbose = false
 
     simulationMode = SystemSetting.webportal_simulation_mode
-#abort simulationMode.inspect
+#raise simulationMode.inspect
 
     require "net/http"
     require "uri"
@@ -51,13 +51,13 @@ class HttpPostRequest
 #    p array.map(&:strip).inspect
     
     #array = array.map(&:strip)
-#abort array.inspect
+#raise array.inspect
     
     headerHash = {}
 
-#abort headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/).inspect
-#abort headerInput.is_a?(String).inspect
-#abort (!!headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/)).inspect
+#raise headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/).inspect
+#raise headerInput.is_a?(String).inspect
+#raise (!!headerInput.match(/\A([^=\n]+=[^=,\n]+)([,\n]*[^=,\n]+=[^=,\n]+)*\Z/)).inspect
     
     if headerInput.is_a?(Hash)    
       headerHash = headerInput
@@ -73,11 +73,11 @@ class HttpPostRequest
         elsif variableValuePairArray.length.to_s[/^1$/]
           headerHash[variableValuePairArray[0]] = ""
         else
-          abort "headerInput (here: #{headerInput}) must be of the format \"variable1=value1,variable2=value2, ...\""
+          raise "headerInput (here: #{headerInput}) must be of the format \"variable1=value1,variable2=value2, ...\""
         end
       end
     else
-      abort "HttpPostRequest: wrong headerInput (#{headerInput.inspect}) type or format"
+      raise "HttpPostRequest: wrong headerInput (#{headerInput.inspect}) type or format"
     end # if headerInput.is_a?(Hash)
 
     if simulationMode
@@ -107,16 +107,16 @@ class HttpPostRequest
         {target: myheaderHash["OSVIP"]} #.match(/OSVIP.*[,&]/)
       end
       
-              #abort target.inspect
+              #raise target.inspect
       
       # return {target: "myTargetNyme", customer: "myCustomerName"}
       def customerID(myheaderHash = @headerHash)
-              #abort myheaderHash.inspect
+              #raise myheaderHash.inspect
         returnValue = targetID(myheaderHash)
         returnValue[:customer] = myheaderHash["customerName"]
         returnValue
       end      
-            #abort customerID.inspect
+            #raise customerID.inspect
       
       # return {target: "myTargetNyme", customer: "myCustomerName", site: "mySiteName"}
       def siteID(myheaderHash = @headerHash)
@@ -139,7 +139,7 @@ class HttpPostRequest
         end
         
         # in case of :create and :delete, target, customer and site are not known, but CC, AC. LOC are not known:        
-        #abort myheaderHash.inspect
+        #raise myheaderHash.inspect
         returnValue = siteID(myheaderHash)
         return nil if returnValue.nil?
 
@@ -148,20 +148,20 @@ class HttpPostRequest
         if myTargets.count == 1
           myTargetID = myTargets[0].id
         else
-          abort "HttpPostRequest: Cannot determine target with OSVIP = #{returnValue[:target]} in the database while trying to access user with extension = #{myheaderHash['X']}"
+          raise "HttpPostRequest: Cannot determine target with OSVIP = #{returnValue[:target]} in the database while trying to access user with extension = #{myheaderHash['X']}"
         end
         myCustomers = Customer.where(target: myTargetID, name: returnValue[:customer])
         if myCustomers.count == 1
           myCustomerID = myCustomers[0].id
         else
-          abort "HttpPostRequest: Cannot determine customer with targetID=#{myTargetID} and name=#{returnValue[:customer]} the database while trying to access user with extension = #{myheaderHash['X']}"
+          raise "HttpPostRequest: Cannot determine customer with targetID=#{myTargetID} and name=#{returnValue[:customer]} the database while trying to access user with extension = #{myheaderHash['X']}"
         end
         #myCustomerID = Customer.where(target: myTargetID, name: returnValue[:customer])[0].id
         mySites = Site.where(customer: myCustomerID, name: returnValue[:site])
         if mySites.count == 1
           mySite = mySites[0]
         else
-          abort "HttpPostRequest: Cannot determine site with customerID=#{myCustomerID} and name=#{returnValue[:site]} the database while trying to access user with extension = #{myheaderHash['X']}"
+          raise "HttpPostRequest: Cannot determine site with customerID=#{myCustomerID} and name=#{returnValue[:site]} the database while trying to access user with extension = #{myheaderHash['X']}"
         end
         
         # re-initialize the returnValue, since target, customer and site is not needed, but we will return the full DN instead
@@ -184,13 +184,13 @@ class HttpPostRequest
       # if the Web server was newly started, it might have forgotten the status of the customer.
       def myTargets
         return [] if targetID.nil?
-              #abort targetID.inspect
+              #raise targetID.inspect
         myTargets = Target.where("configuration LIKE ?", "%OSVIP%=%#{targetID[:target]}%" ).map{|i| i}
-              #abort myTargets.inspect
+              #raise myTargets.inspect
       end
       
-      #abort myTargets.inspect
-      #abort @@provisioned.inspect
+      #raise myTargets.inspect
+      #raise @@provisioned.inspect
       
       
       def syncMyCustomersFromDB 
@@ -198,11 +198,11 @@ class HttpPostRequest
         myTargets.each do |target|
           myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
           myCustomers.each do |customer|
-            #abort @@provisioned[customerID].inspect
+            #raise @@provisioned[customerID].inspect
             puts "---- before syncMyCustomersFromDB ----" if debug
             puts "@@provisioned = #{@@provisioned.inspect}" if debug
             puts "--------------------------------------" if debug
-            #abort customer.provisioned?.inspect
+            #raise customer.provisioned?.inspect
             if @@provisioned[customerID].nil? # only update, if the status is not known from provisioning history (i.e. if @@provisioned[customerID] is nil)                         
               @@provisioned[customerID] = customer.provisioned? if @@provisioned[customerID].nil?
               @@provisioned[customerID] = true if /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(customer.status)
@@ -243,7 +243,7 @@ class HttpPostRequest
     </Sites>
 </Result>"
          else
-           abort "camelResponse is not supported for this object of class #{object.class.name}"
+           raise "camelResponse is not supported for this object of class #{object.class.name}"
          end
       end
       
@@ -268,39 +268,39 @@ class HttpPostRequest
       
       def syncMyUsersFromDB        
         myTargets.each do |target|
-                #abort target.inspect
-                #abort customerID.inspect
+                #raise target.inspect
+                #raise customerID.inspect
           if customerID.nil? || customerID[:customer].nil?
             myCustomers = Customer.where(target_id: target.id) # since I might not know the customer for input like {"action"=>"List Users", "X"=>"2221", "CC"=>"49", "AC"=>"99", "LOC"=>"7007", "OSVIP"=>"1.2.3.4"}, we need to search the user everywhere
           else 
             myCustomers = Customer.where(name: customerID[:customer], target_id: target.id)
           end
-                  #abort customerID[:customer].inspect
-                #abort myCustomers.inspect
+                  #raise customerID[:customer].inspect
+                #raise myCustomers.inspect
           myCustomers.each do |customer|
-                  #abort customer.inspect
+                  #raise customer.inspect
             if siteID.nil? || siteID[:site].nil?
               mySites = Site.where(customer_id: customer.id).map{|i| i}
-              #abort mySites.inspect unless mySites.count==0
+              #raise mySites.inspect unless mySites.count==0
               
             else
               mySites = Site.where(customer_id: customer.id, name: siteID[:site]).map{|i| i}
             end
             mySites.each do |site|
-              #abort (/#{site.countrycode}#{site.areacode}#{site.localofficecode}.{#{site.extensionlength}}/.match("498934512345")).inspect
+              #raise (/#{site.countrycode}#{site.areacode}#{site.localofficecode}.{#{site.extensionlength}}/.match("498934512345")).inspect
               matches = /\A#{site.countrycode}#{site.areacode}#{site.localofficecode}.{#{site.extensionlength}}\Z/.match(userID[:user])
               #matches = /#{site.countrycode}#{site.areacode}#{site.localofficecode}.{4}/.match(userID[:user])
               
-              #abort /.{#{site.extensionlength}}/.inspect unless matches.nil?
-              #abort matches.inspect unless matches.nil?
+              #raise /.{#{site.extensionlength}}/.inspect unless matches.nil?
+              #raise matches.inspect unless matches.nil?
               myExtension = userID[:user].gsub("#{site.countrycode}#{site.areacode}#{site.localofficecode}",'') unless matches.nil?
-              #abort myExtension.inspect unless matches.nil?
-              #abort site.id.inspect unless matches.nil?
+              #raise myExtension.inspect unless matches.nil?
+              #raise site.id.inspect unless matches.nil?
               myUsers = User.where(site_id: site.id, extension: myExtension) unless matches.nil?
-              #abort myUser.inspect unless myUser.nil? || myUser.count == 0 
+              #raise myUser.inspect unless myUser.nil? || myUser.count == 0 
               myUsers.each do |user|
-                #abort user.inspect
-                #abort @@provisioned[userID].inspect
+                #raise user.inspect
+                #raise @@provisioned[userID].inspect
                 if SystemSetting.debug_http_post_request
                   p @@provisioned[userID].inspect
                   p user.inspect
@@ -311,7 +311,7 @@ class HttpPostRequest
                   # override: is still provisioned in the following cases:
                   @@provisioned[userID] = true if @@provisioned[userID].nil? && /deletion in progress|waiting for deletion|de-provisioning in progress|waiting for de-provisioning/.match(user.status)
                 end
-                #abort @@provisioned[userID].inspect
+                #raise @@provisioned[userID].inspect
                 if SystemSetting.debug_http_post_request
                   p @@provisioned[userID].inspect
                   p user.inspect
@@ -341,9 +341,9 @@ class HttpPostRequest
       syncMySitesFromDB unless siteID.nil?
       
       syncMyUsersFromDB unless userID.nil?
-      #abort userID.inspect
-      #abort @@provisioned.inspect
-      #abort myCustomers.inspect
+      #raise userID.inspect
+      #raise @@provisioned.inspect
+      #raise myCustomers.inspect
       
       if SystemSetting.debug_http_post_request
         p "customerID = #{customerID}"
@@ -365,7 +365,7 @@ class HttpPostRequest
           if @@provisioned[customerID].nil? || !@@provisioned[customerID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
             @@provisioned[customerID] = true #unless customerID.nil?
-            #abort @@provisioned.inspect
+            #raise @@provisioned.inspect
             #@@customerprovisioned = true
           else 
             @@provisioned[customerID] = true #unless customerID.nil?
@@ -382,8 +382,8 @@ class HttpPostRequest
             responseBody = 'ERROR: java.lang.Exception: Site Name "ExampleSite" exists already in the data base (Numbering Plan = NP_Site1_00010)!'
           end
         when /Add User/
-                  #abort myUserID.inspect
-                  #abort @@provisioned[myUserID].inspect
+                  #raise myUserID.inspect
+                  #raise @@provisioned[myUserID].inspect
           if @@provisioned[myUserID].nil? || !@@provisioned[myUserID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
             @@provisioned[myUserID] = true
@@ -391,8 +391,8 @@ class HttpPostRequest
             @@provisioned[myUserID] = true
             responseBody = 'ERROR: java.lang.Exception: Cannot create user with phone number +49 (99) 7007 30800: phone number is in use already!'
           end
-                  #abort myUserID.inspect
-                  #abort @@provisioned[myUserID].inspect
+                  #raise myUserID.inspect
+                  #raise @@provisioned[myUserID].inspect
         when /Delete Customer/
           if @@provisioned[customerID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
@@ -410,7 +410,7 @@ class HttpPostRequest
             #@@provisioned[siteID] = nil
           end
         when /Delete User/
-          #abort @@provisioned[myUserID].inspect
+          #raise @@provisioned[myUserID].inspect
           if @@provisioned[myUserID]
             responseBody = "Success: 234     Errors:0     Syntax Errors:0"
             @@provisioned[myUserID] = false
@@ -454,15 +454,15 @@ class HttpPostRequest
             end
         when /List Users/
           
-                  #abort myUserID.inspect
-                  #abort @@provisioned[myUserID].inspect
+                  #raise myUserID.inspect
+                  #raise @@provisioned[myUserID].inspect
           if @@provisioned[myUserID]
             responseBody = '<Result><ServiceId>' + myUserID[:user] + '</ServiceId><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           else
             responseBody = '<Result><ServiceId>9999999991</ServiceId><ServiceId>9999999992</ServiceId></Result>'
           end
         when /List Customers/
-                    #abort "ooooooooooooooooooooooooo" + customerID[:customer].nil?.inspect         
+                    #raise "ooooooooooooooooooooooooo" + customerID[:customer].nil?.inspect         
           if customerID[:customer].nil?
             
             # this is a List Customer with no customer specified; we need to fake the list answer
@@ -472,22 +472,22 @@ class HttpPostRequest
             # create customerList of all customers with known provisioning status (i.e. customers, where a Add or Delet Customer was performed since the last start of Web Service)
             customerList = []
             @@provisioned.each do |myCustomerID, provisioned|
-                        #abort myCustomerID.inspect
+                        #raise myCustomerID.inspect
               target_i = myCustomerID[:target]
-                        #abort target_i.inspect
-                        #abort customerID[:target].inspect
+                        #raise target_i.inspect
+                        #raise customerID[:target].inspect
               if customerID[:target] == myCustomerID[:target]
-                      #abort customerID.inspect + '---' + myCustomerID.inspect                        
+                      #raise customerID.inspect + '---' + myCustomerID.inspect                        
                 unless myCustomerID[:customer].nil?
-                      #abort customerID[:customer].inspect + '---' + myCustomerID[:customer].inspect
+                      #raise customerID[:customer].inspect + '---' + myCustomerID[:customer].inspect
                   customerList << myCustomerID[:customer]
                 end
               end
             end            
-                    #abort customerList.inspect
+                    #raise customerList.inspect
                        
             customerList << 'ManuallyAddedCust' if ENV["WEBPORTAL_SYNCHRONIZE_ALL_ALWAYS_ADD_MANUALLY_ADDED_CUSTOMER"] == "true"
-                    #abort customerList.inspect
+                    #raise customerList.inspect
 
             # create snippets for the answer to 'List Customers':
             
@@ -499,24 +499,24 @@ class HttpPostRequest
             customerList.each do |cust_i_name|   
               customerID_i = customerID
               customerID_i[:customer] = cust_i_name
-                        #abort customerID_i.inspect
-                        #abort @@provisioned[customerID_i].inspect
-                        #abort @@provisioned.inspect
+                        #raise customerID_i.inspect
+                        #raise @@provisioned[customerID_i].inspect
+                        #raise @@provisioned.inspect
               
               # For demo purposes we can always add this special customer named 'ManuallyAddedCust'
               @@provisioned[customerID_i] = true if /\AManuallyAddedCust\Z/.match(cust_i_name)
-                        #abort @@provisioned[customerID_i].inspect if /\AManuallyAddedCust\Z/.match(cust_i_name)
+                        #raise @@provisioned[customerID_i].inspect if /\AManuallyAddedCust\Z/.match(cust_i_name)
               
               snippets[cust_i_name] = "<BGName>#{cust_i_name}</BGName>" if @@provisioned[customerID_i]
-                        #abort snippets.inspect              
+                        #raise snippets.inspect              
             end
             
             
             if myTargets.count == 1
               thisTarget = myTargets[0]
-                  #abort myTargets.inspect
+                  #raise myTargets.inspect
             else 
-              abort "Could not find target for the 'List Customers' request: myTargets = #{myTargets.inspect}"
+              raise "Could not find target for the 'List Customers' request: myTargets = #{myTargets.inspect}"
             end
             
             unless thisTarget.nil?
@@ -531,26 +531,26 @@ class HttpPostRequest
 
               # 1) from the DB we read all supposedly provisioned Customers
               provisionedCustomers = Customer.where(target_id: thisTarget.id).select {|i| i.provisioned?}
-                    #abort provisionedCustomers.inspect
+                    #raise provisionedCustomers.inspect
               
               # 2) need to set all snippets according to the found provisionedCustomers, if @@provisioned for this customer is not defined (yet)
               provisionedCustomers.each do |cust_i|
                 cust_i_name = cust_i.name  
                 customerID_i = customerID
-                          #abort customerID_i.inspect
+                          #raise customerID_i.inspect
                 customerID_i[:customer] = cust_i_name
-                          #abort customerID_i.inspect
+                          #raise customerID_i.inspect
                 # 2) for each such Customer, we set the status @@provisioned, if @@provisioned is nil (unknown), but we keep it to false, if it was known to be false
                 # if @@provisioned[customerID_i] is nil, then provisioninf status is unknown (no Add/Delete Customer was called before)
                 # in this case, we copy the provisioning status (true for all provisioned Customers) as known by the database
                 @@provisioned[customerID_i] = true if @@provisioned[customerID_i].nil?
-                          #abort @@provisioned[customerID_i].inspect
-                          #abort @@provisioned.inspect
-                          #abort snippets.inspect
+                          #raise @@provisioned[customerID_i].inspect
+                          #raise @@provisioned.inspect
+                          #raise snippets.inspect
 
                 # 3) if @@provisioned is true, we add the Customer to the answer of 'List Customers'
                 snippets[cust_i_name] = "<BGName>#{cust_i_name}</BGName>" if @@provisioned[customerID_i]
-                          #abort snippets.inspect  
+                          #raise snippets.inspect  
               end # provisionedCustomers.each do |cust_i|
             end # unless thisTarget.nil?
             
@@ -558,11 +558,11 @@ class HttpPostRequest
             # e.g. if snippets["Cust1"] = "<BGName>Cust1</BGName>" and snippets["Cust2"] = "<BGName>Cust2</BGName>"
             # then snippet will be "<BGName>Cust1</BGName><BGName>Cust2</BGName>"
             snippet = snippets.map {|key, value| value}.join                     
-                        #abort snippet
+                        #raise snippet
             
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName>' + snippet + '</GetBGListData></SOAPResult>'
-                        #abort "ooooooooooooooooooooooooo" + responseBody           
+                        #raise "ooooooooooooooooooooooooo" + responseBody           
           elsif @@provisioned[customerID]                      
             responseBody = '<?xml version="1.0" encoding="UTF-8"?>
 <SOAPResult><Result>Success</Result><GetBGListData><BGName>BG_DC</BGName><BGName>' + customerID[:customer] + '</BGName></GetBGListData></SOAPResult>'
@@ -808,8 +808,8 @@ finished execution of batch file batchFile-93733174.sh
         p "@@provisioned[myUserID] after provisioning: #{@@provisioned[myUserID]}"
         p "@@provisioned = #{@@provisioned}"
       end    
-                  #abort myUserID.inspect
-                  #abort @@provisioned[myUserID].inspect    
+                  #raise myUserID.inspect
+                  #raise @@provisioned[myUserID].inspect    
       # save any changes made to @@provisioned on the database:
       persistent_hash = PersistentHash.first_or_create(name: "#{self.class.name}.provisioned")
       persistent_hash.update_attributes(value: @@provisioned)

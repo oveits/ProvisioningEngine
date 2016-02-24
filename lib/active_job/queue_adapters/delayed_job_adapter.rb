@@ -160,7 +160,7 @@ module ActiveJob
           when 0
             false
           else
-            abort "There are more than one Delayed::Job.where(id: #{job.provider_job_id}). This should never happen and it looks like a bug."
+            raise "There are more than one Delayed::Job.where(id: #{job.provider_job_id}). This should never happen and it looks like a bug."
           end
         end
       end

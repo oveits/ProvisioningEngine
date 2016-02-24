@@ -43,18 +43,18 @@ class ProvisioningobjectsController < ApplicationController
       @params[key.parameterize.underscore.to_sym] = value
     end
     # result: something like @params = {per_page: params[:per_page], controller: params[:controller], action: params[:action], target_id: params[:target_id]}
-		#abort @params.class.name
-		#abort @params.inspect
+		#raise @params.class.name
+		#raise @params.inspect
 
     # find the closets relative upwards that is specified
     # e.g. if called with GET /targets/3/sites, the closest upward relative is Target with id==3
 
     # init
-          #abort params[:target_id].inspect
+          #raise params[:target_id].inspect
     per_page = params[:per_page]
     per_page = 10 if per_page.nil?
     per_page = 1000000 if per_page == 'all'
-          #abort per_page.inspect
+          #raise per_page.inspect
 
     ancestor = nil
     ancestorClass = myClass
@@ -74,16 +74,16 @@ class ProvisioningobjectsController < ApplicationController
     # default ancestor:
     ancestor = Target.find(params[:target_id]) if ancestor.nil? && !params[:target_id].nil? && params[:target_id] != 'none'
     my_array_object = myClass.all_in(ancestor)
-          #abort my_array_object.inspect
-          #abort my_array_object.map!(&:target).inspect # (ruby1.9 or Ruby 1.8.7).inspect
+          #raise my_array_object.inspect
+          #raise my_array_object.map!(&:target).inspect # (ruby1.9 or Ruby 1.8.7).inspect
     @provisioningobjects = Kaminari.paginate_array(my_array_object).page(params[:page]).per(per_page)
-		      #abort @provisioningobjects.inspect
+		      #raise @provisioningobjects.inspect
 
     # e.g. @customers = @provisioningobjects 
     # TODO: remove the next line, afer all views have been changed to wirk with @provisioningobjects instead of @targets, @customers, @sites or @users
     instance_variable_set("@#{myClass.name.downcase.pluralize}", @provisioningobjects)
-		      #abort @sites.inspect
-		      #abort @provisioningobjects.inspect
+		      #raise @sites.inspect
+		      #raise @provisioningobjects.inspect
 
     # set filteredvia variable that can be used in the views to show, how the data was filtered
     @filteredvia = ancestor unless ancestor.nil?
@@ -91,7 +91,7 @@ class ProvisioningobjectsController < ApplicationController
 
   # GET /customers/new  
   def new
-        #abort params.inspect
+        #raise params.inspect
     @provisioningobject = myClass.new
     
     @provisioningtime = params[:provisioningtime]
@@ -100,9 +100,9 @@ class ProvisioningobjectsController < ApplicationController
   # POST /customers
   # POST /customers.json
   def create
-          #abort params.inspect
+          #raise params.inspect
     params.delete :target_id if params[:target_id].to_s == ""          
-          #abort params.inspect
+          #raise params.inspect
 
     respond_to do |format|         
       if @provisioningobject.save        
@@ -133,9 +133,9 @@ class ProvisioningobjectsController < ApplicationController
   # PATCH/PUT /customers/1
   # PATCH/PUT /customers/1.json
   def update
-              #abort params.inspect
+              #raise params.inspect
     params.delete :target_id if params[:target_id].to_s == "" 
-          #abort params.inspect
+          #raise params.inspect
 
     respond_to do |format|         
       if !@provisioningobject.provisioned? && @provisioningobject.update(provisioningobject_params)       
@@ -262,7 +262,7 @@ class ProvisioningobjectsController < ApplicationController
     # removes all entities in the database
     # individual settings are done e.g. in customers_controller.rb#removeAll
 
-    		#abort provisioningobjects.inspect
+    		#raise provisioningobjects.inspect
     @redirectPath = :back if @redirectPath.nil?
     if provisioningobjects.count > 0
       
@@ -304,17 +304,17 @@ class ProvisioningobjectsController < ApplicationController
       being_individual = ""
     end
     
-            #abort ENV["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"].inspect
-            #abort (!@async_all).inspect
+            #raise ENV["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"].inspect
+            #raise (!@async_all).inspect
     if ENV["WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT"] == "true" || @async_all
-      # in case of asynchronous synchronization, we always allow to abort, since this will trigger delayed_job to retry
-      # in case of synchronous synchronization, we allow to abort only, if WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT is set to "true"
+      # in case of asynchronous synchronization, we always allow to abort on abort, since this will trigger delayed_job to retry
+      # in case of synchronous synchronization, we allow to abort on abort only, if WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT is set to "true"
       @abortOnAbort = true
     else
       # in case of synchronous synchronization and WEBPORTAL_SYNCHRONIZE_ALL_ABORT_ON_ABORT is not set to "true", we proceed even after an abort (e.g. if a target is unreachable, other targets will still be synchronized)
       @abortOnAbort = false
     end
-            #abort @abortOnAbort.inspect
+            #raise @abortOnAbort.inspect
 
     # note: @id needs to be set in the individual child classes (e.g. Customer/Site/User)
     if @id.nil?
@@ -361,7 +361,7 @@ class ProvisioningobjectsController < ApplicationController
 private
   def myClass
     # returns "User" or "Site" or "Customer" (String)
-		#abort controller_name.classify
+		#raise controller_name.classify
     controller_name.classify.constantize
   end
 
@@ -384,27 +384,27 @@ private
   
   def set_parent
     
-        #abort @parent.inspect
+        #raise @parent.inspect
     this_sym = "#{myClass.name.downcase}".to_sym
     parent_id_sym = "#{myClass.parentClass.name.downcase}_id".to_sym unless myClass.parentClass.nil?
-        #abort parent_id_sym.inspect
-        #abort this_sym.inspect
-        #abort params[this_sym][parent_id_sym].inspect
-        #abort params[parent_id_sym].inspect
-        #abort params[:site][:customer_id].inspect
-        #abort myClass.parentClass.find(params[this_sym][parent_id_sym]).inspect
+        #raise parent_id_sym.inspect
+        #raise this_sym.inspect
+        #raise params[this_sym][parent_id_sym].inspect
+        #raise params[parent_id_sym].inspect
+        #raise params[:site][:customer_id].inspect
+        #raise myClass.parentClass.find(params[this_sym][parent_id_sym]).inspect
 
-        #abort params[this_sym].nil?.inspect
-        #abort params[this_sym][parent_id_sym].to_s
-        #abort (!params[this_sym].nil? && params[this_sym][parent_id_sym].to_s != "").inspect
+        #raise params[this_sym].nil?.inspect
+        #raise params[this_sym][parent_id_sym].to_s
+        #raise (!params[this_sym].nil? && params[this_sym][parent_id_sym].to_s != "").inspect
     if(!params[parent_id_sym].nil?) # this is the format needed for all controllers but #create (e.g. #new in case of /customers/5/sites/new or /sites/new?customer_id=5)
       @parent = myClass.parentClass.find(params[parent_id_sym])
     elsif( params[this_sym].is_a?(Hash) && params[this_sym][parent_id_sym].to_s != "")  # this is the format needed for #create
-            #abort this_sym.inspect
-            #abort params[this_sym].inspect
-            #abort (params[this_sym][parent_id_sym].to_s != "").inspect
-            #abort params.inspect
-            #abort params[this_sym][parent_id_sym].inspect
+            #raise this_sym.inspect
+            #raise params[this_sym].inspect
+            #raise (params[this_sym][parent_id_sym].to_s != "").inspect
+            #raise params.inspect
+            #raise params[this_sym][parent_id_sym].inspect
       if myClass.parentClass.exists? id: params[this_sym][parent_id_sym]
         @parent = myClass.parentClass.find(params[this_sym][parent_id_sym])
       else
@@ -415,7 +415,7 @@ private
       # read parent from existing object
       @parent = myClass.find(params[:id]).parent
     end
-        #abort @parent.inspect
+        #raise @parent.inspect
   end
   
   def set_async_mode

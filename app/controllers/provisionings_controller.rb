@@ -22,11 +22,11 @@ class ProvisioningsController < ApplicationController
   # GET /provisionings
   # GET /provisionings.json
   def index
-		#abort params[:show].inspect
+		#raise params[:show].inspect
     @active = params[:active]
     # can be :true, :any
     
-#abort "provisionings index test"
+#raise "provisionings index test"
 
     #TODO: today,this index will only display customer provisionings, if called from a customer context
     # however, we also want to see all provisioning of child objects, e.g. the sites of this customer
@@ -54,8 +54,8 @@ class ProvisioningsController < ApplicationController
       end
     end
 
-#abort @provisionings.inspect    
-    #abort @provisionings.count.to_s + "params[:customer_id] = " + params[:customer_id].to_s
+#raise @provisionings.inspect    
+    #raise @provisionings.count.to_s + "params[:customer_id] = " + params[:customer_id].to_s
     
     # show only active provisioning jobs:
     if @active
@@ -64,7 +64,7 @@ class ProvisioningsController < ApplicationController
         @activeProvisionings << provisioning if provisioning.activeJob?
       end
       
-      #abort @activeProvisionings.inspect
+      #raise @activeProvisionings.inspect
       @provisionings =  @activeProvisionings
     end 
 
@@ -74,7 +74,7 @@ class ProvisioningsController < ApplicationController
 
     # convert to paginatable Array:
     @provisionings = Kaminari.paginate_array(@provisionings).page(params[:page]).per(20)
-    		#abort @provisionings.inspect
+    		#raise @provisionings.inspect
             
   end
 
@@ -112,7 +112,7 @@ class ProvisioningsController < ApplicationController
             p "@delayedjob.id = " + @delayedjob.id.to_s
             p '++++++++++++++++++++++++++++++++'
             
-       #abort @provisioning.inspect
+       #raise @provisioning.inspect
             @provisioning.update_attributes!(:delayedjob_id => @delayedjob.id)
             #
             # Note: delayedjob attribute will be removed again at the end of the ProvisioningJob

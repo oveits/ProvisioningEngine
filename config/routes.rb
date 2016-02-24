@@ -9,7 +9,7 @@ else
   baseURL = ENV["WEBPORTAL_BASEURL"]
 end
 
-#abort baseURL
+#raise baseURL
 #baseURL = '/'
 
 scope(path: baseURL) do
