@@ -311,6 +311,14 @@ class Provisioning < ActiveRecord::Base
                 targetobject.update_attribute(:status, thisaction + ' failed (target system export error)') unless targetobject.nil?
               end
               raise 'provisioning.deliver: target system export error'
+            when /Import cancelled due to congestion.*$/
+            # full message: Import cancelled due to congestion; please try again when the system recovers
+              returnvalue = 102
+              resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Import cancelled due to congestion.*$/] + '" at ' + Time.now.to_s
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (target system congested; trying again later)') unless targetobject.nil?
+              end
+              raise 'provisioning.deliver: target system congested'
             when /ERROR.*Site.*exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
             # failure: object exists already
               returnvalue = 100
