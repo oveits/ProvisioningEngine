@@ -106,7 +106,7 @@ targetsolutionList = Array["CSL8", "CSL9_V7R1"]
 #targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #targetsolutionList = Array["CSL8"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-#targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
  
@@ -172,7 +172,7 @@ end
 
 def provisioningobjects_path(obj)
   # return the path to the obj index as String, e.g. customers_path = (/dev) "/customers/" or "/dev/customers" in case WEBPORTAL_BASEURL = '/dev'
- 		#abort send("#{myobjects(obj)}_path".to_sym) + "?per_page=0"
+ 		#raise send("#{myobjects(obj)}_path".to_sym) + "?per_page=0"
 
   # index page with no pagination, so all entries can be seen:
   send("#{myobjects(obj)}_path".to_sym) + "?per_page=all"
@@ -194,7 +194,7 @@ end
 #  obj = "Customer"
 #  
 #  fillFormForNewCustomer(name)
-##abort "createCustomer: abort"
+##raise "createCustomer: raise"
 #  click_button 'Save', match: :first 
 #end
 
@@ -316,16 +316,16 @@ def defaultParams(obj, i = 0)
               }
       end
     else
-      abort "obj=#{obj} not supported for function defaultParams(obj)"
+      raise "obj=#{obj} not supported for function defaultParams(obj)"
   end
-  #abort "Could not find defaultParams for i=#{i}" if paramsSet.nil?
+  #raise "Could not find defaultParams for i=#{i}" if paramsSet.nil?
   paramsSet
 end
 
 def initObj(paramsHash)
   # e.g.:
   # initObj(obj: "Customer", shall_exist_on_db: true, shall_exist_on_target: true, defaultParams("Customer", 0))
-#abort paramsHash.inspect unless paramsHash[:paramsSet].nil?
+#raise paramsHash.inspect unless paramsHash[:paramsSet].nil?
   return false unless paramsHash.is_a?(Hash)
 
   # init
@@ -333,7 +333,7 @@ def initObj(paramsHash)
   shall_exist_on_db = paramsHash[:shall_exist_on_db]
   shall_exist_on_target = paramsHash[:shall_exist_on_target]
   paramsSet = paramsHash[:paramsSet]
-      #abort paramsSet.inspect unless paramsHash[:paramsSet].nil?
+      #raise paramsSet.inspect unless paramsHash[:paramsSet].nil?
 
   # validation
   return false if obj.nil?
@@ -343,11 +343,11 @@ def initObj(paramsHash)
   shall_exist_on_target = true if shall_exist_on_target.nil?
   paramsSet = defaultParams(obj, 0) if paramsSet.nil?
 
-      #abort paramsSet.inspect unless paramsHash[:paramsSet].nil?
+      #raise paramsSet.inspect unless paramsHash[:paramsSet].nil?
   
   myObj = createObjDB(obj, paramsSet)
   
-        #abort myObj.inspect unless paramsHash[:paramsSet].nil?
+        #raise myObj.inspect unless paramsHash[:paramsSet].nil?
 
   # probe whether obj exists on target
   # -> set exists_on_target accordingly
@@ -366,7 +366,7 @@ def initObj(paramsHash)
   if shall_exist_on_db == false
     # destroy! 
     myObj.destroy!
-          #abort myObj.inspect
+          #raise myObj.inspect
   else
     return myObj
   end
@@ -395,25 +395,25 @@ def createObjDB(obj, paramsSet = nil)
     myObj = obj.constantize.new(
       paramsSetWithParent
     )
-          #abort paramsSetWithParent.inspect
+          #raise paramsSetWithParent.inspect
     myObj.save!
   end
 
   if obj.constantize.where(paramsSetWithParent).count == 1
     myObj = obj.constantize.where(paramsSetWithParent).last
   else
-    abort "More than one #{obj} found matching the parameters=#{paramsSetWithParent.inspect}"
+    raise "More than one #{obj} found matching the parameters=#{paramsSetWithParent.inspect}"
   end
 
   return myObj
 end # def createObjDB(obj, paramsSet = nil)
 
 def sync(syncObj, async=false)
-	#abort "sync(#{syncObj.inspect})"
+	#raise "sync(#{syncObj.inspect})"
 #  updateDB = UpdateDB.new
 #  returnBody = updateDB.perform(syncObj)
   syncObj.synchronize(async)
-	#abort returnBody
+	#raise returnBody
 end
 
 def createSite(name = "ExampleSite" )      
@@ -447,7 +447,7 @@ def createObject(obj, name = "" )
     #returnval = 
     page.current_url
   end
-#abort returnval.inspect
+#raise returnval.inspect
 end
 
 def deleteObjectURLfromDB(obj, myURL)
@@ -458,7 +458,7 @@ def deleteObjectURLfromDB(obj, myURL)
     obj_id = /[1-9][0-9]*\Z/.match(page.current_url).to_s.to_i
     myProvisioningobject(obj).find(obj_id).destroy!
   else
-    abort "Cannot find URL #{myURL}"
+    raise "Cannot find URL #{myURL}"
   end
 end
 
@@ -510,7 +510,7 @@ def createObjectDB_manual(obj)
     when /Target/
       createTargetDB_manual
     else
-      abort "Object=#{obj} not supported for function createObjectDB_manual"
+      raise "Object=#{obj} not supported for function createObjectDB_manual"
   end
 end
 
@@ -616,10 +616,10 @@ def fillFormForNewUser(name = "" )
     delayed_worker_delay_jobs_before = Delayed::Worker.delay_jobs
     Delayed::Worker.delay_jobs = false
     createObject("Site", name = "ExampleSite" ) 
-#abort Site.all.inspect
+#raise Site.all.inspect
     Delayed::Worker.delay_jobs = delayed_worker_delay_jobs_before
   end
-#abort Site.all.inspect
+#raise Site.all.inspect
   visit new_provisioningobject_path("User") # for refreshing after creating the target
   #fill_in "Name",         with: name        # not possible, since name input field might not be displayed (depending on the application.yaml file content)
   select "ExampleSite", :from => "user[site_id]"
@@ -706,7 +706,7 @@ def destroyObjectByName(obj, name = "")
   #
   # Workaround: make sure the names are unique...
   #
-#abort myObjects.inspect
+#raise myObjects.inspect
 #p myObjects.count.to_s + "<-------------------------------------------------------- myObjects.count.to_s"
 #p obj.to_s + "<-------------------------------------------------------- obj.to_s"
 #p name.to_s + "<-------------------------------------------------------- name.to_s"
@@ -720,7 +720,7 @@ def destroyObjectByName(obj, name = "")
     click_link "Delete #{obj}", match: :first
     Delayed::Worker.delay_jobs = delayedJobsBefore
   elsif myObjects.count > 1
-    abort "destroyObjectByName(#{obj}, #{name}): found more than one #{obj} with name=#{name}. Aborting..."
+    raise "destroyObjectByName(#{obj}, #{name}): found more than one #{obj} with name=#{name}. Aborting..."
   end
   
   # delete the customer from the database if it still exists
@@ -735,7 +735,7 @@ def destroyObjectByName(obj, name = "")
     click_link "Delete #{obj}", match: :first
     Delayed::Worker.delay_jobs = delayedJobsBefore
   elsif myObjects.count > 1
-    abort "destroyObjectByName(#{obj}, #{name}): found more than one #{obj} with name=#{name}. Aborting..."
+    raise "destroyObjectByName(#{obj}, #{name}): found more than one #{obj} with name=#{name}. Aborting..."
   end  
   Delayed::Worker.delay_jobs = delayedJobsBefore
 #p "destroyObjectByName end: \n#{page.html.gsub(/[\n\t]/, '')}"
@@ -759,7 +759,7 @@ end
 targetsolutionList.each do |targetsolution|
   describe "On target solution '#{targetsolution}'" do  
     before do
-            #abort targetsolutionList.inspect
+            #raise targetsolutionList.inspect
       FactoryGirl.create("target_#{targetsolution}".to_sym)
       myTarget = Target.last
       $customerName = "ExampleCustomerV8" #targetsolutionVars[targetsolution][:customerName]
@@ -870,8 +870,8 @@ objectList.each do |obj|
         expect{ @myobj = createObjDB(obj) }.to change(Object.const_get(obj), :count).by(1)
         # create children:
         expect{ @mychildobj = createObjDB(child(obj)) }.to change(Object.const_get(child(obj)), :count).by(1) unless child(obj).nil?
-#abort child(obj).inspect
-#abort createObjDB(child(obj),3).inspect
+#raise child(obj).inspect
+#raise createObjDB(child(obj),3).inspect
 
         # Create "Site3" in the database and deprovision it: 
         # i.e. workaround for non-existent synchronization before recursive deletion within the rspec above
@@ -882,13 +882,13 @@ objectList.each do |obj|
 
         # de-provision the object recursively?
         @myobj.provision(:destroy, false)
-#abort Site.all.inspect
+#raise Site.all.inspect
         @myobj.provision(:create, false)
         
         # provision children:
         @mychildobj.provision(:create, false) unless child(obj).nil?
         #@mychildobj2.provision(:create, false) unless child(obj).nil? if obj=="Customer"
-#abort Site.all.inspect
+#raise Site.all.inspect
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.name}</) unless obj == "User"
         expect( @myobj.provision(:read, false) ).to match(/>#{@myobj.site.countrycode}#{@myobj.site.areacode}#{@myobj.site.localofficecode}#{@myobj.extension}</) if obj == "User"
         @myobj.destroy!
@@ -1115,7 +1115,7 @@ objectList.each do |obj|
         #special name for Customer dummy:
         paramsSetDummy = paramsSet.clone
         paramsSetDummy[:name] = '_sync_dummyCustomer_________________3426' if obj == "Customer"
-		#abort paramsSet.inspect
+		#raise paramsSet.inspect
         # create the object but do not save it:
         #dummyObj = obj.constantize.new(paramsSet)
         expect{ @dummyObj = obj.constantize.new(paramsSetDummy) }.to change(Object.const_get(obj), :count).by(0) 
@@ -1123,20 +1123,20 @@ objectList.each do |obj|
         # because us async sync, the dummyObj needs to be saved (delayed_jobs cannot work on transient data):
         expect{ @dummyObj.save!(validate: false) }.to change(Object.const_get(obj), :count).by(1) if obj == "Customer"
         #dummyObj = Object.const_get(obj).last # 
-		#abort @dummyObj.inspect
-		#abort sync( @dummyObj ).inspect
+		#raise @dummyObj.inspect
+		#raise sync( @dummyObj ).inspect
 
         # tests:
         # 1) sync should create an object in the DB:
         expect{ sync( @dummyObj ) }.to change(Object.const_get(obj), :count).by_at_least(1)
 
-		#abort obj.constantize.all.inspect
+		#raise obj.constantize.all.inspect
         # 2) test whether the synced object has the expected parameters
         # 2.1 Sites should match exactly
                 #p ">>>>>>>>>>>>>>>>>>>>>>" + paramsSet.inspect + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
                 #p ">>>>>>>>>>>>>>>>>>>>>>" +  obj.constantize.all.inspect  + "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
         expect( obj.constantize.where( paramsSet ).count).to be(1) if obj == "Site"
-		#abort obj.constantize.where( paramsSet ).inspect
+		#raise obj.constantize.where( paramsSet ).inspect
         # 2.2 non-Sites should not match yet, since they are not fully synchronized yet:
         expect( obj.constantize.where( paramsSet ).count).to be(0) if obj != "Site" 
         # 2.3 but a new customer with name ExampleCustomerV8 should be created:
@@ -1144,7 +1144,7 @@ objectList.each do |obj|
         # 2.4 and a User with the right extension should be present in the DB now:
         expect( obj.constantize.where( extension: paramsSet[:extension], site: myParent).count ).to be(1) if obj == "User"
 		#syncedObject = Object.const_get(obj).last
-		#abort syncedObject.inspect
+		#raise syncedObject.inspect
 
       end # it "should synchronize the index with the objects found on the target system" do 
      end #if obj == "Site"
@@ -1172,10 +1172,10 @@ objectList.each do |obj|
           Delayed::Worker.delay_jobs = false
           
           myClass = Object.const_get(myObject(obj))
-                #abort myClass.inspect
+                #raise myClass.inspect
                 
           provisionedObjectToBeCreatedOnDB = initObj(obj: obj, shall_exist_on_db: false, shall_exist_on_target: true)
-                #abort myClass.all.inspect      
+                #raise myClass.all.inspect      
           # check that initObj was working correctly and the object is not in the database:
           #expect( Customer.where(defaultParams(obj)).count ).to be(0)
           expect( Object.const_get(myObject(obj)).where(defaultParams(obj)).count ).to be(0) 
@@ -1184,9 +1184,9 @@ objectList.each do |obj|
           # create an object that is on the db, marked as provisioned, but not found on the target (should be marked as not provisioned at the end)
 
           notProvisionedObjectToBeSetToNotProvisioned = initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: false, paramsSet: defaultParams(obj, 2))
-			           #abort myClass.all.inspect
+			           #raise myClass.all.inspect
           notProvisionedObjectToBeSetToNotProvisioned.update_attribute(:status, 'provisioned successfully')
-                  #abort myClass.all.inspect
+                  #raise myClass.all.inspect
                   
           # the object should not be in status "not provisioned": 
           expect( notProvisionedObjectToBeSetToNotProvisioned.provisioned? ).to be(true)      
@@ -1194,7 +1194,7 @@ objectList.each do |obj|
           
           # create an object that is already on the database with the right provisioning status:
           provisionedObjectAlreadyOnDB = initObj(obj: obj, shall_exist_on_db: true, shall_exist_on_target: true, paramsSet: defaultParams(obj, 3))
-			#abort provisionedObjectAlreadyOnDB.inspect
+			#raise provisionedObjectAlreadyOnDB.inspect
           expect( provisionedObjectAlreadyOnDB.provisioned? ).to be(true)
           # status should not change, if possible, so let us remember the status, so we can compare later
           status_before_provisionedObjectAlreadyOnDB = provisionedObjectAlreadyOnDB.status    
@@ -1210,9 +1210,9 @@ objectList.each do |obj|
             #expect( myClass.where(name: defaultParams(obj)[:name]).count ).to be(0) if obj != "User"           
             
             # 'clicking' the "Synchronize" link should increase the number of objects by 1 or more:
-			             #abort myClass.all.inspect
+			             #raise myClass.all.inspect
             expect{ myClass.synchronizeAll(nil, false, false, true) }.to change(Object.const_get(obj), :count).by_at_least(1)
-			             #abort myClass.all.inspect
+			             #raise myClass.all.inspect
             
             # after 'clicking' "Synchronize", the object should  be present on the index page:  
             delta = myClass.where(extension: defaultParams(obj)[:extension]).count - delta if obj == "User"
@@ -1240,20 +1240,20 @@ objectList.each do |obj|
           
           # need to reload the data from database (why?)
           notProvisionedObjectToBeSetToNotProvisioned.reload
-                #abort myClass.all.inspect
+                #raise myClass.all.inspect
           # the object now should be in status "not provisioned"  :       
           expect( notProvisionedObjectToBeSetToNotProvisioned.provisioned? ).to be(false)
           expect( notProvisionedObjectToBeSetToNotProvisioned.status ).to match(/not provisioned/)
           
-                #abort myClass.all.inspect
+                #raise myClass.all.inspect
           # needs to be found on the database:
-                #abort provisionedObjectToBeCreatedOnDB.inspect
-                #abort myClass.all.inspect
+                #raise provisionedObjectToBeCreatedOnDB.inspect
+                #raise myClass.all.inspect
           provisionedObjectToBeCreatedOnDB = myClass.where(extension: provisionedObjectToBeCreatedOnDB.extension)[0] if myClass == User
           provisionedObjectToBeCreatedOnDB = myClass.where(name: provisionedObjectToBeCreatedOnDB.name)[0] unless myClass == User
           
-                #abort myClass.all.inspect
-                #abort provisionedObjectToBeCreatedOnDB.inspect
+                #raise myClass.all.inspect
+                #raise provisionedObjectToBeCreatedOnDB.inspect
           expect( provisionedObjectToBeCreatedOnDB.provisioned? ).to be(true)
           
 
@@ -1264,8 +1264,8 @@ objectList.each do |obj|
           # already correct entry should still be correct:          
             # needs to be reloaded from the DB:
              provisionedObjectAlreadyOnDB.reload    
-                  #abort  provisionedObjectAlreadyOnDB.inspect
-                  #abort myClass.all.inspect
+                  #raise  provisionedObjectAlreadyOnDB.inspect
+                  #raise myClass.all.inspect
             expect( provisionedObjectAlreadyOnDB.provisioned? ).to be(true)
             status_before_provisionedObjectAlreadyOnDB = status_before_provisionedObjectAlreadyOnDB.gsub('(', '\(').gsub(')', '\)')
             expect( provisionedObjectAlreadyOnDB.status ).to match(/\A#{status_before_provisionedObjectAlreadyOnDB}\Z/)
@@ -1289,8 +1289,8 @@ objectList.each do |obj|
       it "should have the header '#{myObjects(obj)}'" do
         # this works:
         #visit provisioningobjects_path(obj)
-                #abort provisioningobjects_path(obj).inspect
-		#abort page.html.gsub(/[\n\t]/, '')
+                #raise provisioningobjects_path(obj).inspect
+		#raise page.html.gsub(/[\n\t]/, '')
         expect(page).to have_selector('h1', text: obj)
       end
       
@@ -1482,7 +1482,7 @@ objectList.each do |obj|
             	# for debugging:
             	#p page.html.gsub(/[\n\t]/, '')
             click_button submit, match: :first
-#abort page.html.gsub(/[\n\t]/, '')
+#raise page.html.gsub(/[\n\t]/, '')
             
             # TODO: it should redirect to customer_path(created_customer_id)
 
@@ -1601,7 +1601,7 @@ objectList.each do |obj|
 
 	  # delete the object from the database:
 	  if myURL.nil?
-	    abort "createObject(obj) did not return the correct URL. Full page content: " + page.html.gsub(/[\n\t]/, '')
+	    raise "createObject(obj) did not return the correct URL. Full page content: " + page.html.gsub(/[\n\t]/, '')
 	  else
             deleteObjectURLfromDB(obj, myURL)
 	  end
@@ -1711,9 +1711,9 @@ objectList.each do |obj|
             #createObject("Site", name = "ExampleSite" ) # might fail with an error like 'Site Code "99821" exists already'
             @sites=Site.where(name: 'ExampleSite')
             if @sites.count == 0
-              abort "Could not create or find ExampleSite"
+              raise "Could not create or find ExampleSite"
             elsif @sites.count > 1
-              abort "Too many sites with name \"ExampleSite\""
+              raise "Too many sites with name \"ExampleSite\""
             else
               @site=@sites[0]
             end
@@ -1730,11 +1730,11 @@ objectList.each do |obj|
           if myObjects.count == 1
             myObjects[0].update_attributes!(:status => "provisioning success: was already provisioned")
             visit provisioningobject_path(myObjects[0])
-#abort myObjects[0].inspect
+#raise myObjects[0].inspect
           else
-            abort "Found more than one #{obj} with name #{$customerName}" if obj == "Customer"
-            abort "Found more than one #{obj} with name Example#{obj}" unless obj == "User" || obj == "Customer"
-            abort "Found more than one #{obj} with Extension \"30800\"" unless obj == "User"
+            raise "Found more than one #{obj} with name #{$customerName}" if obj == "Customer"
+            raise "Found more than one #{obj} with name Example#{obj}" unless obj == "User" || obj == "Customer"
+            raise "Found more than one #{obj} with Extension \"30800\"" unless obj == "User"
           end
           #p page.html.gsub(/[\n\t]/, '')
          

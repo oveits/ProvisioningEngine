@@ -5,13 +5,13 @@ class Validate_Hash_Uniqueness < ActiveModel::Validator
     
     @object_with_same_identifierhash = @object_with_same_identifierhash.select {|i| i.id != record[:id]} unless record[:id].nil?
     
-          #abort record[:id].inspect
+          #raise record[:id].inspect
     #.select {|i| i.id != record.id}
-          #abort @object_with_same_identifierhash.inspect
+          #raise @object_with_same_identifierhash.inspect
     
     unless @object_with_same_identifierhash.count == 0
       record.errors[:identifierhash] << "has already been taken"     
-            #abort record.errors.inspect
+            #raise record.errors.inspect
     end
        
   end # def

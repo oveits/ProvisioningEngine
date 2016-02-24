@@ -10,7 +10,7 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
   def new
     super
     
-        #abort @params.inspect
+        #raise @params.inspect
     
     @myparams = {"id"=>'ro', "name"=>rw, "language"=>'showLanguageDropDown', "created_at"=>'', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
     
@@ -28,16 +28,16 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
   # POST /customers
   # POST /customers.json
   def create
-          #abort params.inspect
+          #raise params.inspect
     # TODO: the next line is still needed. Is this the right place to control, whether a param is ro or rw?
     @myparams = {"id"=>'ro', "name"=>rw, "created_at"=>'', "language"=>'showLanguageDropDown', "updated_at"=>'', "status"=>'', "target_id"=>'showTargetDropDown'}
 
-#abort @provisioningobject.inspect
+#raise @provisioningobject.inspect
     @provisioningobject = Customer.new(provisioningobject_params)
-#abort @provisioningobject.inspect
+#raise @provisioningobject.inspect
     @customer = @provisioningobject
     @className = @provisioningobject.class.to_s
-#abort @provisioningobject.provisioningtime.inspect
+#raise @provisioningobject.provisioningtime.inspect
 
     super
   end
@@ -45,12 +45,12 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
   # PATCH/PUT /customers/1
   # PATCH/PUT /customers/1.json
   def update
-    #abort params.inspect
+    #raise params.inspect
     @myparams = {"id"=>ro, "name"=>rw, "language"=>'showLanguageDropDown', "customer_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "target_id"=>ro }
     #@provisioningobject = @customerS
     @customer = @provisioningobject
     
-    #abort @provisioningobject.inspect
+    #raise @provisioningobject.inspect
 
     super
   end
@@ -95,11 +95,11 @@ class CustomersController < ProvisioningobjectsController #ApplicationController
     @recursive_individual = true
     @id = params[:id]
     		#@partentTargets = Target.where(name: "CSL9DEV (OSV V8R0 Development Machine)")
-    				#abort @partentTargets.inspect
+    				#raise @partentTargets.inspect
         	# for testing:
         	#nonexistentcustomer = Customer.where(name: "ExampleCustomerV8") #, target_id: targets.last.id)
         	#nonexistentcustomer.last.destroy! unless nonexistentcustomer.count == 0
-		#abort "dehgosdöhgliöodsf"
+		#raise "dehgosdhgliodsf"
     super
   end
 

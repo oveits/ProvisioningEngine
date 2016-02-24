@@ -41,15 +41,15 @@ class TextDocumentsController < ApplicationController
           @text_documents 
         else
           render json: @text_documents, status: :unprocessable_entity
-          #abort "@text_documents.count = #{@text_documents.count}" #status: :unprocessable_entity
+          #raise "@text_documents.count = #{@text_documents.count}" #status: :unprocessable_entity
         end
         }
     end
     
 
-          #abort @identifierhash.inspect
-          #abort params[:identifierhash].class.name.inspect
-          #abort @text_documents.inspect
+          #raise @identifierhash.inspect
+          #raise params[:identifierhash].class.name.inspect
+          #raise @text_documents.inspect
   end
 
   # GET /text_documents/1
@@ -60,29 +60,29 @@ class TextDocumentsController < ApplicationController
   # GET /text_documents/new
   def new
     @text_document = TextDocument.new
-          #abort @text_document.inspect
+          #raise @text_document.inspect
   end
 
   # GET /text_documents/1/edit
   def edit
-    #abort "slkgehoösdrhödl"
+    #raise "slkgehoösdrhödl"
   end
 
   # POST /text_documents
   # POST /text_documents.json
   def create
-          #abort request.format.inspect
-          #abort Proc.new { |c| c.request.format == 'application/json'}.inspect
-          #abort YAML::load(text_document_params[:identifierhash]).inspect
+          #raise request.format.inspect
+          #raise Proc.new { |c| c.request.format == 'application/json'}.inspect
+          #raise YAML::load(text_document_params[:identifierhash]).inspect
     # convert identifierhash text to hash:
     #new_text_document_params = {}
     new_text_document_params = text_document_params
     new_text_document_params[:identifierhash] = YAML::load(text_document_params[:identifieryaml])
     #text_document_params[:identifierhash] = YAML::load(text_document_params[:identifieryaml])
     
-          #abort YAML::load(text_document_params[:identifierhash]).class.name
-          #abort new_text_document_params[:identifierhash].class.name
-          #abort new_text_document_params[:identifierhash].inspect
+          #raise YAML::load(text_document_params[:identifierhash]).class.name
+          #raise new_text_document_params[:identifierhash].class.name
+          #raise new_text_document_params[:identifierhash].inspect
     @text_document = TextDocument.new(new_text_document_params)
 
     respond_to do |format|
@@ -91,7 +91,7 @@ class TextDocumentsController < ApplicationController
         format.json { render :show, status: :created, location: @text_document }
       else
         format.html { render :new, new_text_document_params
-              #abort new_text_document_params.inspect
+              #raise new_text_document_params.inspect
           }
         format.json { render json: @text_document.errors, status: :unprocessable_entity }
       end

@@ -17,7 +17,7 @@ class Validate_Variable_Value_Pairs < ActiveModel::Validator
           #postData[variableValuePairArray[0]] = variableValuePairArray[1]
         else
           record.errors[:configuration] << "must be of the format \"variable1=value1,variable2=value2, ... (linebreaks instead of ',' are allowed)\""
-          #abort 'The POST data must be of the format "variable1=value1,variable2=value2, ..."'
+          #raise 'The POST data must be of the format "variable1=value1,variable2=value2, ..."'
         end
       end # while
     end # if
@@ -63,7 +63,7 @@ class Target < Provisioningobject #ActiveRecord::Base
      # for now, since it does not work correctly and is not fully tested:
         nil
       else
-        abort "Unsupported provisioning method"
+        raise "Unsupported provisioning method"
     end
 
   end

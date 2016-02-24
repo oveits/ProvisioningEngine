@@ -36,9 +36,9 @@ class UsersController < ProvisioningobjectsController #ApplicationController
 
   # GET /users/1/edit
   def edit
-    #abort @parent.inspect
+    #raise @parent.inspect
     params[:site_id] = @parent.id
-    #abort params.inspect
+    #raise params.inspect
   end
 
   # POST /users
@@ -92,11 +92,11 @@ class UsersController < ProvisioningobjectsController #ApplicationController
     @recursive_individual = true
     @id = params[:id]
                 #@partentTargets = Target.where(name: "CSL9DEV (OSV V8R0 Development Machine)")
-                                #abort @partentTargets.inspect
+                                #raise @partentTargets.inspect
                 # for testing:
                 #nonexistentcustomer = Customer.where(name: "ExampleCustomerV8") #, target_id: targets.last.id)
                 #nonexistentcustomer.last.destroy! unless nonexistentcustomer.count == 0
-                #abort "dehgosdöhgliöodsf"
+                #raise "dehgosdhgliodsf"
     super
   end
 
@@ -123,7 +123,7 @@ class UsersController < ProvisioningobjectsController #ApplicationController
   def update
     @myparams = {"id"=>ro, "name"=>rw, "site_id"=>ro, "created_at"=>ro, "updated_at"=>ro, "status"=>ro, "email"=>rw, "extension"=>rw, "givenname"=>rw, "familyname"=>rw }
 
-      #abort @provisioningobject.inspect
+      #raise @provisioningobject.inspect
     @user = @provisioningobject
     @className = @provisioningobject.class.to_s
     super

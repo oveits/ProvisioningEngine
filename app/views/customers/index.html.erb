@@ -9,7 +9,7 @@
     if targetsOfCustomer.count == 1
       targetsOfCustomer[0]
     else
-      abort "Did not find target of this customer=#{customer.inspect}"
+      raise "Did not find target of this customer=#{customer.inspect}"
     end
   end
 %>

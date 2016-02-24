@@ -28,7 +28,7 @@ class Validate_DisplayLength < ActiveModel::Validator
   def validate(record)
     
     givennamelength = record.givenname.nil? ? 0 : record.givenname.length.to_i
-        #abort givennamelength.inspect
+        #raise givennamelength.inspect
     familynamelength = record.familyname.nil? ? 0 : record.familyname.length.to_i
     
     maxlength = 29
@@ -109,12 +109,12 @@ class User < Provisioningobject #< ActiveRecord::Base
 #      when is_a?(Site) && ! name.nil?
 #        "action=List Users, SiteName=#{myparent.name}"
 #      else
-#        abort "whatever"
+#        raise "whatever"
 #      end
       "action=List Users" if myparent.nil?
       "action=List Users, SiteName=#{myparent.name}, customerName=#{myparent.customer.name}" unless myparent.nil?
     else
-      abort "unknown method for User.provisioningAction(method)"
+      raise "unknown method for User.provisioningAction(method)"
     end
   end
   
@@ -180,26 +180,26 @@ class User < Provisioningobject #< ActiveRecord::Base
         return inputBody
       when :destroy
         if site.nil?
-          abort "cannot de-provision a user without site"
+          raise "cannot de-provision a user without site"
         end
         
         if site.name.nil?
-          abort "cannot de-provision a user with a site with no name"
+          raise "cannot de-provision a user with a site with no name"
         end
         
         if site.customer.nil?
-          abort "cannot de-provision a user of a site with no customer"
+          raise "cannot de-provision a user of a site with no customer"
         end
         
         if site.customer.name.nil?
-          abort "cannot de-provision a user of a site of a customer with no name"
+          raise "cannot de-provision a user of a site of a customer with no name"
         end
         return "action=Delete User, X=#{extension}, customerName=#{site.customer.name}, SiteName=#{site.name}"
       when :read
         # read exactly the subscriber number:
         return "action=List Users, X=#{extension}, CC=#{site.countrycode}, AC=#{site.areacode}, LOC=#{site.localofficecode}"
       else
-        abort "Unsupported provisioning method: " + method.inspect
+        raise "Unsupported provisioning method: " + method.inspect
     end
   end
  
@@ -214,15 +214,15 @@ class User < Provisioningobject #< ActiveRecord::Base
 #    @parentParentClassName = "Customer"
 #    @parentparentclassname = @parentParentClassName.downcase
 #    
-##abort self.inspect
-##abort @parentclassname
+##raise self.inspect
+##raise @parentclassname
 #    
 #    unless @object.site.nil? || @object.site.customer.nil?
 ##      provisioningAction = "action=#{@method} #{@className}, X=#{@object.extension}, #{@classname}Name=#{@object.name}, #{@parentclassname}Name=#{@object.site.name}, #{@parentparentclassname}Name=#{@object.site.customer.name}" 
 #      provisioningAction = "action=#{@method} #{@className}, X=#{@object.extension}, #{@parentclassname}Name=#{@object.site.name}, #{@parentparentclassname}Name=#{@object.site.customer.name}" 
 #      provisionNew(provisioningAction, async)
 #    else
-#      abort "cannot de-provision a user without specified site and customer"
+#      raise "cannot de-provision a user without specified site and customer"
 #    end
 #  end
 
@@ -254,7 +254,7 @@ class User < Provisioningobject #< ActiveRecord::Base
 #       return 0
 #    else
 #      @provisioning.errors.full_messages.each do |message|
-#        abort 'provisioning error: ' + message.to_s
+#        raise 'provisioning error: ' + message.to_s
 #      end
 #    end 
 #  end # def
