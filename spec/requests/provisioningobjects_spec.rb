@@ -102,7 +102,7 @@ if SystemSetting.webportal_simulation_mode
 else
    
 #targetsolutionList = Array["CSL6_V7R1", "CSL8", "CSL9_V7R1", "CSL9DEV", "CSL11", "CSL12"]
-targetsolutionList = Array["CSL8", "CSL9_V7R1"]
+#targetsolutionList = Array["CSL8", "CSL9_V7R1"]
 #targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #targetsolutionList = Array["CSL8"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
