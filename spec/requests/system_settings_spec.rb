@@ -11,7 +11,7 @@ describe "FactoryGirl" do
   it "should create admin user, if it does not exist and not raise an error, if the user exists already" do
     expect { 
       @admin = FactoryGirl.create(:admin_user)
-#abort @admin.inspect
+#raise @admin.inspect
       @admin = FactoryGirl.create(:admin_user)
     }.not_to raise_error
   end

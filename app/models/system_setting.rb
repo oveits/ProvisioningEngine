@@ -16,8 +16,8 @@ class SystemSetting < ActiveRecord::Base
             foundlist = nil
         end
 
-#abort environment_variable
-#abort foundlist.inspect
+#raise environment_variable
+#raise foundlist.inspect
         
         # return value, if non-ambiguous entry was found; else return environment variable, if it exists:
         if foundlist.nil?
@@ -30,7 +30,7 @@ class SystemSetting < ActiveRecord::Base
         elsif foundlist.count == 0 #&& !ENV[environment_variable].nil?
             # not found in the database: try to find corresponding environment variable as a fallback. 
             value = ENV[environment_variable]
-            value = false if value.nil?
+            value = "false" if value.nil?
             
             # If found, auto-create a database entry
             @@autocreate = {} unless defined?(@@autocreate)
@@ -41,10 +41,10 @@ class SystemSetting < ActiveRecord::Base
             value == "true"
         elsif foundlist.count > 1
             # error handling: variable found more than once (should never happen with the right validation)
-            abort "Oups, this looks like a bug: Configuration.variable with name #{environment_variable} found more than once in the database."
+            raise "Oups, this looks like a bug: Configuration.variable with name #{environment_variable} found more than once in the database."
         else
             message = "SystemSetting: unknown error"
-	    abort message
+	    raise message
 #            # error handling: variable not found:
 #            message = "#{environment_variable} not found: neither in the database nor as system environment variable." +
 #                      " As administrator, please create a SystemSetting variable with name #{environment_variable} " +

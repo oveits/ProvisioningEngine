@@ -17,7 +17,7 @@ class Validate_action < ActiveModel::Validator
           #postData[variableValuePairArray[0]] = variableValuePairArray[1]
         else
           record.errors[:action] << "(here: #{:action} must be of the format \"variable1=value1,variable2=value2, ...\""
-          #abort 'The POST data must be of the format "variable1=value1,variable2=value2, ..."'
+          #raise 'The POST data must be of the format "variable1=value1,variable2=value2, ..."'
         end
       end # while
     end # if
@@ -87,11 +87,11 @@ class Provisioning < ActiveRecord::Base
         elsif variableValuePairArray.length.to_s[/^1$/]
           returnHash[variableValuePairArray[0]] = ""
         else
-          abort "action (here: #{action}) must be of the format \"variable1=value1,variable2=value2, ...\""
+          raise "action (here: #{action}) must be of the format \"variable1=value1,variable2=value2, ...\""
         end
       end
     else
-      abort "HttpPostRequest: wrong action (#{action.inspect}) type or format"
+      raise "HttpPostRequest: wrong action (#{action.inspect}) type or format"
     end # if action.is_a?(Hash)
     
     returnHash
@@ -109,7 +109,7 @@ class Provisioning < ActiveRecord::Base
     end
     
     uriString = @@nextUri
-          #abort @@nextUri.inspect
+          #raise @@nextUri.inspect
 
     # workaround for the fact that List commands need to be sent to "http://192.168.113.104:80/show", while all other commands need to be sent to "http://192.168.113.104:80/ProvisioningEngine"
     # set uriString = "http://192.168.113.104:80/show" for List commands
@@ -156,13 +156,13 @@ class Provisioning < ActiveRecord::Base
       targetobject = nil
       targetobjects.each do |targetobject_i|
         unless targetobject_i.nil? 
-            #abort targetobject_i.inspect
+            #raise targetobject_i.inspect
           targetobject = targetobject_i
           break
         end
       end
 
-      abort "Provisioning.deliver: could not find target object for provisioning" if targetobject.nil? unless thisaction == 'reading'
+      raise "Provisioning.deliver: could not find target object for provisioning" if targetobject.nil? unless thisaction == 'reading'
 
         # e.g. with "provisioning.action = 'Add Customer, ...', update the status of the customer object to 'provisioning in progress'"
         # only the first non-nil object is updated
@@ -171,7 +171,7 @@ class Provisioning < ActiveRecord::Base
 	# 	if both, the user and site are nil and the customer is defined, then the customer status is updated
       targetobject.update_attribute(:status, thisaction + ' in progress') unless targetobject.nil? || thisaction == 'reading'
 
-#abort httpreadtimeout.inspect
+#raise httpreadtimeout.inspect
       resulttext = provisioningRequest.perform(action, uriString, httpreadtimeout, httpopentimeout)
       
       case thisaction
@@ -188,13 +188,13 @@ class Provisioning < ActiveRecord::Base
 
           # TODO: preparation is work in progress and not yet tested...
                 #File.open("resulttext", "w") { |file| file.write resulttext }
-                #abort result.inspect
-                #abort resulttext
+                #raise result.inspect
+                #raise resulttext
                 #existingVersion = resulttext.match(/version of existing.*$/).inspect
                 #newVersion = resulttext.match(/version of new.*$/).inspect
                 #updated = false if /Existing ProvisioningScripts do not need to be upgraded/.match(resulttext)
-                #abort newVersion.inspect
-                #abort result.inspect
+                #raise newVersion.inspect
+                #raise result.inspect
         else
           case resulttext 
             when nil 
@@ -212,12 +212,12 @@ class Provisioning < ActiveRecord::Base
                 when uriStringArray[1]
                   @@nextUri = uriStringArray[0]           
                 end
-                      #abort @@nextUri.inspect
+                      #raise @@nextUri.inspect
               end
-              abort ('provisioning.deliver: ' + resulttext) unless thisaction == 'reading'
+              raise ('provisioning.deliver: ' + resulttext) unless thisaction == 'reading'
             when /Too many open files/
-#abort uriStringArray.count.inspect
-#abort uriStringCSV
+#raise uriStringArray.count.inspect
+#raise uriStringCSV
             #when /-----Too many open files/
             # error: Apache Camel has a resource problem.
               resulttext = "resource problems on #{uriString} at " + Time.now.to_s
@@ -231,9 +231,9 @@ class Provisioning < ActiveRecord::Base
                 when uriStringArray[1]
                   @@nextUri = uriStringArray[0]           
                 end
-                      #abort @@nextUri.inspect
+                      #raise @@nextUri.inspect
                 targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine resource problem; trying again on other Apache Camel connector') unless targetobject.nil? || thisaction == 'reading'
-                abort 'provisioning.deliver: ' + resulttext + ": trying again on other Apache Camel connector: #{@@nextUri}"
+                raise 'provisioning.deliver: ' + resulttext + ": trying again on other Apache Camel connector: #{@@nextUri}"
               else
                 # no other Apache Camel connector available
                 targetobject.update_attribute(:status, thisaction + ' failed: ProvisioningEngine resource problem.') unless targetobject.nil? || thisaction == 'reading'
@@ -250,11 +250,11 @@ class Provisioning < ActiveRecord::Base
                 else
                   targetobject.update_attribute(:status, thisaction + ' successful') unless targetobject.nil?
                 end
-                #abort targetobjects.inspect unless targetobject.nil?
+                #raise targetobjects.inspect unless targetobject.nil?
               end 
               #provisioning.update_attributes!(:delayedjob => nil)
               # 0
-              #abort targetobjects.inspect
+              #raise targetobjects.inspect
             when /ERROR: Variables file.*have read rights for user srx/
               returnvalue = 103
               resulttext = "ERROR[#{returnvalue.to_s}]=\" Target system has reported a missing file in ~srx/ProvisioningScripts/ccc_config.txt\nFull text:"  + resulttext
@@ -269,8 +269,8 @@ class Provisioning < ActiveRecord::Base
               unless thisaction == 'reading'
                 targetobject.update_attribute(:status, thisaction + ' failed: target system has denied access; is the target initialized correctly for usage with the ProvisioningEngine?') unless targetobject.nil?
               end unless thisaction == 'reading'
-                #abort resulttext
-              #abort 'provisioning.deliver: connection timout of one or more target systems'
+                #raise resulttext
+              #raise 'provisioning.deliver: connection timout of one or more target systems'
 
             when /ERROR.*Connection timed out.*$|ERROR.*Network is unreachable.*$|ERROR.*Connection refused.*$|ERROR.*No route to host.*$|ERROR.*The OUT message was not received within.*$/
             # timeout
@@ -279,8 +279,17 @@ class Provisioning < ActiveRecord::Base
               unless thisaction == 'reading'
                 targetobject.update_attribute(:status, thisaction + ' failed (timed out); trying again') unless targetobject.nil?
               end unless thisaction == 'reading'
-          	    #abort resulttext
-              abort 'provisioning.deliver: connection timout of one or more target systems'
+          	    #raise resulttext
+              raise 'provisioning.deliver: connection timout of one or more target systems'
+            when /Connection refused/
+            # refused (proxy error)
+              returnvalue = 113
+              resulttext = "ERROR: Connection refused (wrong porxy?)"
+              #unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (connection refused: wrong HTTP proxy?); aborting') unless targetobject.nil?
+              #end #unless thisaction == 'reading'
+              # re-trying does not make sense, if the connection is refused (will be refused next time again). Therefore no raise that would lead to a retry
+              # raise 'provisioning.deliver: connection refused: wrong proxy?'
             when /TEST MODE.*$/
             # test mode
               returnvalue = 4
@@ -299,9 +308,17 @@ class Provisioning < ActiveRecord::Base
               returnvalue = 7
               resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/error while loading shared libraries.*$/] + '" at ' + Time.now.to_s
               unless thisaction == 'reading'
-                targetobject.update_attribute(:status, thisaction + ' failed (OSV export error)') unless targetobject.nil?
+                targetobject.update_attribute(:status, thisaction + ' failed (target system export error)') unless targetobject.nil?
               end
-              abort 'provisioning.deliver: OSV export error'
+              raise 'provisioning.deliver: target system export error'
+            when /Import cancelled due to congestion.*$/
+            # full message: Import cancelled due to congestion; please try again when the system recovers
+              returnvalue = 102
+              resulttext = "stopped with ERROR[#{returnvalue.to_s}]=\"" + resulttext[/Import cancelled due to congestion.*$/] + '" at ' + Time.now.to_s
+              unless thisaction == 'reading'
+                targetobject.update_attribute(:status, thisaction + ' failed (target system congested; trying again later)') unless targetobject.nil?
+              end
+              raise 'provisioning.deliver: target system congested'
             when /ERROR.*Site.*exists already.*$|ERROR.*Customer.*exists already.*|ERROR.*phone number is in use already.*$/
             # failure: object exists already
               returnvalue = 100
@@ -347,12 +364,12 @@ class Provisioning < ActiveRecord::Base
                 #targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/ERROR.*\Z/).to_s}") unless targetobject.nil?
                 if resulttext.match(/ERROR.*$/)
                   targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.gsub('<pre>','').gsub(/#+$\n/, '').match(/ERROR.*$/).to_s} ... (click here for more info)")
-			                     #abort resulttext
+			                     #raise resulttext
                 else
                   # first 4 lines, if ERROR does not match:
                   #targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.match(/\A.*$.*$.*$.*$/).to_s}")
                   targetobject.update_attribute(:status, "#{thisaction} failed with #{resulttext.split(/\r\n|\r|\n/)[1..3].join}")
-			                     #abort resulttext
+			                     #raise resulttext
                 end
               end
           end  # case resulttext
@@ -373,7 +390,7 @@ class Provisioning < ActiveRecord::Base
     
 #    rescue Exception => e
 #        update_attribute(:status, e.message)
-#        abort e.message if returnvalue == 3 || returnvalue == 7 || returnvalue == 8
+#        raise e.message if returnvalue == 3 || returnvalue == 7 || returnvalue == 8
     end
 
   end # def deliver

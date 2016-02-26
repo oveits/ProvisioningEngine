@@ -42,15 +42,15 @@ class SitesController < ProvisioningobjectsController #ApplicationController
   # POST /sites
   # POST /sites.json
   def create
-    #abort @parent
+    #raise @parent
         # TODO: the next line is still needed. Is this the right place to control, whether a param is ro or rw?
     @myparams = {"id"=>'none', "name"=>rw, "customer_id"=>'showCustomerDropDown', "created_at"=>'none', "updated_at"=>'none', "status"=>'none', "sitecode"=>rw, "countrycode"=>'showDropDown', "areacode"=>rw, "localofficecode"=>rw, "extensionlength"=>rw, "mainextension"=>rw, "gatewayIP"=>rw }
 
     @provisioningobject = Site.new(provisioningobject_params)
-#abort @provisioningobject.inspect
+#raise @provisioningobject.inspect
     @site = @provisioningobject
     @className = @provisioningobject.class.to_s
-#abort @provisioningobject.provisioningtime.inspect
+#raise @provisioningobject.provisioningtime.inspect
 
     super
   end
@@ -124,11 +124,11 @@ class SitesController < ProvisioningobjectsController #ApplicationController
     @recursive_individual = true
     @id = params[:id]
                 #@partentTargets = Target.where(name: "CSL9DEV (OSV V8R0 Development Machine)")
-                                #abort @partentTargets.inspect
+                                #raise @partentTargets.inspect
                 # for testing:
                 #nonexistentcustomer = Customer.where(name: "ExampleCustomerV8") #, target_id: targets.last.id)
                 #nonexistentcustomer.last.destroy! unless nonexistentcustomer.count == 0
-                #abort "dehgosdöhgliöodsf"
+                #raise "dehgosdhgliodsf"
     super
   end
 
@@ -198,7 +198,7 @@ class SitesController < ProvisioningobjectsController #ApplicationController
     @provisioningobject = @site
     @className = @provisioningobject.class.to_s
 
-#abort request.referer.inspect
+#raise request.referer.inspect
     if /sites\/[1-9][0-9]*\Z/.match(request.referer)
       @redirectPath = sites_url 
     else

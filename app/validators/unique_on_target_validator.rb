@@ -10,19 +10,19 @@ class UniqueOnTargetValidator < ActiveModel::EachValidator
     return true if value.nil? || value == ""
     @myObjects = @myClass.where(attribute.to_sym => value)
 
-#abort self.inspect
+#raise self.inspect
     #@myObjects = @myClass.where(@options[:scope]
     # e.g. find all sites with the requested sitecode
     #@myObjects = @myClass.where(attribute.to_sym => value, scope: :areacode)
     #@myObjects = @myObjects.where(attribute.to_sym => value, scope: :areacode)
-#abort record[:countrycode]
+#raise record[:countrycode]
     unless @options[:scope].nil?
       @options[:scope].each do |myscope|
-#abort @options[:scope].class.inspect
+#raise @options[:scope].class.inspect
         @myObjects = @myObjects.where(myscope => record[myscope])
-#abort record[myscope].inspect
-#abort myscope.inspect
-#abort @myObjects.inspect 
+#raise record[myscope].inspect
+#raise myscope.inspect
+#raise @myObjects.inspect 
       end
     end  
 

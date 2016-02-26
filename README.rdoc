@@ -8,7 +8,7 @@ This README documents describes the purpose of the software and describes the st
 === Purpose
 This ProvisioningEngine / ProvisioningPortal is a Proof of Concept that shows how to manage target systems (in our case VoIP & UC servers) and help administrators to provision Customers, Sites and Users on the target systems.
 
-Check out a running example on https://salty-peak-4964.herokuapp.com/ (the demo is running in simulated, synchronous mode).
+Check out a running example on https://provisioningengine.herokuapp.com/, a demo that is running with simulated target systems.
 
 For demo purposes, the SW can be run without the Apache Camel module (see below) in simulation mode. An in-built mock service will simulate the answers of the Apache Camel service. Both, synchronous (i.e. foreground mode) or asynchronous mode (i.e. background mode) are possible in simulation mode.
 
@@ -151,7 +151,7 @@ In production, an Apache Camel based connector (private; not published here) is 
       * remove the admin@example.com user
 
 === Developers Info: Commit & Production
-* first time use of git:
+* git general setup (first time use of git on the machine):
   * git config --global user.email "you@example.com"
   * git config --global user.name "Your Name"
   * optional: set up git, so it does not ask for the username anymore:
@@ -159,8 +159,15 @@ In production, an Apache Camel based connector (private; not published here) is 
       url = https://oveits@ProvisioningEngine.git # replace oveits by your own git repository login name
     * if you are allowed to use SSH and do not want to enter the password, try 
       url = git@github.com:oveits/ProvisioningEngine.git # replace oveits by your own git repository login name
-* if behind proxy (e.g.: 172.28.12.5:8080):
-  * SET HTTP_PROXY=http://172.28.12.5:8080
+* download via git:
+  * preparation: if behind proxy (e.g.: 172.28.12.5:8080):
+    * SET HTTP_PROXY=http://172.28.12.5:8080
+    * or 
+  * initial download: master branch: git clone https://oveits@ProvisioningEngine.git
+  * update from remote: git pull
+  * download of additional branch (here: branch 'development'): git checkout -b development origin/development
+    (see http://www.wetware.co.nz/2009/07/pull-a-git-branch-from-remote/; via google you will find other possibilites with drawbacks; 
+    this seems to b e the best possibility)
 * cd <your application root> 
   e.g. on my Windows machine: cd /d F:\veits\RubyOnRails\ProvisioningPortalvx.x.x
 * best practice: perform automatic tests, see "Test Execution"

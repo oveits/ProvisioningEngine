@@ -10,7 +10,7 @@ end
 
 class ValidateLanguage < ActiveModel::Validator
   def validate(record)
-    #abort record.inspect
+    #raise record.inspect
     # returnString = @customer.provision("testMode=testMode, action=Add Customer, customerName=#{customer_params[:name]}")
   end
 end
@@ -39,7 +39,7 @@ class ValidateWithProvisioningEngine_old < ActiveModel::Validator
     begin
       response = http.request(request)
       responseBody = response.body[0,200]
-    rescue Exception=>e
+    rescue Exception => e
       responseBody = 'ERROR: OpenScape Voice validation timeout'
     end
    
@@ -119,14 +119,14 @@ class Customer < Provisioningobject #< ActiveRecord::Base
         "action=Add Customer, customerName=#{name}, customerLanguage=#{language}"
       when :destroy
         if name.nil?
-          abort "cannot de-provision customer without name"
+          raise "cannot de-provision customer without name"
         end
         "action=Delete Customer, customerName=#{name}"
       when :read
 	#"action=List Customers"
         "action=List Customers, customerName=#{name}"
       else
-        abort "Unsupported provisioning method"
+        raise "Unsupported provisioning method"
     end
   end
   
@@ -136,7 +136,7 @@ class Customer < Provisioningobject #< ActiveRecord::Base
     
     myelements.each do |element|
       # skip special customer (BG) named BG_DC
-          #abort myelements.class.inspect
+          #raise myelements.class.inspect
       myelements.delete_element(element) if /\ABG_DC\Z/.match(element.text)
     end
     
@@ -168,38 +168,38 @@ class Customer < Provisioningobject #< ActiveRecord::Base
 if false
   def self.synchronizeAllSynchronouslyOld(targets, recursive=false)
     targets.each do |mytarget|
-		#abort mytarget.inspect
+		#raise mytarget.inspect
       #responseBody = Customer::provision(:read, false, Customer, mytarget)
       #responseBody = Customer.read(mytarget)
       responseBody = self.read(mytarget)
-		#abort responseBody
+		#raise responseBody
       # error handling:
-      abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
+      raise "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
 
       # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
       responseBody = "synchronizeAllSynchronously: ERROR: #{self.class.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
 
-      # abort, if it is still a Fixnum:
-      abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
+      # raise, if it is still a Fixnum:
+      raise "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
       # business logic error:
-      abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
+      raise "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
     
       require 'rexml/document'
       xml_data = responseBody
       doc = REXML::Document.new(xml_data)
       
-            #abort doc.root.elements["GetBGListData"].elements.inspect
+            #raise doc.root.elements["GetBGListData"].elements.inspect
       doc.root.elements["GetBGListData"].elements.each do |element|
-		        #abort element.text.inspect
+		        #raise element.text.inspect
         # skip special customer (BG) named BG_DC
         next if /\ABG_DC\Z/.match( element.text )
         # skip if the customer exists already in the database:
-		        #abort xml_data.inspect
-		        #abort element.text.inspect
+		        #raise xml_data.inspect
+		        #raise element.text.inspect
         #next if Customer.where(name: element.text).count > 0
         #next if Customer.where(name: element.text, target_id: mytarget.id).count > 0
         next if self.where(name: element.text, target_id: mytarget.id).count > 0
-		        #abort element.text
+		        #raise element.text
   
         # found an object that is not in the DB:
         newProvisioningobject = self.new(name: element.text, target_id: mytarget.id, status: 'provisioning successful (verified existence)')
@@ -208,7 +208,7 @@ if false
         # save it with no validations. 
         newProvisioningobject.save!(validate: false)
       
-		#abort newCustomer.inspect
+		#raise newCustomer.inspect
   
 	#p 'SSSSSSSSSSSSSSSSSSSSSSSSS    Customer.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS'
         #p responseBody.inspect

@@ -61,7 +61,7 @@ select {min-width:<%= inputFieldSize*15.75/30 + 18.2 - 15.75 %>em;}
 				<%= f.select(:customer_id, Customer.where.not(target_id: nil).map {|customer| 
 			    	targetname_or_id = ( !customer.nil? && !customer.target.nil? && customer.target.name.to_s != "") ? customer.target.name : customer.target_id.to_s
 			    	customername_or_id = ( !customer.nil? && !customer.name.to_s != "" ) ? customer.name : customer_id.to_s
-			    	#abort targetname.inspect
+			    	#raise targetname.inspect
 			    	[targetname_or_id + ":" + customername_or_id,customer.id]}, :prompt => "Select a Target:Customer", selected: selected) %>	    
 <% if false %>
 			        <% unless @parent.nil? %>

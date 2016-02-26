@@ -40,7 +40,7 @@ class ProvisioningRequest
       elsif variableValuePairArray.length.to_s[/^1$/]
         postData[variableValuePairArray[0]] = ""
       else
-        abort "action (here: #{action}) must be of the format \"variable1=value1,variable2=value2, ...\""
+        raise "action (here: #{action}) must be of the format \"variable1=value1,variable2=value2, ...\""
       end
     end
     
@@ -94,7 +94,7 @@ class ProvisioningJob < Struct.new(:provisioning_id)
     provisioning = Provisioning.find(provisioning_id)
     
     if provisioning.nil?
-      abort "ProvisioningJob.perform: cannot find provisioning with id=#{provisioning_id}"
+      raise "ProvisioningJob.perform: cannot find provisioning with id=#{provisioning_id}"
     end
 
     if provisioning.attempts.nil?
@@ -145,11 +145,11 @@ class ProvisioningJob < Struct.new(:provisioning_id)
             targetobject.update_attributes(:status => thisaction + ' successful') unless targetobject.nil?
           end
           break unless targetobject.nil?
-          #abort targetobjects.inspect unless targetobject.nil?
+          #raise targetobjects.inspect unless targetobject.nil?
         end
         #provisioning.update_attributes(:delayedjob => nil)
         # 0
-        #abort targetobjects.inspect
+        #raise targetobjects.inspect
       when 1 # unknown error
         targetobjects.each do |targetobject|
           targetobject.update_attributes(:status => thisaction + ' failed (unknown error); stopped') unless targetobject.nil?
@@ -160,7 +160,7 @@ class ProvisioningJob < Struct.new(:provisioning_id)
           targetobject.update_attributes(:status => thisaction + ' failed (timed out); trying again') unless targetobject.nil?
           break unless targetobject.nil?
         end
-        abort 'ProvisioningJob.perform: connection timout'
+        raise 'ProvisioningJob.perform: connection timout'
       when 4 # test mode
         targetobjects.each do |targetobject|
           targetobject.update_attributes(:status => thisaction + ' successful (test mode)') unless targetobject.nil?
@@ -183,7 +183,7 @@ class ProvisioningJob < Struct.new(:provisioning_id)
           targetobject.update_attributes(:status => thisaction + ' failed (OSV export error)') unless targetobject.nil?
           break unless targetobject.nil?       
         end
-        abort 'ProvisioningJob.perform: OSV export error'
+        raise 'ProvisioningJob.perform: OSV export error'
       when 100 # failure: object exists already
         targetobjects.each do |targetobject|
           targetobject.update_attributes(:status => thisaction + ' failed: was already provisioned') unless targetobject.nil?

@@ -20,7 +20,7 @@ class Provisioningobject < ActiveRecord::Base
     # 1) get the Target, 
     # 2) get all Customers of this target, 
     # 3) get all Sites and filter by the list of Customers (filtering done in memory on an array) 
-    #abort ancestor.inspect
+    #raise ancestor.inspect
 
     # find all parents recursively. Start at ancestor level, e.g. at the target
     if ancestor.nil?
@@ -36,13 +36,13 @@ class Provisioningobject < ActiveRecord::Base
       return self.all.map {|i| i}
     end
 
-            #abort Target.all.inspect
-            #abort filtered_all.inspect
-            #abort ancestor.inspect
+            #raise Target.all.inspect
+            #raise filtered_all.inspect
+            #raise ancestor.inspect
     children_list = []
     #currentClass = ancestor.class
     currentClass = filtered_all[0].class
-           #abort currentClass.inspect
+           #raise currentClass.inspect
     while currentClass != self # stop if you have found all parents. E.g. if you search for all Sites of the Target, we will stop if we have found all Customers
 
       # for all parents in the list, find all children and write them to the children_list
@@ -52,14 +52,14 @@ class Provisioningobject < ActiveRecord::Base
 
       # go down one level, e.g. if you have found all Customers of a Target, write the Customers to the parent_list, in case of searched Sites, we stop here. In case of Users being looked for, we go one step further and will find all children of the Customers in the next iteration
       filtered_all = children_list
-            #abort filtered_all.inspect if filtered_all[0].is_a?(Customer)
-            #abort filtered_all.inspect if filtered_all[0].is_a?(Site)
-            #abort filtered_all.inspect if filtered_all[0].is_a?(User)
+            #raise filtered_all.inspect if filtered_all[0].is_a?(Customer)
+            #raise filtered_all.inspect if filtered_all[0].is_a?(Site)
+            #raise filtered_all.inspect if filtered_all[0].is_a?(User)
       children_list = []
       currentClass = currentClass.childClass
     end # while currentClass != parentClass
     
-            #abort filtered_all.inspect
+            #raise filtered_all.inspect
 
     return filtered_all
   end # def self.all_in(ancestor=nil)
@@ -81,15 +81,15 @@ class Provisioningobject < ActiveRecord::Base
       if pagination
         pagedReturn = self.all.map {|i| i }[first_index_of_page..last_index_of_page]
         pagedReturn = [] if pagedReturn.nil?
-		#abort pagedReturn.inspect
+		#raise pagedReturn.inspect
         return pagedReturn
       else
-              abort self.all.map {|i| i }.inspect
+              raise self.all.map {|i| i }.inspect
         return self.all.map {|i| i }
       end
     end
 
-abort "djköshgoöesrhriogörwheögwiöho"
+raise "djköshgoöesrhriogörwheögwiöho"
     # perform single SQL query with filter, if filtered per parent, e.g. GET /customers/1/sites
     if ancestor.is_a?(parentClass)
       # single parent
@@ -98,18 +98,18 @@ abort "djköshgoöesrhriogörwheögwiöho"
       parent_id_sym = "#{parentClass.name.downcase}_id".to_sym
       return self.where(parent_id_sym => ancestor.id).map {|i| i }
     end unless parentClass.nil?
-#abort ancestor.inspect
+#raise ancestor.inspect
 
     # calculate list of parents; go down the tree in order to save SQL queries:
     # with this method, only 3 SQL statements are needed to find the Site of a Target: 
     # 1) get the Target, 
     # 2) get all Customers of this target, 
     # 3) get all Sites and filter by the list of Customers (filtering done in memory on an array) 
-		#abort ancestor.inspect
+		#raise ancestor.inspect
 
     # find all parents recursively. Start at ancestor level, e.g. at the target
     filtered_all = [ancestor]
-          abort filtered_all.inspect 
+          raise filtered_all.inspect 
     children_list = []
     currentClass = ancestor.class
     while currentClass != self # stop if you have found all parents. E.g. if you search for all Sites of the Target, we will stop if we have found all Customers
@@ -121,7 +121,7 @@ abort "djköshgoöesrhriogörwheögwiöho"
 
       # go down one level, e.g. if you have found all Customers of a Target, write the Customers to the parent_list, in case of searched Sites, we stop here. In case of Users being looked for, we go one step further and will find all children of the Customers in the next iteration
       filtered_all = children_list
-            abort filtered_all.inspect 
+            raise filtered_all.inspect 
       children_list = []
       currentClass = currentClass.childClass
     end # while currentClass != parentClass
@@ -146,11 +146,11 @@ abort "djköshgoöesrhriogörwheögwiöho"
   end
   
   def path(prefix)
-    abort "method path() in app/models/provisioningobject.rb is broken. Fix before use. E.g. see app/views/shared/_helpers.html.erb->provisioningobject_path() for a correctly working example"
+    raise "method path() in app/models/provisioningobject.rb is broken. Fix before use. E.g. see app/views/shared/_helpers.html.erb->provisioningobject_path() for a correctly working example"
     prefixPrepend = "#{prefix}_" unless prefix.nil? 
     #return send("#{prefix}#{myobject(thisobject.class.to_s)}_path", thisobject.id)
-    #abort send("#{prefix}#{self.class.name.downcase}_path").inspect if prefix == 'deprovision_'
-    #abort self.id.inspect if prefix == 'deprovision_'
+    #raise send("#{prefix}#{self.class.name.downcase}_path").inspect if prefix == 'deprovision_'
+    #raise self.id.inspect if prefix == 'deprovision_'
     #return send("#{prefix}#{self.class.name.downcase}_path", self.id)
 
     # does not work, error message: 
@@ -178,7 +178,7 @@ abort "djköshgoöesrhriogörwheögwiöho"
     object_sym = self.class.to_s.downcase.to_sym
     
     @provisionings = Provisioning.where(object_sym => self)
-    #abort @provisionings.inspect
+    #raise @provisionings.inspect
     
     # search for active jobs:
     @provisionings.each do |provisioning|    
@@ -201,7 +201,7 @@ abort "djköshgoöesrhriogörwheögwiöho"
   end
   
   def synchronize(async=true, recursive=true)
-		#abort async.inspect
+		#raise async.inspect
     #return false if /waiting|progress/.match(status)
     #updateDB = UpdateDB.new
     if async
@@ -217,10 +217,10 @@ abort "djköshgoöesrhriogörwheögwiöho"
       # replaced by:
       #job = 
       GeneralJob.perform_later(self, "synchronizeSynchronously")
-      #abort GeneralJob.all.inspect
-      # for testing the cancel function: should raise an abort with message "true", if sleep is commented out. Else it should raise an abort with message "false"
+      #raise GeneralJob.all.inspect
+      # for testing the cancel function: should raise an raise with message "true", if sleep is commented out. Else it should raise an raise with message "false"
       # sleep 10.seconds
-      #abort job.cancel.inspect
+      #raise job.cancel.inspect
        
       
       #returnBody = synchronizeSynchronously(recursive)
@@ -240,14 +240,14 @@ abort "djköshgoöesrhriogörwheögwiöho"
     #
     # TODO: create rspec tests for recursive synchronizeAll, if not already present and test with recursive = true (also see controller)
 
-    abort "recursive mode of synchronizeAll is not yet supported" if recursive
+    raise "recursive mode of synchronizeAll is not yet supported" if recursive
 
     if ancestor.nil?
       targetsArray = Target.all.map {|i| i}
     else
       targetsArray = [ ancestor.target ] unless ancestor.nil?
     end
-		#abort targetsArray.inspect
+		#raise targetsArray.inspect
 
     parents_all = parentClass.all_in(ancestor) unless ancestor.nil?
     parents_all = parentClass.all_in if ancestor.nil?
@@ -258,7 +258,7 @@ abort "djköshgoöesrhriogörwheögwiöho"
 
     end
 
-abort parents.inspect    
+raise parents.inspect    
     # TODO: rebuild the functions of self.synchronizeAll with less SQL requests.
     # idea: build a tree from ancestor (or root) to the to be updated level. 
     # It should be possible to find the anchestors without any additional SQL statement (e.g. if user = tree[target_i][customer_i][site_i][user_i] then user.customer = tree[target_i][customer_i]. 
@@ -275,16 +275,16 @@ abort parents.inspect
     # 
     # TODO: create rspec tests for recursive synchronizeAll, if not already present and test with recursive = true (also see controller)
 
-#abort  abortOnAbort.inspect
+#raise  abortOnAbort.inspect
   
-    abort "recursive mode of synchronizeAll is not yet supported" if recursive
+    raise "recursive mode of synchronizeAll is not yet supported" if recursive
 
     parents ||= parentClass.all_in
-		#abort parents.inspect
+		#raise parents.inspect
 
     # find target systems involved:
     targetsArray = parents.map {|i| i.target}.uniq
-		#abort targetsArray.inspect
+		#raise targetsArray.inspect
 
     # for each target involved, perform a synchronization task (in the background for async==true):
     targetsArray.each do |target_i|
@@ -294,15 +294,15 @@ abort parents.inspect
 
       # For each target, find all parents, which are in the parents list and are on this target
       parents_of_this_target = parents.select{ |i| i.target.id == target_i.id} #targetsArray 
-		#abort parents_of_this_target.inspect
+		#raise parents_of_this_target.inspect
 
       # perform synchronizeAllSynchronously(parents_of_this_target, recursive)
       if async
-        # delayed jobs automatically rescues on abort and retries the synchronization. If we do not want to retry on abort, we can set @abortOnAbort to false in the provisioningobjects controller
+        # delayed jobs automatically rescues on raise and retries the synchronization. If we do not want to retry on raise, we can set @abortOnAbort to false in the provisioningobjects controller
         delay.synchronizeAllSynchronously(parents_of_this_target, recursive, abortOnAbort)
       else # if async
-        # if @abortOnAbort is set to false in the provisioningobjects controller, we rescue the abort and continue with other targets, if a target synchronization fails:
-        # (in development mode, for troubleshooting, it is sometimes better not to rescue on abort, though)
+        # if @abortOnAbort is set to false in the provisioningobjects controller, we rescue the raise and continue with other targets, if a target synchronization fails:
+        # (in development mode, for troubleshooting, it is sometimes better not to rescue on raise, though)
         synchronizeAllSynchronously(parents_of_this_target, recursive, abortOnAbort)          
       end # if async
 
@@ -317,7 +317,7 @@ abort parents.inspect
 
     updateDB = UpdateDB.new
     responseBody = updateDB.perform(self)
-            #abort "model: synchronize" + self.inspect
+            #raise "model: synchronize" + self.inspect
     if recursive && responseBody.is_a?(String) && responseBody[/ERROR.*$/].nil? && !childClass.nil?
       # TODO: read children from target, create children in DB, if not present yet, and perform a child.synchronizeSynchronously(recursive)
       #dummyChild = childClass.new(customer: self) #self.class.name.downcase.to_sym => self) # needed in order to access the provision method of the child class
@@ -334,7 +334,7 @@ abort parents.inspect
   
   def self.synchronizeAllSynchronously(parents, recursive=false, abortOnAbort=true)
     
-    # if abortOnAbort is false, we wrap the whole function in a begin rescure block and only print the Exception message to the standard output:
+    # if abortOnAbort is false, we wrap the whole function in a begin rescue block and only print the Exception message to the standard output:
     unless abortOnAbort
       begin
         result = synchronizeAllSynchronously(parents, recursive, true)
@@ -348,28 +348,28 @@ abort parents.inspect
     #else the rest of the function is performed:
     
     verbose = false
-		#abort parents.inspect
+		#raise parents.inspect
 
     # For each parent, perform the synchronization of all childs of the corresponding parent:
     parents.each do |myparent|
       responseBody = self.read(myparent)
 		#p responseBody
-		#abort responseBody
+		#raise responseBody
       # error handling:
-      abort "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
+      raise "synchronizeAllSynchronously(: ERROR: provisioningRequest timeout reached!" if responseBody.nil?
 
       # depending on the result, targetobject.provision can return a Fixnum. We need to convert this to a String
       responseBody = "synchronizeAllSynchronously: ERROR: #{self.name} does not exist" if responseBody.is_a?(Fixnum) && responseBody == 101
-#abort "lerghoesrhgoerhgos"
+#raise "lerghoesrhgoerhgos"
 
       #p "SSSSSSSSSSSSSSSSSSSSSSSSS    #{self.name}.synchronizeAll responseBody    SSSSSSSSSSSSSSSSSSSSSSSSS" if verbose
       p responseBody.inspect if verbose
         
-      # abort, if it is still a Fixnum:
+      # raise, if it is still a Fixnum:
       return "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
-      #abort "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
+      #raise "synchronizeAllSynchronously: ERROR: wrong responseBody type (#{responseBody.class.name}) instead of String)" unless responseBody.is_a?(String)
       # business logic error:
-      #abort "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
+      #raise "received an ERROR response for provision(:read) in synchronizeAllSynchronously" unless responseBody[/ERROR.*$/].nil?
       next unless responseBody[/ERROR.*$/].nil?
     
       require 'rexml/document'
@@ -385,21 +385,21 @@ abort parents.inspect
         idsNotYetFound = self.where(parentSym => myparent).map {|i| i.id }
       end
             # convert to array: .map {|i| i.id }
-            #abort idsNotYetFound.inspect
-            #abort self.find(idsNotYetFound[0]).inspect
+            #raise idsNotYetFound.inspect
+            #raise self.find(idsNotYetFound[0]).inspect
       
       myparent.childClass.xmlElements(xml_data).each do |element|        
-                #abort myparent.inspect
+                #raise myparent.inspect
 
           # find corresponding site in the DB:
           thisObjects = self.find_from_REXML_element(element, myparent)
-                    #abort thisObjects.inspect
+                    #raise thisObjects.inspect
          
           case thisObjects.count
             when 0
               # did not find object in the DB, so we create it:
               thisObject = self.create_from_REXML_element(element, myparent)
-                    #abort thisObject.inspect
+                    #raise thisObject.inspect
 
               # update status:
               thisObject.update_attribute(:status, 'provisioned successfully (found on target and  thus created in the database)')
@@ -412,36 +412,36 @@ abort parents.inspect
               idsNotYetFound.delete(thisObject.id)             
             else
               # found more than one match in the DB
-              abort "too many matches"           
+              raise "too many matches"           
           end
           
-		#abort thisObject.status
+		#raise thisObject.status
   
       end # doc.root.elements["GetBGListData"].elements.each do |element|
       
       #3) update the status of the objects that are in the DB, but not configured on the target 
       idsNotFound = idsNotYetFound
-                #abort idsNotFound.inspect
+                #raise idsNotFound.inspect
       unless idsNotFound.empty?
         idsNotFound.each do |i|
           objectNotFound = self.find(i)
-                #abort objectNotFound.inspect
+                #raise objectNotFound.inspect
           objectNotFound.update_attribute(:status, 'not provisioned (seems to have been removed manually from target)') unless objectNotFound.status.match(/not provisioned/)
-                #abort objectNotFound.inspect if objectNotFound.name == "Customer3"
+                #raise objectNotFound.inspect if objectNotFound.name == "Customer3"
         end # idsNotFound.each do |i|
       end # unless idsNotFound.empty?
     end # parents.each do |target|
-                #abort self.all.inspect
+                #raise self.all.inspect
   end
   
   def self.read(myparent)
     methodNoun = "reading"
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}"
     header = self.provisioningAction(:read, myparent)
-		#abort inputBody.inspect
+		#raise inputBody.inspect
     return false if header.nil?  # no provisioningAction defined for this type
 
-		#abort provisioningobject.inspect
+		#raise provisioningobject.inspect
     unless myparent.nil?
       headerAppend = myparent.recursiveConfiguration.gsub(/\r/, '')
       headerAppend = headerAppend.gsub(/^[\s]*\n/,'') # ignore empty lines
@@ -462,13 +462,13 @@ abort parents.inspect
     # deletes all children tables recursively
     #
     childClass.recursiveDeleteAll unless childClass.nil?
-		#abort childClass.inspect
+		#raise childClass.inspect
     self.delete_all
   end
   
   def recursiveConfiguration
     if parent.nil?
-      abort "could not read configuration for #{self.inspect}"
+      raise "could not read configuration for #{self.inspect}"
     else 
       parent.recursiveConfiguration
     end
@@ -477,8 +477,8 @@ abort parents.inspect
   def provision(method, async=true)
 
     provisioningobject = self
-		#abort provisioningobject.inspect
-		#abort method.inspect
+		#raise provisioningobject.inspect
+		#raise method.inspect
 
     # update the status of the object; throws an exception, if the object cannot be saved.
     case method
@@ -493,12 +493,12 @@ abort parents.inspect
       when :read
         methodNoun = "reading"
       else
-        abort "provision(method=#{method}, async=#{async}): Unknown method"
+        raise "provision(method=#{method}, async=#{async}): Unknown method"
     end
 
     # set body to be sent to the ProvisioningEngine target: e.g. inputBody = "action = Add Customer, customerName=#{name}" 
     inputBody = provisioningAction(method)
-        #abort inputBody.inspect
+        #raise inputBody.inspect
     return false if inputBody.nil?  # no provisioningAction defined for this type
     
     unless target.nil?
@@ -524,7 +524,7 @@ abort parents.inspect
     # recursive creation of parents for Add (:create) functions
     if inputBody.include?("Add ") && !inputBody.include?("testMode")
 #      readList = self.parent.provision(:read, false)
-#            abort readList.inspect
+#            raise readList.inspect
 
       # confusing "exists already" error in the Provisioning Tasks list, in case a parent is provisioned already, but I still try to provision it:
 #      self.parent.provision(:create, async) unless self.parent.nil?
@@ -538,21 +538,21 @@ abort parents.inspect
     object_sym = :provisioningobject
     
     @provisioning = Provisioning.new(action: inputBody, object_sym => provisioningobject)
-              #abort @provisioning.inspect
-              #abort @provisioning.action.inspect
-              #abort method.inspect
-              #abort async.inspect
+              #raise @provisioning.inspect
+              #raise @provisioning.action.inspect
+              #raise method.inspect
+              #raise async.inspect
     if method == :read || @provisioning.save
        if async == true
          returnvalue = @provisioning.deliverasynchronously
        else
-              #abort @provisioning.inspect
-              #abort @provisioning.action.inspect
+              #raise @provisioning.inspect
+              #raise @provisioning.action.inspect
          returnvalue = @provisioning.deliver
        end
     else
       @provisioning.errors.full_messages.each do |message|
-        abort 'provisioning error: ' + message.to_s
+        raise 'provisioning error: ' + message.to_s
       end
     end 
     returnvalue

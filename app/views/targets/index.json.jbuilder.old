@@ -1,6 +1,6 @@
 json.array!(@targets) do |target|
   #json.extract! target, :id, :name, :configuration
-  #abort (render target.json.inspect
+  #raise (render target.json.inspect
   #render :json  => target #, include: :name
   json.id target.id
   json.name target.name

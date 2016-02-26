@@ -20,7 +20,7 @@
         when 'Waiting'
           raw('<button class= "btn btn-default" onclick="alert(\'Please wait for the provisioning process to finish!\');">Waiting...</button>')
         else
-          abort "myLink called with wrong linkLabel=#{linkLabel}"
+          raise "myLink called with wrong linkLabel=#{linkLabel}"
       end
     end
 
