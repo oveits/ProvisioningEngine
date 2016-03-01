@@ -13,7 +13,8 @@ ADD . /ProvisioningEngine
 WORKDIR /ProvisioningEngine
 
 # Install the Rails Gems and prepare the database:
-RUN bundle install; bundle exec rake db:migrate RAILS_ENV=development || echo "ignoring Graphviz failure"
+RUN bundle install; bundle exec rake db:migrate RAILS_ENV=development
+# || echo "ignoring Graphviz failure"
 
 # expose tcp port 80
 EXPOSE 80

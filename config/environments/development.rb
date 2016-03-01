@@ -37,4 +37,7 @@ Rails.application.configure do
   
   # OV: see https://github.com/gevans/respond-rails
   config.assets.precompile += %w( modernizr.js respond.js respond-proxy.html respond.proxy.js )
+
+  # OV trying to fix issue #48 according to http://code.eklund.io/blog/2014/05/27/ignoring-heroku-errors-on-rake-db-migrate/
+  config.active_record.schema_format = :ruby 
 end
