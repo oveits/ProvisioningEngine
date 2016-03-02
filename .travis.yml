@@ -5,8 +5,9 @@ rvm:
 env:
   - WEBPORTAL_SIMULATION_MODE=true WEBPORTAL_ASYNC_MODE=true
   - WEBPORTAL_SIMULATION_MODE=true WEBPORTAL_ASYNC_MODE=false
-before_script:
+before_install:
   - bundle install
+before_script:
   - bundle exec rake db:migrate RAILS_ENV=test
 script: 
 #  - bundle exec rspec -f d spec/requests/provisioningobjects_spec.rb "$@"
