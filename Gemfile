@@ -124,9 +124,10 @@ gem 'figaro'
 gem "respond-rails", "~> 1.0"
 
 # OV for automatic creation of UML-like class diagrams (see http://rails-erd.rubyforge.org/)
-group :development do
-  gem "rails-erd" if ENV["DOCKER"].nil?
-end
+# comment out only, if you want to create the ERD.PDF UML file:
+#group :development do
+  #gem "rails-erd" if ENV["DOCKER"].nil?
+#end
 
 gem 'activesupport'
 
