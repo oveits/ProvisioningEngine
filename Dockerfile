@@ -13,7 +13,8 @@ ADD . /ProvisioningEngine
 WORKDIR /ProvisioningEngine
 
 # Install the Rails Gems and prepare the database:
-RUN bundle install; bundle exec rake db:migrate RAILS_ENV=development
+# note: the DOCKER=true is needed for filtering the gem rails-erd during the bundle install (in Gemfile: gem "rails-erd" if ENV["DOCKER"].nil?)
+RUN export DOCKER=true; bundle install; bundle exec rake db:migrate RAILS_ENV=development
 
 # expose tcp port 80
 EXPOSE 80
