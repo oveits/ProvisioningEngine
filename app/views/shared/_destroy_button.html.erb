@@ -16,9 +16,9 @@
     end
 
     if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status)
-      if ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false" && ENV["WEBPORTAL_PROVISIONINGOBJECTS_DESTROY_WO_DEPROVISION"] == "true"
+      if !SystemSetting.webportal_provisioningobjects_hide_inactivebuttons && ENV["WEBPORTAL_PROVISIONINGOBJECTS_DESTROY_WO_DEPROVISION"] == "true"
         return myLink
-      elsif ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false"
+      elsif !SystemSetting.webportal_provisioningobjects_hide_inactivebuttons
         return raw('<button class= "btn btn-default" onclick="alert(\'De-Provision the item first!\');">' + label + '</button>')
       end          
     else

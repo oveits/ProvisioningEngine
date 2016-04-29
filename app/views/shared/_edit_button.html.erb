@@ -16,7 +16,7 @@
         when 'Edit'
           link_to linkLabel, provisioningobject_path(@provisioningobject, 'edit'), class: "btn btn-primary"
         when 'Waiting'
-          '<button class= "btn btn-default" onclick="alert(\'De-Provision the item first!\');">Edit</button>'
+          raw('<button class= "btn btn-default" onclick="alert(\'De-Provision the item first!\');">Edit</button>')
         else
           raise "myLink called with wrong linkLabel=#{linkLabel}"
       end
@@ -24,7 +24,7 @@
 
     # return the link
     if @provisioningobject.provisioned? || /waiting/.match(@provisioningobject.status) || /progress/.match(@provisioningobject.status)
-      return myLink('Waiting') if ENV["WEBPORTAL_PROVISIONINGOBJECTS_HIDE_INACTIVEBUTTONS"] == "false"
+      return myLink('Waiting') unless SystemSetting.webportal_provisioningobjects_hide_inactivebuttons
     else
       return myLink('Edit')
     end
