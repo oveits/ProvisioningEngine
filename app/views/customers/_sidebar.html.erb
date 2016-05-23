@@ -5,7 +5,13 @@
                 <li class="sidebar-brand">
                         Functions
                 </li>
+                <% if true %>
+                <% # to be replaced by the following uncommented line, if we want to provision targets as well?: %>
+                <% # if @target.nil? %>
                 <li><%= link_to 'New Customer', new_customer_path(@params) %></li>
+                <% else %>
+                <li><%= link_to 'New Customer', new_target_customer_path(@target) %></li>
+                <% end %>
                 <% if ENV["WEBPORTAL_SYNCHRONIZEBUTTON_VISIBLE"] == "true" && ENV["WEBPORTAL_SYNCHRONIZEALLBUTTON_VISIBLE"] == "true" %>
                 <li><%= link_to 'Synchronize Customers', synchronize_customers_path, method: :patch, data: { confirm: 'Are you sure?' } %></li>
                 <% end %>

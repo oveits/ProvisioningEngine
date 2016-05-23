@@ -77,6 +77,11 @@ scope(path: baseURL) do
 #    resources :customers, :sites, :users
 #  end
 
+#  OV: needed if we want to provision targets later on?
+#  resources :targets do
+#    resources :customers, :sites, :users
+#  end
+  
   resources :customers do
     # TODO: OV: what is needed this for?
     #get :index, :controller => :sites

@@ -78,11 +78,13 @@ end
 #      versionList = Array["V7R1", "V8"]
 #      and iterate over versionList, and set targetsolution
 
+
 objectList = Array["Customer", "Site", "User"]
 #objectList = Array["Customer", "User"]
 #objectList = Array["Customer"]
 #objectList = Array["Site"]
 #objectList = Array["User"]
+#objectList = Array["Target"]
 
 objectList2 = Array["Provisioning", "Target"]
 
@@ -1295,11 +1297,12 @@ objectList.each do |obj|
       end
       
       #  "should have link to 'New Customer'"
-      it "should have link to 'New #{obj}'" do     
+      it "should have link to 'New #{obj}'" do  
         #expect(page).to have_link( 'New Customer', href: new_customer_path )
                 #p page.html.gsub(/[\n\t]/, '')
 
         # TODO: need to find a way to have the same expect command for all provisioningobjects
+    #byebug
         expect(page).to have_link( "New #{obj}", href: new_provisioningobject_path(obj) + '?per_page=all') #unless obj == "Site"
         #expect(page).to have_link( "New #{obj}", href: new_provisioningobject_path(obj) ) if obj == "Site"
       end
