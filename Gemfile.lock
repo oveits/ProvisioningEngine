@@ -312,7 +312,7 @@ DEPENDENCIES
   daemons
   delayed_job_active_record
   delayed_job_web (= 1.2.5)
-  devise
+  devise (= 3.5.6)
   em-http-request
   factory_girl_rails (= 4.2.0)
   figaro
