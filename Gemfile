@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-#ruby '2.1.3'
+ruby '2.2.4'
 # >= is not supported in tis context:
 #ruby ENV['CUSTOM_RUBY_VERSION'] || '>= 2.0.0'
 # commented out again and we set the ruby version externally, e.g. in .travis.yml etc.
