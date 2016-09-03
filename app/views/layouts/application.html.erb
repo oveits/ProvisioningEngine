@@ -54,10 +54,12 @@
         <nav>
           <ul class="nav navbar-nav navbar-right">
             <span id="flash">
+            <span class="refresh" id="_flash<%= request.path.gsub('/','_') %>">
             <p id="notice" style="background-color: white;"><%= notice %></p>
             <p id="alert" style="background-color: white;"><%= alert %></p>
             <p id="error" style="background-color: white;"><%= error %></p>
             <p id="success" style="background-color: white;"><%= success %></p>
+            </span>
             </span>
     <%  if false # since there are no functions behind, let us hide those links for now %>
             <li><%= link_to "Home",   '#' %></li>
@@ -85,20 +87,25 @@
 
         <!-- Sidebar -->
         <div id="sidebar-wrapper" >
-            <ul class="sidebar-nav">
-
-                <%= render "sidebar" %>
-
-            </ul>
+            <div class="refresh" id="_sidebar-wrapper<%= request.path.gsub('/','_') %>" >
+                <ul class="sidebar-nav">
+        
+                    <%= render "sidebar" %>
+    
+                </ul>
+            </div>
         </div>
         <!-- /#sidebar-wrapper -->
         <!-- Page Content -->
         <div id="page-content-wrapper">
+        <div class="refresh" id="_page-content-wrapper<%= request.path.gsub('/','_') %>">
+        
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
 <!--
                       <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+                      
 --> 
                       <% if SystemSetting.webportal_simulation_mode %>
                         <h4 style="color:blue; background-color:white; opacity: 0.6; position:fixed; top:90px; left: 50%;"> **simulation mode**</h4>
@@ -124,6 +131,7 @@
                     </div>
                 </div>
             </div>
+        </div> <!-- /#_page-content-wrapper for refresh-->
         </div>
         <!-- /#page-content-wrapper -->
     </div>

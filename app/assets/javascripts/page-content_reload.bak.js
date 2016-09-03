@@ -32,29 +32,28 @@ function page_ajax_id_refresh(idArray) {
         window.ajaxWaiting = true;
     },
     success: function(data) {
-                var elementsToBeRefreshed = document.getElementsByClassName("refresh");
-                for (var i = 0; i < elementsToBeRefreshed.length; i++) {
-                  var id = elementsToBeRefreshed[i].getAttribute('id');
+                for (var i = 0; i < idArray.length; i++) {
+                  id = idArray[i];
                   var oldobj = $('#' + id);
                     console.log("oldobj: " + oldobj);
-                  
-                  // get updated HTML:
+                  if(oldobj == null)  {
+                    // return if no element with id=page-content-wrapper was found on the page
+                    console.log("HTML elemnet with id=" + id + " not found on the page");
+                    return;
+                  }
+                  var oldhtml = oldobj.get(0).innerHTML;
+                  // same as: var oldhtml = document.getElementById("status").innerHTML;
+
+                  // calculate newhtml:
                   var parser = new DOMParser();
                   var doc = parser.parseFromString(data, "text/html");
-                  var newElement = doc.getElementById(id);
-                  var newhtml;
-        
-                  if(newElement != null) {
-                    newhtml = newElement.innerHTML;
-                    
-                                    //   // replace old html by newhtml:
-                    elementsToBeRefreshed[i].innerHTML = newhtml;
-                    console.log("page reloaded successfully:");
-                    console.log("HTML element with id=" + id + " updated");
-                  } else {
-                    console.log("could not find id=" + id + " on retrieved page");
-                  } //  if(newElement != null)                 ;
-                } // for (var i = 0; i < elementsToBeRefreshed.length; i++)
+                  var newhtml = doc.getElementById(id).innerHTML;
+
+                  // replace old html by newhtml:
+                  oldobj.get(0).innerHTML = newhtml;
+                  console.log("page reloaded successfully:");
+                  console.log("HTML element with id=" + id + " updated");
+                } // for (var i = 0; i < idArray.length; i++)
               }, // success: function(data)
     failure: function(data) {
                 timeout = 2 * timeout; 
