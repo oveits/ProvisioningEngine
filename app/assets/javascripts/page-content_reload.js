@@ -2,7 +2,9 @@
   var pattern, regex;
 
   // specify the URLs, where we want to perform page reloads:
-  pattern = "customers[/#]*$|customers/[1-9][0-9]*[/#]*$|sites[/#]*$|sites/[1-9][0-9]*[/#]*$|users[/#]*$|users/[1-9][0-9]*[/#]*$|provisionings[/#]*$|provisionings/[1-9][0-9]*[/#]*$";
+  //pattern = "customers[/#]*$|customers/[1-9][0-9]*[/#]*$|sites[/#]*$|sites/[1-9][0-9]*[/#]*$|users[/#]*$|users/[1-9][0-9]*[/#]*$|provisionings[/#]*$|provisionings/[1-9][0-9]*[/#]*$";
+  // replaced by: refresh all paths. The ajax "success" function will take care that HTML element with forms are not refreshed.
+  pattern = ".*"
 
 // temporarily switched off:
 //pattern = "@@@@@@@@@@@@@@@@@@@@@---switched--off---@@@@@@@@@@@@@@@@@@@@@@@";
@@ -34,9 +36,19 @@ function page_ajax_id_refresh(idArray) {
     success: function(data) {
                 var elementsToBeRefreshed = document.getElementsByClassName("refresh");
                 for (var i = 0; i < elementsToBeRefreshed.length; i++) {
+                  
                   var id = elementsToBeRefreshed[i].getAttribute('id');
+                  
+                  if(elementsToBeRefreshed[i].getElementsByTagName("form").length > 0) {
+                    // skip if elementsToBeRefreshed containts a form:
+                    console.log("element with id=" + id + " skipped because it contains a form");
+                    continue;
+                  }
+                  
                   var oldobj = $('#' + id);
                     console.log("oldobj: " + oldobj);
+                    
+                  var oldhtml = oldobj.get(0).innerHTML;
                   
                   // get updated HTML:
                   var parser = new DOMParser();
@@ -47,10 +59,15 @@ function page_ajax_id_refresh(idArray) {
                   if(newElement != null) {
                     newhtml = newElement.innerHTML;
                     
-                                    //   // replace old html by newhtml:
-                    elementsToBeRefreshed[i].innerHTML = newhtml;
-                    console.log("page reloaded successfully:");
-                    console.log("HTML element with id=" + id + " updated");
+                    // replace old html by newhtml, if they differ:
+                    if (oldhtml === newhtml){
+                      console.log("update of element id=" + id + " skipped because it has not changed")
+                    } else {
+                      elementsToBeRefreshed[i].innerHTML = newhtml;
+                      
+                      console.log("page reloaded successfully:");
+                      console.log("HTML element with id=" + id + " updated");
+                    }
                   } else {
                     console.log("could not find id=" + id + " on retrieved page");
                   } //  if(newElement != null)                 ;
@@ -85,7 +102,10 @@ function page_ajax_id_refresh(idArray) {
   
   myReload = function() {
     console.log("myReload called!");
-    if ( regexInclude.test(window.location.pathname) && ( $('form').get(0) == null  || regexIncludeEvenIfForm.test(window.location.pathname))) {
+// reload only, if path included in pattern and page has no form or if specified to be updated even if a form is present:
+//    if ( regexInclude.test(window.location.pathname) && ( $('form').get(0) == null  || regexIncludeEvenIfForm.test(window.location.pathname))) {
+// replaced by: reload always. The update will be skipped in the ajax "success" function, if a form is present or if the content has not changed.
+    if (true) {
       // this is autmatically loading/starting mySetReload because of the document ready and document page reload statements:
 
       // see: https://coderwall.com/p/ii0a_g/page-reload-refresh-every-5-sec-using-turbolinks-js-rails-jquery

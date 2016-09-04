@@ -46,7 +46,7 @@
 <%= render 'shared/pagination.html.erb' %>
 <br />
 <div>
-<table>
+<table class="refresh" id="userIndexTable">
   <thead>
     <tr>
 <% if false %>
@@ -102,11 +102,12 @@
         	<% if false %>
         <td><%= user.email %></td>
         	<% end %>
-        <td><% user.status %>
+        <td class="no-refresh" id="_status<%= "#{request.path.gsub('/','_')}_#{user.id}" %>">
+          <% user.status %>
           <% case user.status
                when /success/
                  statuscolor = "#008800"  # dark green
-               when /failure/
+               when /fail/
                  statuscolor = "red"
                when /progress/
                  statuscolor = "orange"

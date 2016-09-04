@@ -19,7 +19,7 @@
 <br />
 <div>
 	
-<table>
+<table class="refresh" id="customerIndexTable">
   <thead>
     <tr>
       <th>ID</th>
@@ -42,11 +42,11 @@
 		<% rescue %>
       	<% end %>
         </td>
-        <td>
+        <td class="no-refresh" id="_status<%= "#{request.path.gsub('/','_')}_#{customer.id}" %>">
           <% case customer.status
                when /success/  
                  statuscolor = "#008800"  # dark green
-               when /failure/
+               when /fail/
                  statuscolor = "red"
                when /progress/
                  statuscolor = "orange"

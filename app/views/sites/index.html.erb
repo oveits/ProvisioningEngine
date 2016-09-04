@@ -69,7 +69,7 @@ $('.user').hover(function() {
 
 <br />
 <div>
-<table>
+<table class="refresh" id="siteIndexTable">
   <thead>
     <tr>
       <th>Name</th>
@@ -96,11 +96,11 @@ $('.user').hover(function() {
         	<% end %>       	
         </td>
         <% end %>
-        <td>
+        <td class="no-refresh" id="_status<%= "#{request.path.gsub('/','_')}_#{site.id}" %>">
           <% case site.status
                when /success/
                  statuscolor = "#008800"  # dark green
-               when /failure/
+               when /fail/
                  statuscolor = "red"
                when /progress/
                  statuscolor = "orange"
