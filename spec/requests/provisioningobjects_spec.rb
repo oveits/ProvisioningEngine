@@ -109,8 +109,9 @@ else
 #targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9ROCS", "CSL8", "CSL9_V7R1"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9ROCS"]
-targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
+#targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
+targetsolutionList = Array["10_152_0_10"]  # simplex OSV on development notebook
  
 end # if SystemSetting.webportal_simulation_mode
 

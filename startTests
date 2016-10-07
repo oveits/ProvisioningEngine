@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+
 export HTTP_PROXY=
 export http_proxy=
 

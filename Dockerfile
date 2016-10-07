@@ -19,5 +19,5 @@ RUN export DOCKER=true; bundle install; bundle exec rake db:migrate RAILS_ENV=de
 # expose tcp port 80
 EXPOSE 80
 
-# default command: run the web server on port 80:
-CMD ["rails", "server", "-p", "80"]
+# default command: run the web server on port 80 and on IP 0.0.0.0 (if the latter is missing, I have seen connection refused messages):
+CMD ["rails", "server", "-p", "80", "-b", "0.0.0.0"]
