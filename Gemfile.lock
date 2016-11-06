@@ -310,6 +310,7 @@ DEPENDENCIES
   activeadmin (= 1.0.0.pre2)
   activemodel-globalid
   activesupport
+  bcrypt (~> 3.1.11)
   bootstrap-sass
   byebug
   capybara
