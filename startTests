@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 export HTTP_PROXY=
 export http_proxy=
 
@@ -20,7 +22,9 @@ perform_tests(){
 }
 
 #rake db:migrate RAILS_ENV=test
-perform_tests "$@" | tee $DIR/log/lasttest.log
+MILLISECONDS=`date +%N | cut -c1-3`; # did not work, but cut -c1-3 has worked: let MILLISECONDS/=1000000
+DATETIME=`date +"%Y-%m-%d-%H-%M"`.$MILLISECONDS
+perform_tests "$@" | tee $DIR/log/lasttest.log | tee $DIR/log/test_${DATETIME}.log
 
 # return exitstatus of first command in the pipe:
 test ${PIPESTATUS[0]} -eq 0

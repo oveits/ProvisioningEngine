@@ -27,7 +27,7 @@ RSpec.configure do |config|
   
   # stop on first failure, if set to true:
 #  config.fail_fast = false
-  config.fail_fast = true
+  config.fail_fast = false
 
   # TODO: this filter does not work: run only broken test cases
   #config.filter_run_excluding broken: false #, provisioning: true #, untested: true
@@ -106,9 +106,12 @@ else
 #targetsolutionList = Array["CSL6_V7R1"]  # OSV V7R1, Erik Luft
 #targetsolutionList = Array["CSL8"]  # OSV V8R0, Thomas Otto
 #targetsolutionList = Array["CSL9_V7R1"]  # OSV V7R1, Pascal Welz
-targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+#targetsolutionList = Array["CSL9DEV"]  # OSV V8R0, Thomas Otto
+#targetsolutionList = Array["CSL9ROCS", "CSL8", "CSL9_V7R1"]  # OSV V8R0, Thomas Otto
+#targetsolutionList = Array["CSL9ROCS"]
 #targetsolutionList = Array["CSL11"]   # OSV V8R0, Rolf Lang
 #targetsolutionList = Array["CSL12"]  # AcmePacket; Joerg Seifert
+targetsolutionList = Array["10_152_0_10"]  # simplex OSV on development notebook
  
 end # if SystemSetting.webportal_simulation_mode
 
@@ -1170,7 +1173,6 @@ objectList.each do |obj|
         it "should synchronize the index with the #{obj} objects found on the target system" do
           # create an object that is on the target and not in the DB (shouldl be synchronized to the DB at the end)
           Delayed::Worker.delay_jobs = false
-          
           myClass = Object.const_get(myObject(obj))
                 #raise myClass.inspect
                 
